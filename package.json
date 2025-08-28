@@ -1,6 +1,6 @@
 {
   "name": "mcp-jira-stdio",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Model Context Protocol (MCP) server for Jira API integration",
   "author": "graslt",
   "license": "MIT",
@@ -79,5 +79,8 @@
   "bugs": {
     "url": "https://github.com/freema/mcp-jira-stdio/issues"
   },
-  "homepage": "https://github.com/freema/mcp-jira-stdio#readme"
+  "homepage": "https://github.com/freema/mcp-jira-stdio#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }
