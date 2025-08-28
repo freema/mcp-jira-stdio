@@ -1,30 +1,40 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { 
-  handleGetVisibleProjects, getVisibleProjectsTool,
-  handleGetMyIssues, getMyIssuesTool,
-  handleUpdateIssue, updateIssueTool,
-  handleAddComment, addCommentTool,
-  handleGetIssueTypes, getIssueTypesTool,
-  handleGetUsers, getUsersTool,
-  handleGetPriorities, getPrioritiesTool,
-  handleGetStatuses, getStatusesTool,
-  handleGetProjectInfo, getProjectInfoTool,
-  handleCreateSubtask, createSubtaskTool
+import {
+  handleGetVisibleProjects,
+  getVisibleProjectsTool,
+  handleGetMyIssues,
+  getMyIssuesTool,
+  handleUpdateIssue,
+  updateIssueTool,
+  handleAddComment,
+  addCommentTool,
+  handleGetIssueTypes,
+  getIssueTypesTool,
+  handleGetUsers,
+  getUsersTool,
+  handleGetPriorities,
+  getPrioritiesTool,
+  handleGetStatuses,
+  getStatusesTool,
+  handleGetProjectInfo,
+  getProjectInfoTool,
+  handleCreateSubtask,
+  createSubtaskTool,
 } from '../../../src/tools/index.js';
 import { validateInput } from '../../../src/utils/validators.js';
-import { 
-  getVisibleProjects, 
-  getMyIssues, 
-  updateIssue, 
+import {
+  getVisibleProjects,
+  getMyIssues,
+  updateIssue,
   addComment,
   getIssueTypes,
   getUsers,
   getPriorities,
   getStatuses,
   getProjectDetails,
-  createSubtask
+  createSubtask,
 } from '../../../src/utils/api-helpers.js';
-import { 
+import {
   formatProjectsResponse,
   formatSearchResultsResponse,
   formatSuccessResponse,
@@ -34,11 +44,11 @@ import {
   formatPrioritiesResponse,
   formatStatusesResponse,
   formatProjectDetailsResponse,
-  formatIssueResponse
+  formatIssueResponse,
 } from '../../../src/utils/formatters.js';
 import { handleError } from '../../../src/utils/error-handler.js';
-import { 
-  mockJiraProject, 
+import {
+  mockJiraProject,
   mockJiraSearchResult,
   mockJiraComment,
   mockJiraIssueType,
@@ -48,7 +58,7 @@ import {
   mockJiraProjectDetails,
   mockJiraIssue,
   mockUnauthorizedError,
-  mockNotFoundError
+  mockNotFoundError,
 } from '../../mocks/jira-responses.js';
 import { TOOL_NAMES } from '../../../src/config/constants.js';
 
@@ -110,7 +120,7 @@ describe('All Jira Tools', () => {
 
     it('should handle errors', async () => {
       const mockErrorResponse = { content: [{ type: 'text', text: 'error' }] };
-      
+
       mockedValidateInput.mockReturnValue({});
       mockedGetVisibleProjects.mockRejectedValue(mockUnauthorizedError);
       mockedHandleError.mockReturnValue(mockErrorResponse);
@@ -147,7 +157,9 @@ describe('All Jira Tools', () => {
       const validationError = new Error('Invalid maxResults');
       const mockErrorResponse = { content: [{ type: 'text', text: 'validation error' }] };
 
-      mockedValidateInput.mockImplementation(() => { throw validationError; });
+      mockedValidateInput.mockImplementation(() => {
+        throw validationError;
+      });
       mockedHandleError.mockReturnValue(mockErrorResponse);
 
       const result = await handleGetMyIssues({ maxResults: 101 });
@@ -164,10 +176,10 @@ describe('All Jira Tools', () => {
     });
 
     it('should handle successful issue update', async () => {
-      const input = { 
-        issueKey: 'TEST-123', 
+      const input = {
+        issueKey: 'TEST-123',
         summary: 'Updated summary',
-        priority: 'High'
+        priority: 'High',
       };
       const mockResponse = { content: [{ type: 'text', text: 'success' }] };
 
@@ -179,9 +191,11 @@ describe('All Jira Tools', () => {
 
       expect(mockedUpdateIssue).toHaveBeenCalledWith('TEST-123', {
         summary: 'Updated summary',
-        priority: 'High'
+        priority: 'High',
       });
-      expect(mockedFormatSuccessResponse).toHaveBeenCalledWith('Issue TEST-123 updated successfully');
+      expect(mockedFormatSuccessResponse).toHaveBeenCalledWith(
+        'Issue TEST-123 updated successfully'
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -206,9 +220,9 @@ describe('All Jira Tools', () => {
     });
 
     it('should handle successful comment addition', async () => {
-      const input = { 
-        issueKey: 'TEST-123', 
-        body: 'This is a comment'
+      const input = {
+        issueKey: 'TEST-123',
+        body: 'This is a comment',
       };
       const mockResponse = { content: [{ type: 'text', text: 'comment added' }] };
 
@@ -224,10 +238,10 @@ describe('All Jira Tools', () => {
     });
 
     it('should handle comment with visibility', async () => {
-      const input = { 
-        issueKey: 'TEST-123', 
+      const input = {
+        issueKey: 'TEST-123',
         body: 'Private comment',
-        visibility: { type: 'group', value: 'jira-developers' }
+        visibility: { type: 'group', value: 'jira-developers' },
       };
 
       mockedValidateInput.mockReturnValue(input);
@@ -236,11 +250,10 @@ describe('All Jira Tools', () => {
 
       await handleAddComment(input);
 
-      expect(mockedAddComment).toHaveBeenCalledWith(
-        'TEST-123', 
-        'Private comment',
-        { type: 'group', value: 'jira-developers' }
-      );
+      expect(mockedAddComment).toHaveBeenCalledWith('TEST-123', 'Private comment', {
+        type: 'group',
+        value: 'jira-developers',
+      });
     });
   });
 
@@ -296,7 +309,7 @@ describe('All Jira Tools', () => {
       expect(mockedGetUsers).toHaveBeenCalledWith({
         query: 'john',
         startAt: 0,
-        maxResults: 50
+        maxResults: 50,
       });
       expect(result).toEqual(mockResponse);
     });
@@ -346,7 +359,9 @@ describe('All Jira Tools', () => {
   describe('Get Project Info Tool', () => {
     it('should have correct configuration', () => {
       expect(getProjectInfoTool.name).toBe(TOOL_NAMES.GET_PROJECT_INFO);
-      expect(getProjectInfoTool.description).toContain('Retrieves detailed information about a project');
+      expect(getProjectInfoTool.description).toContain(
+        'Retrieves detailed information about a project'
+      );
       expect(getProjectInfoTool.inputSchema.required).toEqual(['projectKey']);
     });
 
@@ -365,9 +380,9 @@ describe('All Jira Tools', () => {
     });
 
     it('should handle project info with expand', async () => {
-      const input = { 
-        projectKey: 'TEST', 
-        expand: ['lead', 'description'] 
+      const input = {
+        projectKey: 'TEST',
+        expand: ['lead', 'description'],
       };
 
       mockedValidateInput.mockReturnValue(input);
@@ -388,9 +403,9 @@ describe('All Jira Tools', () => {
     });
 
     it('should handle subtask creation', async () => {
-      const input = { 
-        parentIssueKey: 'TEST-123', 
-        summary: 'New subtask'
+      const input = {
+        parentIssueKey: 'TEST-123',
+        summary: 'New subtask',
       };
       const mockResponse = { content: [{ type: 'text', text: 'subtask created' }] };
 
@@ -401,20 +416,20 @@ describe('All Jira Tools', () => {
       const result = await handleCreateSubtask(input);
 
       expect(mockedCreateSubtask).toHaveBeenCalledWith('TEST-123', {
-        summary: 'New subtask'
+        summary: 'New subtask',
       });
       expect(result).toEqual(mockResponse);
     });
 
     it('should handle subtask creation with all fields', async () => {
-      const input = { 
-        parentIssueKey: 'TEST-123', 
+      const input = {
+        parentIssueKey: 'TEST-123',
         summary: 'New subtask',
         description: 'Subtask description',
         priority: 'High',
         assignee: 'user-123',
         labels: ['subtask'],
-        components: ['Frontend']
+        components: ['Frontend'],
       };
 
       mockedValidateInput.mockReturnValue(input);
@@ -429,7 +444,7 @@ describe('All Jira Tools', () => {
         priority: 'High',
         assignee: 'user-123',
         labels: ['subtask'],
-        components: ['Frontend']
+        components: ['Frontend'],
       });
     });
 
@@ -458,7 +473,7 @@ describe('All Jira Tools', () => {
       { handler: handleGetPriorities, name: 'Get Priorities' },
       { handler: handleGetStatuses, name: 'Get Statuses' },
       { handler: handleGetProjectInfo, name: 'Get Project Info' },
-      { handler: handleCreateSubtask, name: 'Create Subtask' }
+      { handler: handleCreateSubtask, name: 'Create Subtask' },
     ];
 
     tools.forEach(({ handler, name }) => {
@@ -466,7 +481,9 @@ describe('All Jira Tools', () => {
         const validationError = new Error('Validation failed');
         const mockErrorResponse = { content: [{ type: 'text', text: 'validation error' }] };
 
-        mockedValidateInput.mockImplementation(() => { throw validationError; });
+        mockedValidateInput.mockImplementation(() => {
+          throw validationError;
+        });
         mockedHandleError.mockReturnValue(mockErrorResponse);
 
         const result = await handler({});
@@ -490,7 +507,8 @@ describe('All Jira Tools', () => {
         else if (name.includes('Users')) mockedGetUsers.mockRejectedValue(networkError);
         else if (name.includes('Priorities')) mockedGetPriorities.mockRejectedValue(networkError);
         else if (name.includes('Statuses')) mockedGetStatuses.mockRejectedValue(networkError);
-        else if (name.includes('Project Info')) mockedGetProjectDetails.mockRejectedValue(networkError);
+        else if (name.includes('Project Info'))
+          mockedGetProjectDetails.mockRejectedValue(networkError);
         else if (name.includes('Subtask')) mockedCreateSubtask.mockRejectedValue(networkError);
 
         mockedHandleError.mockReturnValue(mockErrorResponse);

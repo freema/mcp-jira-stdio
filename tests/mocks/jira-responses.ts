@@ -92,8 +92,8 @@ export const mockJiraProjectDetails = {
   components: [],
   versions: [],
   roles: {
-    'Administrators': 'https://test.atlassian.net/rest/api/3/project/TEST/role/10002',
-    'Developers': 'https://test.atlassian.net/rest/api/3/project/TEST/role/10001',
+    Administrators: 'https://test.atlassian.net/rest/api/3/project/TEST/role/10002',
+    Developers: 'https://test.atlassian.net/rest/api/3/project/TEST/role/10001',
   },
   issueTypes: [mockJiraIssueType],
 };

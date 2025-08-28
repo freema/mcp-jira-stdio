@@ -6,6 +6,9 @@ import { getStatuses } from '../utils/api-helpers.js';
 import { formatStatusesResponse } from '../utils/formatters.js';
 import { handleError } from '../utils/error-handler.js';
 import { TOOL_NAMES } from '../config/constants.js';
+import { createLogger } from '../utils/logger.js';
+
+const log = createLogger('tool:get-statuses');
 
 export const getStatusesTool: Tool = {
   name: TOOL_NAMES.GET_STATUSES,
@@ -27,18 +30,18 @@ export const getStatusesTool: Tool = {
   },
 };
 
-export async function handleGetStatuses(input: any): Promise<McpToolResponse> {
+export async function handleGetStatuses(input: unknown): Promise<McpToolResponse> {
   try {
     const validated = validateInput(GetStatusesInputSchema, input);
 
     if (validated.projectKey && validated.issueTypeId) {
-      console.error(
-        `🔍 Getting statuses for project ${validated.projectKey} and issue type ${validated.issueTypeId}...`
+      log.info(
+        `Getting statuses for project ${validated.projectKey} and issue type ${validated.issueTypeId}...`
       );
     } else if (validated.projectKey) {
-      console.error(`🔍 Getting statuses for project ${validated.projectKey}...`);
+      log.info(`Getting statuses for project ${validated.projectKey}...`);
     } else {
-      console.error(`🔍 Getting global statuses...`);
+      log.info('Getting global statuses...');
     }
 
     const getParams: any = {};
@@ -48,11 +51,11 @@ export async function handleGetStatuses(input: any): Promise<McpToolResponse> {
 
     const statuses = await getStatuses(getParams);
 
-    console.error(`✅ Found ${statuses.length} status(es)`);
+    log.info(`Found ${statuses.length} status(es)`);
 
     return formatStatusesResponse(statuses);
   } catch (error) {
-    console.error('❌ Error in handleGetStatuses:', error);
+    log.error('Error in handleGetStatuses:', error);
     return handleError(error);
   }
 }

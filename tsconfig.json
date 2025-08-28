@@ -6,7 +6,7 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "allowJs": true,
+    "allowJs": false,
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
@@ -29,18 +29,11 @@
     "sourceMap": true,
     "removeComments": false,
     "importHelpers": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false,
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

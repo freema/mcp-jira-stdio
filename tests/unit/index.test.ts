@@ -60,42 +60,42 @@ describe('MCP Server Main', () => {
   let mockTransportInstance: any;
   let originalProcessExit: any;
   let originalConsoleError: any;
-  
+
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Mock server instance
     mockServerInstance = {
       setRequestHandler: vi.fn(),
       connect: vi.fn(),
     };
-    
+
     // Mock transport instance
     mockTransportInstance = {};
-    
+
     mockedServer.mockImplementation(() => mockServerInstance as any);
     mockedStdioServerTransport.mockImplementation(() => mockTransportInstance as any);
-    
+
     // Mock process.exit to prevent actual exit during tests
     originalProcessExit = process.exit;
     process.exit = vi.fn() as any;
-    
+
     // Mock console.error
     originalConsoleError = console.error;
     console.error = vi.fn();
-    
+
     // Reset environment variables
     process.env.NODE_ENV = 'test';
     delete process.env.JIRA_BASE_URL;
     delete process.env.JIRA_EMAIL;
     delete process.env.JIRA_API_TOKEN;
   });
-  
+
   afterEach(() => {
     // Restore original functions
     process.exit = originalProcessExit;
     console.error = originalConsoleError;
-    
+
     // Clear dynamic imports cache
     vi.resetModules();
   });
@@ -170,7 +170,10 @@ describe('MCP Server Main', () => {
 
       await import('../../src/index.js');
 
-      expect(console.error).toHaveBeenCalledWith('❌ Authentication Error:', 'Authentication failed');
+      expect(console.error).toHaveBeenCalledWith(
+        '❌ Authentication Error:',
+        'Authentication failed'
+      );
       expect(process.exit).toHaveBeenCalledWith(1);
     });
 
@@ -240,10 +243,10 @@ describe('MCP Server Main', () => {
 
       // Extract handlers from setRequestHandler calls
       const calls = mockServerInstance.setRequestHandler.mock.calls;
-      listToolsHandler = calls.find(call => call[0].type === 'ListToolsRequest')?.[1];
-      callToolHandler = calls.find(call => call[0].type === 'CallToolRequest')?.[1];
-      listResourcesHandler = calls.find(call => call[0].type === 'ListResourcesRequest')?.[1];
-      readResourceHandler = calls.find(call => call[0].type === 'ReadResourceRequest')?.[1];
+      listToolsHandler = calls.find((call) => call[0].type === 'ListToolsRequest')?.[1];
+      callToolHandler = calls.find((call) => call[0].type === 'CallToolRequest')?.[1];
+      listResourcesHandler = calls.find((call) => call[0].type === 'ListResourcesRequest')?.[1];
+      readResourceHandler = calls.find((call) => call[0].type === 'ReadResourceRequest')?.[1];
     });
 
     describe('ListTools Handler', () => {
@@ -299,7 +302,10 @@ describe('MCP Server Main', () => {
         mockToolHandlers.handleGetIssue.mockRejectedValue(toolError);
 
         await expect(callToolHandler(mockRequest)).rejects.toThrow('Tool execution failed');
-        expect(console.error).toHaveBeenCalledWith('❌ Error executing tool jira_get_issue:', 'Tool execution failed');
+        expect(console.error).toHaveBeenCalledWith(
+          '❌ Error executing tool jira_get_issue:',
+          'Tool execution failed'
+        );
       });
 
       it('should execute all tool handlers', async () => {
@@ -380,7 +386,10 @@ describe('MCP Server Main', () => {
 
       await import('../../src/index.js');
 
-      expect(console.error).toHaveBeenCalledWith('❌ Authentication Error:', 'Fatal error during startup');
+      expect(console.error).toHaveBeenCalledWith(
+        '❌ Authentication Error:',
+        'Fatal error during startup'
+      );
       expect(process.exit).toHaveBeenCalledWith(1);
     });
 
@@ -399,7 +408,7 @@ describe('MCP Server Main', () => {
       await import('../../src/index.js');
 
       const calls = mockServerInstance.setRequestHandler.mock.calls;
-      const callToolHandler = calls.find(call => call[0].type === 'CallToolRequest')?.[1];
+      const callToolHandler = calls.find((call) => call[0].type === 'CallToolRequest')?.[1];
 
       const mockRequest = {
         params: {

@@ -4,7 +4,7 @@ import { vi } from 'vitest';
 beforeEach(() => {
   // Clear all mocks before each test
   vi.clearAllMocks();
-  
+
   // Reset environment variables
   process.env.JIRA_BASE_URL = 'https://test.atlassian.net';
   process.env.JIRA_EMAIL = 'test@example.com';

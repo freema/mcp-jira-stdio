@@ -1,8 +1,11 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { JiraAuthConfig, RetryConfig } from '../types/common.js';
 import { JIRA_CONFIG, ERROR_MESSAGES } from '../config/constants.js';
+import { createLogger } from './logger.js';
+import https from 'https';
 
 let jiraClient: AxiosInstance | null = null;
+const log = createLogger('jira-auth');
 
 export function validateAuth(): JiraAuthConfig {
   const baseUrl = process.env.JIRA_BASE_URL;
@@ -41,22 +44,17 @@ export function getAuthenticatedClient(): AxiosInstance {
       username: auth.email,
       password: auth.apiToken,
     },
+    httpsAgent: new https.Agent({ keepAlive: true }),
   });
 
   // Add request interceptor for logging
   jiraClient.interceptors.request.use(
     (config) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.error(`[DEV] Jira API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
-        // Log auth headers for debugging (but not the actual token)
-        if (config.auth) {
-          console.error(`[DEV] Auth: username=${config.auth.username}, password=***${config.auth.password?.slice(-4)}`);
-        }
-      }
+      log.debug(`Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
       return config;
     },
     (error) => {
-      console.error('Request error:', error);
+      log.error('Request error:', error);
       return Promise.reject(error);
     }
   );
@@ -64,22 +62,11 @@ export function getAuthenticatedClient(): AxiosInstance {
   // Add response interceptor for error handling
   jiraClient.interceptors.response.use(
     (response) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.error(`[DEV] Jira API Response: ${response.status} ${response.config.url}`);
-      }
+      log.debug(`Response: ${response.status} ${response.config.url}`);
       return response;
     },
     (error) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.error(`[DEV] Jira API error: ${error.response?.status} ${error.config?.url}`);
-        if (error.response?.status === 401) {
-          console.error('[DEV] Authentication failed - check your JIRA_EMAIL and JIRA_API_TOKEN');
-          console.error(`[DEV] Using email: ${error.config?.auth?.username}`);
-          console.error(`[DEV] Full URL: ${error.config?.baseURL}${error.config?.url}`);
-        }
-      } else {
-        console.error(`Jira API error: ${error.response?.status} ${error.config?.url}`);
-      }
+      log.error(`Jira API error: ${error.response?.status} ${error.config?.url}`);
 
       if (error.response?.status === 401) {
         throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
@@ -137,8 +124,21 @@ export async function makeJiraRequest<T = any>(
         break;
       }
 
-      // Wait before retry
-      await new Promise((resolve) => setTimeout(resolve, retryConfig.retryDelay * (attempt + 1)));
+      // Compute backoff respecting Retry-After if present
+      const retryAfterHeader = error.response?.headers?.['retry-after'];
+      let delayMs = 0;
+      if (retryAfterHeader) {
+        const seconds = Number(retryAfterHeader);
+        delayMs = !Number.isNaN(seconds) ? seconds * 1000 : retryConfig.retryDelay;
+      } else {
+        const base = retryConfig.retryDelay * Math.pow(2, attempt);
+        const jitter = Math.floor(Math.random() * (retryConfig.retryDelay / 2));
+        delayMs = base + jitter;
+      }
+      log.warn(
+        `Retrying request in ${delayMs}ms (attempt ${attempt + 1}/${retryConfig.maxRetries})`
+      );
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
 
@@ -153,7 +153,7 @@ export async function testConnection(): Promise<boolean> {
     });
     return true;
   } catch (error) {
-    console.error('Connection test failed:', error);
+    log.error('Connection test failed:', error);
     return false;
   }
 }

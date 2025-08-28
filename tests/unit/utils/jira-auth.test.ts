@@ -207,10 +207,8 @@ describe('jira-auth', () => {
     it('should retry on server errors', async () => {
       const serverError = { response: { status: 500 } };
       const mockResponse = { data: { key: 'TEST-123' } };
-      
-      mockClient.request
-        .mockRejectedValueOnce(serverError)
-        .mockResolvedValue(mockResponse);
+
+      mockClient.request.mockRejectedValueOnce(serverError).mockResolvedValue(mockResponse);
 
       const config = { method: 'GET', url: '/issue/TEST-123' };
       const result = await makeJiraRequest(config, { maxRetries: 1, retryDelay: 10 });
@@ -223,7 +221,7 @@ describe('jira-auth', () => {
       mockClient.request.mockRejectedValue(mockUnauthorizedError);
 
       const config = { method: 'GET', url: '/issue/TEST-123' };
-      
+
       await expect(makeJiraRequest(config)).rejects.toEqual(mockUnauthorizedError);
       expect(mockClient.request).toHaveBeenCalledTimes(1);
     });
@@ -233,7 +231,7 @@ describe('jira-auth', () => {
       mockClient.request.mockRejectedValue(forbiddenError);
 
       const config = { method: 'GET', url: '/issue/TEST-123' };
-      
+
       await expect(makeJiraRequest(config)).rejects.toEqual(forbiddenError);
       expect(mockClient.request).toHaveBeenCalledTimes(1);
     });
@@ -242,17 +240,15 @@ describe('jira-auth', () => {
       mockClient.request.mockRejectedValue(mockNotFoundError);
 
       const config = { method: 'GET', url: '/issue/TEST-123' };
-      
+
       await expect(makeJiraRequest(config)).rejects.toEqual(mockNotFoundError);
       expect(mockClient.request).toHaveBeenCalledTimes(1);
     });
 
     it('should retry on rate limit errors', async () => {
       const mockResponse = { data: { key: 'TEST-123' } };
-      
-      mockClient.request
-        .mockRejectedValueOnce(mockRateLimitError)
-        .mockResolvedValue(mockResponse);
+
+      mockClient.request.mockRejectedValueOnce(mockRateLimitError).mockResolvedValue(mockResponse);
 
       const config = { method: 'GET', url: '/issue/TEST-123' };
       const result = await makeJiraRequest(config, { maxRetries: 1, retryDelay: 10 });
@@ -267,10 +263,11 @@ describe('jira-auth', () => {
 
       const retryCondition = vi.fn(() => false);
       const config = { method: 'GET', url: '/issue/TEST-123' };
-      
-      await expect(makeJiraRequest(config, { maxRetries: 3, retryDelay: 10, retryCondition }))
-        .rejects.toEqual(customError);
-      
+
+      await expect(
+        makeJiraRequest(config, { maxRetries: 3, retryDelay: 10, retryCondition })
+      ).rejects.toEqual(customError);
+
       expect(mockClient.request).toHaveBeenCalledTimes(1);
       expect(retryCondition).toHaveBeenCalledWith(customError);
     });
@@ -280,10 +277,11 @@ describe('jira-auth', () => {
       mockClient.request.mockRejectedValue(serverError);
 
       const config = { method: 'GET', url: '/issue/TEST-123' };
-      
-      await expect(makeJiraRequest(config, { maxRetries: 2, retryDelay: 10 }))
-        .rejects.toEqual(serverError);
-      
+
+      await expect(makeJiraRequest(config, { maxRetries: 2, retryDelay: 10 })).rejects.toEqual(
+        serverError
+      );
+
       expect(mockClient.request).toHaveBeenCalledTimes(3); // initial + 2 retries
     });
 
@@ -291,10 +289,11 @@ describe('jira-auth', () => {
       mockClient.request.mockRejectedValue(mockNetworkError);
 
       const config = { method: 'GET', url: '/issue/TEST-123' };
-      
-      await expect(makeJiraRequest(config, { maxRetries: 1, retryDelay: 10 }))
-        .rejects.toEqual(mockNetworkError);
-      
+
+      await expect(makeJiraRequest(config, { maxRetries: 1, retryDelay: 10 })).rejects.toEqual(
+        mockNetworkError
+      );
+
       expect(mockClient.request).toHaveBeenCalledTimes(2); // should retry network errors
     });
   });

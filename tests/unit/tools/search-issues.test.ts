@@ -29,10 +29,10 @@ describe('search-issues tool', () => {
       expect(searchIssuesTool.description).toContain('Search for Jira issues using JQL');
       expect(searchIssuesTool.inputSchema.type).toBe('object');
       expect(searchIssuesTool.inputSchema.required).toEqual(['jql']);
-      
+
       // Check required fields
       expect(searchIssuesTool.inputSchema.properties.jql).toBeDefined();
-      
+
       // Check optional fields with defaults
       expect(searchIssuesTool.inputSchema.properties.startAt).toBeDefined();
       expect(searchIssuesTool.inputSchema.properties.maxResults).toBeDefined();
@@ -58,17 +58,17 @@ describe('search-issues tool', () => {
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: 'project = TEST',
           startAt: 0,
-          maxResults: 50
+          maxResults: 50,
         });
         expect(mockedFormatSearchResultsResponse).toHaveBeenCalledWith(mockJiraSearchResult);
         expect(result).toEqual(mockResponse);
       });
 
       it('should search issues with pagination parameters', async () => {
-        const input = { 
-          jql: 'project = TEST', 
-          startAt: 25, 
-          maxResults: 10 
+        const input = {
+          jql: 'project = TEST',
+          startAt: 25,
+          maxResults: 10,
         };
         const validatedInput = { ...input };
 
@@ -81,19 +81,19 @@ describe('search-issues tool', () => {
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: 'project = TEST',
           startAt: 25,
-          maxResults: 10
+          maxResults: 10,
         });
       });
 
       it('should search issues with specific fields', async () => {
-        const input = { 
+        const input = {
           jql: 'project = TEST',
-          fields: ['summary', 'status', 'assignee']
+          fields: ['summary', 'status', 'assignee'],
         };
-        const validatedInput = { 
-          ...input, 
-          startAt: 0, 
-          maxResults: 50 
+        const validatedInput = {
+          ...input,
+          startAt: 0,
+          maxResults: 50,
         };
 
         mockedValidateInput.mockReturnValue(validatedInput);
@@ -106,19 +106,19 @@ describe('search-issues tool', () => {
           jql: 'project = TEST',
           startAt: 0,
           maxResults: 50,
-          fields: ['summary', 'status', 'assignee']
+          fields: ['summary', 'status', 'assignee'],
         });
       });
 
       it('should search issues with expand options', async () => {
-        const input = { 
+        const input = {
           jql: 'project = TEST',
-          expand: ['comments', 'changelog']
+          expand: ['comments', 'changelog'],
         };
-        const validatedInput = { 
-          ...input, 
-          startAt: 0, 
-          maxResults: 50 
+        const validatedInput = {
+          ...input,
+          startAt: 0,
+          maxResults: 50,
         };
 
         mockedValidateInput.mockReturnValue(validatedInput);
@@ -131,17 +131,17 @@ describe('search-issues tool', () => {
           jql: 'project = TEST',
           startAt: 0,
           maxResults: 50,
-          expand: ['comments', 'changelog']
+          expand: ['comments', 'changelog'],
         });
       });
 
       it('should search issues with all parameters', async () => {
-        const input = { 
+        const input = {
           jql: 'project = TEST AND assignee = currentUser()',
           startAt: 10,
           maxResults: 25,
           fields: ['summary', 'status'],
-          expand: ['comments']
+          expand: ['comments'],
         };
         const validatedInput = { ...input };
 
@@ -156,17 +156,18 @@ describe('search-issues tool', () => {
           startAt: 10,
           maxResults: 25,
           fields: ['summary', 'status'],
-          expand: ['comments']
+          expand: ['comments'],
         });
       });
 
       it('should handle complex JQL queries', async () => {
-        const complexJql = 'project in (TEST, DEMO) AND status in ("In Progress", "Open") AND priority >= High AND assignee in membersOf("jira-developers") ORDER BY created DESC';
+        const complexJql =
+          'project in (TEST, DEMO) AND status in ("In Progress", "Open") AND priority >= High AND assignee in membersOf("jira-developers") ORDER BY created DESC';
         const input = { jql: complexJql };
-        const validatedInput = { 
+        const validatedInput = {
           jql: complexJql,
           startAt: 0,
-          maxResults: 50
+          maxResults: 50,
         };
 
         mockedValidateInput.mockReturnValue(validatedInput);
@@ -178,7 +179,7 @@ describe('search-issues tool', () => {
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: complexJql,
           startAt: 0,
-          maxResults: 50
+          maxResults: 50,
         });
       });
 
@@ -188,7 +189,7 @@ describe('search-issues tool', () => {
           startAt: 0,
           maxResults: 50,
           fields: undefined,
-          expand: undefined
+          expand: undefined,
         };
 
         mockedValidateInput.mockReturnValue(validatedInput);
@@ -200,7 +201,7 @@ describe('search-issues tool', () => {
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: 'project = TEST',
           startAt: 0,
-          maxResults: 50
+          maxResults: 50,
         });
       });
     });
@@ -208,7 +209,7 @@ describe('search-issues tool', () => {
     describe('Validation', () => {
       it('should validate input using schema', async () => {
         const input = { jql: 'project = TEST' };
-        
+
         mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
         mockedSearchIssues.mockResolvedValue(mockJiraSearchResult);
         mockedFormatSearchResultsResponse.mockReturnValue({ content: [] });
@@ -218,8 +219,8 @@ describe('search-issues tool', () => {
         expect(mockedValidateInput).toHaveBeenCalledWith(
           expect.objectContaining({
             _def: expect.objectContaining({
-              typeName: 'ZodObject'
-            })
+              typeName: 'ZodObject',
+            }),
           }),
           input
         );
@@ -259,7 +260,9 @@ describe('search-issues tool', () => {
 
       it('should handle validation errors for invalid maxResults', async () => {
         const input = { jql: 'project = TEST', maxResults: 101 };
-        const validationError = new Error('Validation failed: maxResults must be between 1 and 100');
+        const validationError = new Error(
+          'Validation failed: maxResults must be between 1 and 100'
+        );
         const mockErrorResponse = { content: [{ type: 'text', text: 'Validation error' }] };
 
         mockedValidateInput.mockImplementation(() => {
@@ -290,12 +293,14 @@ describe('search-issues tool', () => {
       });
 
       it('should handle validation errors for invalid field types', async () => {
-        const input = { 
-          jql: 'project = TEST', 
-          startAt: 'invalid', 
-          fields: 'not-an-array' 
+        const input = {
+          jql: 'project = TEST',
+          startAt: 'invalid',
+          fields: 'not-an-array',
         };
-        const validationError = new Error('Validation failed: startAt must be number, fields must be array');
+        const validationError = new Error(
+          'Validation failed: startAt must be number, fields must be array'
+        );
         const mockErrorResponse = { content: [{ type: 'text', text: 'Validation error' }] };
 
         mockedValidateInput.mockImplementation(() => {
@@ -316,8 +321,8 @@ describe('search-issues tool', () => {
         const apiError = {
           response: {
             status: 400,
-            data: { errorMessages: ['Invalid JQL syntax'] }
-          }
+            data: { errorMessages: ['Invalid JQL syntax'] },
+          },
         };
         const mockErrorResponse = { content: [{ type: 'text', text: 'API error' }] };
 
@@ -347,11 +352,11 @@ describe('search-issues tool', () => {
 
       it('should handle permission errors', async () => {
         const input = { jql: 'project = PRIVATE' };
-        const permissionError = { 
-          response: { 
-            status: 403, 
-            data: { errorMessages: ['Insufficient permissions to search this project'] } 
-          } 
+        const permissionError = {
+          response: {
+            status: 403,
+            data: { errorMessages: ['Insufficient permissions to search this project'] },
+          },
         };
         const mockErrorResponse = { content: [{ type: 'text', text: 'Permission error' }] };
 
@@ -367,13 +372,15 @@ describe('search-issues tool', () => {
 
       it('should handle invalid JQL syntax errors', async () => {
         const input = { jql: 'invalid jql syntax here' };
-        const jqlError = { 
-          response: { 
-            status: 400, 
-            data: { 
-              errorMessages: ['Error in the JQL Query: The character \'h\' is a reserved word and cannot be used in field names'] 
-            } 
-          } 
+        const jqlError = {
+          response: {
+            status: 400,
+            data: {
+              errorMessages: [
+                "Error in the JQL Query: The character 'h' is a reserved word and cannot be used in field names",
+              ],
+            },
+          },
         };
         const mockErrorResponse = { content: [{ type: 'text', text: 'JQL error' }] };
 
@@ -421,11 +428,11 @@ describe('search-issues tool', () => {
 
       it('should handle rate limit errors', async () => {
         const input = { jql: 'project = TEST' };
-        const rateLimitError = { 
-          response: { 
-            status: 429, 
-            data: { errorMessages: ['Rate limit exceeded'] } 
-          } 
+        const rateLimitError = {
+          response: {
+            status: 429,
+            data: { errorMessages: ['Rate limit exceeded'] },
+          },
         };
         const mockErrorResponse = { content: [{ type: 'text', text: 'Rate limit error' }] };
 
@@ -455,7 +462,7 @@ describe('search-issues tool', () => {
           AND fixVersion in ("v1.0", "v1.1", "v2.0") 
           ORDER BY priority DESC, created ASC
         `;
-        
+
         const input = { jql: complexJql };
 
         mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
@@ -467,12 +474,13 @@ describe('search-issues tool', () => {
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: complexJql,
           startAt: 0,
-          maxResults: 50
+          maxResults: 50,
         });
       });
 
       it('should handle JQL with special characters and quotes', async () => {
-        const specialJql = 'summary ~ "test\'s \\"quoted\\" string" AND description ~ "Line 1\\nLine 2\\tTabbed"';
+        const specialJql =
+          'summary ~ "test\'s \\"quoted\\" string" AND description ~ "Line 1\\nLine 2\\tTabbed"';
         const input = { jql: specialJql };
 
         mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
@@ -484,15 +492,19 @@ describe('search-issues tool', () => {
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: specialJql,
           startAt: 0,
-          maxResults: 50
+          maxResults: 50,
         });
       });
 
       it('should handle large field and expand arrays', async () => {
-        const input = { 
+        const input = {
           jql: 'project = TEST',
-          fields: Array(50).fill('field').map((f, i) => `${f}${i}`),
-          expand: Array(20).fill('expand').map((e, i) => `${e}${i}`)
+          fields: Array(50)
+            .fill('field')
+            .map((f, i) => `${f}${i}`),
+          expand: Array(20)
+            .fill('expand')
+            .map((e, i) => `${e}${i}`),
         };
 
         mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
@@ -506,15 +518,15 @@ describe('search-issues tool', () => {
           startAt: 0,
           maxResults: 50,
           fields: input.fields,
-          expand: input.expand
+          expand: input.expand,
         });
       });
 
       it('should handle boundary values for pagination', async () => {
-        const input = { 
-          jql: 'project = TEST', 
-          startAt: 0, 
-          maxResults: 1 
+        const input = {
+          jql: 'project = TEST',
+          startAt: 0,
+          maxResults: 1,
         };
 
         mockedValidateInput.mockReturnValue(input);
@@ -527,10 +539,10 @@ describe('search-issues tool', () => {
       });
 
       it('should handle maximum pagination values', async () => {
-        const input = { 
-          jql: 'project = TEST', 
-          startAt: 999999, 
-          maxResults: 100 
+        const input = {
+          jql: 'project = TEST',
+          startAt: 999999,
+          maxResults: 100,
         };
 
         mockedValidateInput.mockReturnValue(input);
@@ -562,8 +574,8 @@ describe('search-issues tool', () => {
 
         mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
         mockedSearchIssues.mockResolvedValue(emptyResults);
-        mockedFormatSearchResultsResponse.mockReturnValue({ 
-          content: [{ type: 'text', text: 'No issues found' }] 
+        mockedFormatSearchResultsResponse.mockReturnValue({
+          content: [{ type: 'text', text: 'No issues found' }],
         });
 
         const result = await handleSearchIssues(input);
@@ -580,7 +592,7 @@ describe('search-issues tool', () => {
           AND created >= startOfMonth(-1) 
           AND worklogDate >= now("-1w")
         `;
-        
+
         const input = { jql: functionalJql };
 
         mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
@@ -592,7 +604,7 @@ describe('search-issues tool', () => {
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: functionalJql,
           startAt: 0,
-          maxResults: 50
+          maxResults: 50,
         });
       });
     });

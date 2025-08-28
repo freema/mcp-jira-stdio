@@ -1,23 +1,13 @@
-## Add Tool
-1. Create `src/tools/[name].ts`
-2. Add handler + validator
-3. Export in `src/tools/index.ts`
-4. Register in `src/index.ts`
+## Contributor Guide for Claude
 
-## Structure
-- Each tool = separate file
-- Validators use zod
-- Always return ToolResponse
-- Handle errors consistently
+This document has been consolidated into AGENTS.md (the single source of truth).
 
-## MANDATORY AGENT USAGE
-For EVERY message, you MUST:
-1. Check agent triggers
-2. Delegate to correct agent
-3. NEVER handle specialized tasks directly
+- How to add a tool, validate input, and register handlers: see `AGENTS.md` → “Adding a Tool”.
+- Coding style, testing, and developer commands: see `AGENTS.md`.
+- Agent-specific guidance and list of agents: see `AGENTS.md` → “Agent Instructions”.
 
-## Available Agents
-- jira-api-integrator: Jira API work
-- mcp-maintainer: Code cleanup
-- mcp-tool-developer: Tool creation
-- test-writer: Test writer agent
+Quick Start:
+1) Create `src/tools/<name>.ts` with a `Tool` export and a handler.
+2) Add a Zod schema in `src/types/tools.ts` and use `validateInput(...)`.
+3) Export from `src/tools/index.ts` and use `TOOL_NAMES`.
+4) Run `task check` and `task test`.

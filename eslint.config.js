@@ -12,7 +12,7 @@ export default [
       parser: typescriptParser,
       parserOptions: {
         ecmaVersion: 2022,
-        sourceType: 'module'
+        sourceType: 'module',
       },
       globals: {
         console: 'readonly',
@@ -23,12 +23,12 @@ export default [
         global: 'readonly',
         module: 'readonly',
         require: 'readonly',
-        exports: 'readonly'
-      }
+        exports: 'readonly',
+      },
     },
     plugins: {
       '@typescript-eslint': typescript,
-      prettier
+      prettier,
     },
     rules: {
       ...typescript.configs.recommended.rules,
@@ -38,24 +38,18 @@ export default [
         'error',
         {
           argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_'
-        }
+          varsIgnorePattern: '^_',
+        },
       ],
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-var-requires': 'off',
       'no-console': 'off',
-      'no-undef': 'off' // TypeScript handles this
-    }
+      'no-undef': 'off', // TypeScript handles this
+    },
   },
   {
-    ignores: [
-      'dist/**/*',
-      'node_modules/**/*',
-      '*.js',
-      '*.d.ts',
-      'coverage/**/*'
-    ]
-  }
+    ignores: ['dist/**/*', 'node_modules/**/*', '*.js', '*.d.ts', 'coverage/**/*'],
+  },
 ];

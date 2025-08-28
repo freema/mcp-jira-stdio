@@ -6,6 +6,10 @@ import { updateIssue, getIssue } from '../utils/api-helpers.js';
 import { formatIssueResponse } from '../utils/formatters.js';
 import { handleError } from '../utils/error-handler.js';
 import { TOOL_NAMES } from '../config/constants.js';
+import { createLogger } from '../utils/logger.js';
+import { formatSuccessResponse } from '../utils/formatters.js';
+
+const log = createLogger('tool:update-issue');
 
 export const updateIssueTool: Tool = {
   name: TOOL_NAMES.UPDATE_ISSUE,
@@ -44,16 +48,21 @@ export const updateIssueTool: Tool = {
         items: { type: 'string' },
         description: 'New components array (replaces existing components) - optional',
       },
+      returnIssue: {
+        type: 'boolean',
+        description: 'If false, returns a success message without fetching the updated issue',
+        default: true,
+      },
     },
     required: ['issueKey'],
   },
 };
 
-export async function handleUpdateIssue(input: any): Promise<McpToolResponse> {
+export async function handleUpdateIssue(input: unknown): Promise<McpToolResponse> {
   try {
     const validated = validateInput(UpdateIssueInputSchema, input);
 
-    console.error(`🔍 Updating issue ${validated.issueKey}...`);
+    log.info(`Updating issue ${validated.issueKey}...`);
 
     const updateParams: any = {};
 
@@ -66,14 +75,19 @@ export async function handleUpdateIssue(input: any): Promise<McpToolResponse> {
 
     await updateIssue(validated.issueKey, updateParams);
 
+    if (validated.returnIssue === false) {
+      log.info(`Updated issue ${validated.issueKey}`);
+      return formatSuccessResponse(`Issue updated: ${validated.issueKey}`);
+    }
+
     // Get the updated issue to return current state
     const updatedIssue = await getIssue(validated.issueKey);
 
-    console.error(`✅ Updated issue ${updatedIssue.key}`);
+    log.info(`Updated issue ${updatedIssue.key}`);
 
     return formatIssueResponse(updatedIssue);
   } catch (error) {
-    console.error('❌ Error in handleUpdateIssue:', error);
+    log.error('Error in handleUpdateIssue:', error);
     return handleError(error);
   }
 }

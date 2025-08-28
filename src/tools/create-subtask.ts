@@ -6,6 +6,9 @@ import { createSubtask } from '../utils/api-helpers.js';
 import { formatIssueResponse } from '../utils/formatters.js';
 import { handleError } from '../utils/error-handler.js';
 import { TOOL_NAMES } from '../config/constants.js';
+import { createLogger } from '../utils/logger.js';
+
+const log = createLogger('tool:create-subtask');
 
 export const createSubtaskTool: Tool = {
   name: TOOL_NAMES.CREATE_SUBTASK,
@@ -52,11 +55,11 @@ export const createSubtaskTool: Tool = {
   },
 };
 
-export async function handleCreateSubtask(input: any): Promise<McpToolResponse> {
+export async function handleCreateSubtask(input: unknown): Promise<McpToolResponse> {
   try {
     const validated = validateInput(CreateSubtaskInputSchema, input);
 
-    console.error(`🔍 Creating subtask under parent issue ${validated.parentIssueKey}...`);
+    log.info(`Creating subtask under parent issue ${validated.parentIssueKey}...`);
 
     const subtaskParams: any = {
       summary: validated.summary,
@@ -70,11 +73,11 @@ export async function handleCreateSubtask(input: any): Promise<McpToolResponse> 
 
     const subtask = await createSubtask(validated.parentIssueKey, subtaskParams);
 
-    console.error(`✅ Created subtask ${subtask.key}`);
+    log.info(`Created subtask ${subtask.key}`);
 
     return formatIssueResponse(subtask);
   } catch (error) {
-    console.error('❌ Error in handleCreateSubtask:', error);
+    log.error('Error in handleCreateSubtask:', error);
     return handleError(error);
   }
 }

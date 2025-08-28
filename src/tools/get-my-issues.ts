@@ -6,6 +6,9 @@ import { getMyIssues } from '../utils/api-helpers.js';
 import { formatSearchResultsResponse } from '../utils/formatters.js';
 import { handleError } from '../utils/error-handler.js';
 import { TOOL_NAMES } from '../config/constants.js';
+import { createLogger } from '../utils/logger.js';
+
+const log = createLogger('tool:get-my-issues');
 
 export const getMyIssuesTool: Tool = {
   name: TOOL_NAMES.GET_MY_ISSUES,
@@ -43,11 +46,11 @@ export const getMyIssuesTool: Tool = {
   },
 };
 
-export async function handleGetMyIssues(input: any): Promise<McpToolResponse> {
+export async function handleGetMyIssues(input: unknown): Promise<McpToolResponse> {
   try {
     const validated = validateInput(GetMyIssuesInputSchema, input);
 
-    console.error(`🔍 Getting issues assigned to current user...`);
+    log.info('Getting issues assigned to current user...');
 
     const getParams: any = {};
 
@@ -58,13 +61,11 @@ export async function handleGetMyIssues(input: any): Promise<McpToolResponse> {
 
     const result = await getMyIssues(getParams);
 
-    console.error(
-      `✅ Found ${result.total} issue(s) assigned to you, showing ${result.issues.length}`
-    );
+    log.info(`Found ${result.total} issue(s) assigned to you, showing ${result.issues.length}`);
 
     return formatSearchResultsResponse(result);
   } catch (error) {
-    console.error('❌ Error in handleGetMyIssues:', error);
+    log.error('Error in handleGetMyIssues:', error);
     return handleError(error);
   }
 }

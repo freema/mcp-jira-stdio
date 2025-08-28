@@ -76,6 +76,7 @@ task jira:projects
 ### 6. Configure MCP Client
 
 Add to your Claude Desktop config:
+
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 - **Linux**: `~/.config/claude/claude_desktop_config.json`
@@ -101,12 +102,14 @@ Restart Claude Desktop after adding the configuration.
 ## 📦 Available Tools
 
 ### Project Management
+
 - `jira_get_visible_projects` - List all accessible projects
 
-### Issue Management (Coming Soon)
+### Issue Management
+
 - `jira_get_issue` - Get issue details by key
-- `jira_create_issue` - Create new issues
-- `jira_update_issue` - Update existing issues
+- `jira_create_issue` - Create new issues (optional: skip fetching full details)
+- `jira_update_issue` - Update existing issues (optional: return success only)
 - `jira_search_issues` - Search issues with JQL
 
 ## 🛠️ Development
@@ -197,17 +200,17 @@ src/
 
 ```javascript
 // List all projects
-jira_get_visible_projects({})
+jira_get_visible_projects({});
 
 // List projects with additional details
 jira_get_visible_projects({
-  "expand": ["description", "lead", "issueTypes"]
-})
+  expand: ['description', 'lead', 'issueTypes'],
+});
 
 // List recent projects only
 jira_get_visible_projects({
-  "recent": 10
-})
+  recent: 10,
+});
 ```
 
 ## ❗ Troubleshooting
@@ -215,21 +218,25 @@ jira_get_visible_projects({
 ### Common Issues
 
 **"Authentication failed"**
+
 - Verify your API token is correct
 - Check that your email matches your Jira account
 - Ensure your Jira base URL is correct (no trailing slash)
 
 **"Connection failed"**
+
 - Verify your Jira instance is accessible
 - Check network connectivity
 - Ensure Jira REST API is enabled
 
 **"Permission denied"**
+
 - Verify your account has the necessary permissions
 - Check project permissions in Jira
 - Ensure you're using the correct Jira instance
 
 **MCP Connection Issues**
+
 - Ensure you're using the built version (`dist/index.js`)
 - Check that Node.js path is correct in Claude Desktop config
 - Look for errors in Claude Desktop logs
@@ -253,12 +260,12 @@ task check
 
 ## 🔍 Environment Variables
 
-| Variable | Required | Description | Example |
-|----------|----------|-------------|---------|
-| `JIRA_BASE_URL` | Yes | Jira instance URL | `https://company.atlassian.net` |
-| `JIRA_EMAIL` | Yes | Your Jira email | `user@example.com` |
-| `JIRA_API_TOKEN` | Yes | Jira API token | `ATxxx...` |
-| `NODE_ENV` | No | Environment mode | `development` or `production` |
+| Variable         | Required | Description       | Example                         |
+| ---------------- | -------- | ----------------- | ------------------------------- |
+| `JIRA_BASE_URL`  | Yes      | Jira instance URL | `https://company.atlassian.net` |
+| `JIRA_EMAIL`     | Yes      | Your Jira email   | `user@example.com`              |
+| `JIRA_API_TOKEN` | Yes      | Jira API token    | `ATxxx...`                      |
+| `NODE_ENV`       | No       | Environment mode  | `development` or `production`   |
 
 ## 🤝 Contributing
 

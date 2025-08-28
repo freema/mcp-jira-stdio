@@ -28,27 +28,27 @@ const options = {
   path: url.pathname,
   method: 'GET',
   headers: {
-    'Authorization': `Basic ${auth}`,
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  }
+    Authorization: `Basic ${auth}`,
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  },
 };
 
 console.log(`Making request to: ${url.toString()}`);
 
 const req = https.request(options, (res) => {
   console.log(`\nResponse Status: ${res.statusCode}`);
-  
+
   let data = '';
-  
+
   res.on('data', (chunk) => {
     data += chunk;
   });
-  
+
   res.on('end', () => {
     try {
       const json = JSON.parse(data);
-      
+
       if (res.statusCode === 200) {
         console.log('\n✅ SUCCESS! Connection working!');
         console.log('========================');
@@ -58,7 +58,7 @@ const req = https.request(options, (res) => {
         console.log(`- Account ID: ${json.accountId}`);
         console.log(`- Active: ${json.active}`);
         console.log('========================');
-        
+
         if (json.emailAddress !== JIRA_EMAIL) {
           console.log('\n⚠️  WARNING: Email mismatch!');
           console.log(`- .env email: ${JIRA_EMAIL}`);
@@ -68,7 +68,7 @@ const req = https.request(options, (res) => {
       } else {
         console.log('\n❌ FAILED! Authentication error');
         console.log('Response:', json);
-        
+
         if (res.statusCode === 401) {
           console.log('\nPossible issues:');
           console.log('1. Wrong email address (check if it matches your Jira account)');

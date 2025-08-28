@@ -6,6 +6,9 @@ import { getIssue } from '../utils/api-helpers.js';
 import { formatIssueResponse } from '../utils/formatters.js';
 import { handleError } from '../utils/error-handler.js';
 import { TOOL_NAMES } from '../config/constants.js';
+import { createLogger } from '../utils/logger.js';
+
+const log = createLogger('tool:get-issue');
 
 export const getIssueTool: Tool = {
   name: TOOL_NAMES.GET_ISSUE,
@@ -35,11 +38,11 @@ export const getIssueTool: Tool = {
   },
 };
 
-export async function handleGetIssue(input: any): Promise<McpToolResponse> {
+export async function handleGetIssue(input: unknown): Promise<McpToolResponse> {
   try {
     const validated = validateInput(GetIssueInputSchema, input);
 
-    console.error(`🔍 Getting issue ${validated.issueKey}...`);
+    log.info(`Getting issue ${validated.issueKey}...`);
 
     const getParams: any = {};
 
@@ -48,11 +51,11 @@ export async function handleGetIssue(input: any): Promise<McpToolResponse> {
 
     const issue = await getIssue(validated.issueKey, getParams);
 
-    console.error(`✅ Retrieved issue ${issue.key}`);
+    log.info(`Retrieved issue ${issue.key}`);
 
     return formatIssueResponse(issue);
   } catch (error) {
-    console.error('❌ Error in handleGetIssue:', error);
+    log.error('Error in handleGetIssue:', error);
     return handleError(error);
   }
 }

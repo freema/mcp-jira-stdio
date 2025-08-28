@@ -6,6 +6,10 @@ import { createIssue } from '../utils/api-helpers.js';
 import { formatIssueResponse } from '../utils/formatters.js';
 import { handleError } from '../utils/error-handler.js';
 import { TOOL_NAMES } from '../config/constants.js';
+import { createLogger } from '../utils/logger.js';
+import { formatSuccessResponse } from '../utils/formatters.js';
+
+const log = createLogger('tool:create-issue');
 
 export const createIssueTool: Tool = {
   name: TOOL_NAMES.CREATE_ISSUE,
@@ -51,16 +55,21 @@ export const createIssueTool: Tool = {
         description: 'Component names (optional)',
         default: [],
       },
+      returnIssue: {
+        type: 'boolean',
+        description: 'If false, returns only the issue key without fetching full details',
+        default: true,
+      },
     },
     required: ['projectKey', 'summary', 'issueType'],
   },
 };
 
-export async function handleCreateIssue(input: any): Promise<McpToolResponse> {
+export async function handleCreateIssue(input: unknown): Promise<McpToolResponse> {
   try {
     const validated = validateInput(CreateIssueInputSchema, input);
 
-    console.error(`🔍 Creating issue in project ${validated.projectKey}...`);
+    log.info(`Creating issue in project ${validated.projectKey}...`);
 
     const createParams: any = {
       projectKey: validated.projectKey,
@@ -74,13 +83,21 @@ export async function handleCreateIssue(input: any): Promise<McpToolResponse> {
     if (validated.labels !== undefined) createParams.labels = validated.labels;
     if (validated.components !== undefined) createParams.components = validated.components;
 
-    const issue = await createIssue(createParams);
+    const issueOrKey = await createIssue(createParams, {
+      returnIssue: validated.returnIssue !== false,
+    });
 
-    console.error(`✅ Created issue ${issue.key}`);
+    if (validated.returnIssue === false) {
+      const key = typeof issueOrKey === 'string' ? issueOrKey : (issueOrKey as any).key;
+      log.info(`Created issue ${key}`);
+      return formatSuccessResponse(`Issue created: ${key}`);
+    }
 
+    const issue = issueOrKey as any;
+    log.info(`Created issue ${issue.key}`);
     return formatIssueResponse(issue);
   } catch (error) {
-    console.error('❌ Error in handleCreateIssue:', error);
+    log.error('Error in handleCreateIssue:', error);
     return handleError(error);
   }
 }

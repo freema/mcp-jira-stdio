@@ -105,16 +105,19 @@ export async function searchIssues(options: {
   return await makeJiraRequest<JiraSearchResult>(config);
 }
 
-export async function createIssue(issueData: {
-  projectKey: string;
-  summary: string;
-  description?: string;
-  issueType: string;
-  priority?: string;
-  assignee?: string;
-  labels?: string[];
-  components?: string[];
-}): Promise<JiraIssue> {
+export async function createIssue(
+  issueData: {
+    projectKey: string;
+    summary: string;
+    description?: string;
+    issueType: string;
+    priority?: string;
+    assignee?: string;
+    labels?: string[];
+    components?: string[];
+  },
+  options: { returnIssue?: boolean } = { returnIssue: true }
+): Promise<JiraIssue | string> {
   const fields: Record<string, any> = {
     project: { key: issueData.projectKey },
     summary: issueData.summary,
@@ -148,6 +151,10 @@ export async function createIssue(issueData: {
   };
 
   const response = await makeJiraRequest<{ key: string; id: string; self: string }>(config);
+
+  if (options.returnIssue === false) {
+    return response.key;
+  }
 
   // Return the created issue
   return await getIssue(response.key);
@@ -216,8 +223,7 @@ export async function getMyIssues(
     expand?: string[];
   } = {}
 ): Promise<JiraSearchResult> {
-  const currentUser = await getCurrentUser();
-  const jql = `assignee = "${currentUser.accountId}" ORDER BY updated DESC`;
+  const jql = `assignee = currentUser() ORDER BY updated DESC`;
 
   const searchParams: any = {
     jql,
@@ -243,12 +249,7 @@ export async function getIssueTypes(projectKey?: string): Promise<JiraIssueType[
     url,
   };
 
-  if (projectKey) {
-    return await makeJiraRequest<JiraIssueType[]>(config);
-  } else {
-    const response = await makeJiraRequest<JiraIssueType[]>(config);
-    return response;
-  }
+  return await makeJiraRequest<JiraIssueType[]>(config);
 }
 
 export async function getUsers(
@@ -320,12 +321,19 @@ export async function getStatuses(
   };
 
   if (options.projectKey) {
-    const response = await makeJiraRequest<Array<{ name: string; statuses: JiraStatus[] }>>(config);
+    const response =
+      await makeJiraRequest<Array<{ id?: string; name: string; statuses: JiraStatus[] }>>(config);
+    if (options.issueTypeId) {
+      const match = response.find(
+        (issueType) =>
+          issueType.id === options.issueTypeId || issueType.name === options.issueTypeId
+      );
+      if (match) return match.statuses;
+    }
     // Flatten the statuses from all issue types
     return response.flatMap((issueType) => issueType.statuses);
-  } else {
-    return await makeJiraRequest<JiraStatus[]>(config);
   }
+  return await makeJiraRequest<JiraStatus[]>(config);
 }
 
 export async function addComment(

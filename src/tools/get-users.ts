@@ -6,6 +6,9 @@ import { getUsers } from '../utils/api-helpers.js';
 import { formatUsersResponse } from '../utils/formatters.js';
 import { handleError } from '../utils/error-handler.js';
 import { TOOL_NAMES } from '../config/constants.js';
+import { createLogger } from '../utils/logger.js';
+
+const log = createLogger('tool:get-users');
 
 export const getUsersTool: Tool = {
   name: TOOL_NAMES.GET_USERS,
@@ -44,18 +47,18 @@ export const getUsersTool: Tool = {
   },
 };
 
-export async function handleGetUsers(input: any): Promise<McpToolResponse> {
+export async function handleGetUsers(input: unknown): Promise<McpToolResponse> {
   try {
     const validated = validateInput(GetUsersInputSchema, input);
 
     if (validated.query) {
-      console.error(`🔍 Searching users with query: "${validated.query}"...`);
+      log.info(`Searching users with query: "${validated.query}"...`);
     } else if (validated.username) {
-      console.error(`🔍 Searching for username: "${validated.username}"...`);
+      log.info(`Searching for username: "${validated.username}"...`);
     } else if (validated.accountId) {
-      console.error(`🔍 Searching for account ID: "${validated.accountId}"...`);
+      log.info(`Searching for account ID: "${validated.accountId}"...`);
     } else {
-      console.error(`🔍 Getting all users...`);
+      log.info('Getting all users...');
     }
 
     const getParams: any = {};
@@ -68,11 +71,11 @@ export async function handleGetUsers(input: any): Promise<McpToolResponse> {
 
     const users = await getUsers(getParams);
 
-    console.error(`✅ Found ${users.length} user(s)`);
+    log.info(`Found ${users.length} user(s)`);
 
     return formatUsersResponse(users);
   } catch (error) {
-    console.error('❌ Error in handleGetUsers:', error);
+    log.error('Error in handleGetUsers:', error);
     return handleError(error);
   }
 }

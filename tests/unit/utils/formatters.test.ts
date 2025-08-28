@@ -148,7 +148,9 @@ describe('formatters', () => {
 
       expect(result.content[0].text).toContain('Found 1 issue(s)');
       expect(result.content[0].text).toContain('• **TEST-123** - Test issue summary');
-      expect(result.content[0].text).toContain('Status: Open | Assignee: Test User | Priority: High');
+      expect(result.content[0].text).toContain(
+        'Status: Open | Assignee: Test User | Priority: High'
+      );
     });
 
     it('should handle empty search results', () => {
@@ -467,10 +469,7 @@ describe('formatters', () => {
     it('should handle subtask issue types', () => {
       const projectWithSubtasks = {
         ...mockJiraProjectDetails,
-        issueTypes: [
-          mockJiraIssueType,
-          { ...mockJiraIssueType, name: 'Sub-task', subtask: true },
-        ],
+        issueTypes: [mockJiraIssueType, { ...mockJiraIssueType, name: 'Sub-task', subtask: true }],
       };
       const result = formatProjectDetailsResponse(projectWithSubtasks);
 

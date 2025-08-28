@@ -29,12 +29,12 @@ describe('create-issue tool', () => {
       expect(createIssueTool.description).toContain('Creates a new Jira issue');
       expect(createIssueTool.inputSchema.type).toBe('object');
       expect(createIssueTool.inputSchema.required).toEqual(['projectKey', 'summary', 'issueType']);
-      
+
       // Check required fields
       expect(createIssueTool.inputSchema.properties.projectKey).toBeDefined();
       expect(createIssueTool.inputSchema.properties.summary).toBeDefined();
       expect(createIssueTool.inputSchema.properties.issueType).toBeDefined();
-      
+
       // Check optional fields
       expect(createIssueTool.inputSchema.properties.description).toBeDefined();
       expect(createIssueTool.inputSchema.properties.priority).toBeDefined();
@@ -50,7 +50,7 @@ describe('create-issue tool', () => {
         const input = {
           projectKey: 'TEST',
           summary: 'New bug report',
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
         const validatedInput = { ...input };
         const mockResponse = { content: [{ type: 'text', text: 'formatted issue' }] };
@@ -65,7 +65,7 @@ describe('create-issue tool', () => {
         expect(mockedCreateIssue).toHaveBeenCalledWith({
           projectKey: 'TEST',
           summary: 'New bug report',
-          issueType: 'Bug'
+          issueType: 'Bug',
         });
         expect(mockedFormatIssueResponse).toHaveBeenCalledWith(mockJiraIssue);
         expect(result).toEqual(mockResponse);
@@ -80,7 +80,7 @@ describe('create-issue tool', () => {
           priority: 'High',
           assignee: 'user-123',
           labels: ['urgent', 'bug'],
-          components: ['Frontend', 'Backend']
+          components: ['Frontend', 'Backend'],
         };
         const validatedInput = { ...input };
 
@@ -98,7 +98,7 @@ describe('create-issue tool', () => {
           priority: 'High',
           assignee: 'user-123',
           labels: ['urgent', 'bug'],
-          components: ['Frontend', 'Backend']
+          components: ['Frontend', 'Backend'],
         });
       });
 
@@ -108,7 +108,7 @@ describe('create-issue tool', () => {
           summary: 'New bug report',
           issueType: 'Bug',
           priority: 'High',
-          labels: ['bug']
+          labels: ['bug'],
         };
         const validatedInput = { ...input };
 
@@ -123,7 +123,7 @@ describe('create-issue tool', () => {
           summary: 'New bug report',
           issueType: 'Bug',
           priority: 'High',
-          labels: ['bug']
+          labels: ['bug'],
         });
       });
 
@@ -133,7 +133,7 @@ describe('create-issue tool', () => {
           summary: 'New bug report',
           issueType: 'Bug',
           labels: [],
-          components: []
+          components: [],
         };
         const validatedInput = { ...input };
 
@@ -148,7 +148,7 @@ describe('create-issue tool', () => {
           summary: 'New bug report',
           issueType: 'Bug',
           labels: [],
-          components: []
+          components: [],
         });
       });
 
@@ -161,7 +161,7 @@ describe('create-issue tool', () => {
           priority: undefined,
           assignee: undefined,
           labels: undefined,
-          components: undefined
+          components: undefined,
         };
 
         mockedValidateInput.mockReturnValue(validatedInput);
@@ -173,7 +173,7 @@ describe('create-issue tool', () => {
         const expectedParams = {
           projectKey: 'TEST',
           summary: 'New bug report',
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
 
         expect(mockedCreateIssue).toHaveBeenCalledWith(expectedParams);
@@ -185,9 +185,9 @@ describe('create-issue tool', () => {
         const input = {
           projectKey: 'TEST',
           summary: 'New bug report',
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
-        
+
         mockedValidateInput.mockReturnValue(input);
         mockedCreateIssue.mockResolvedValue(mockJiraIssue);
         mockedFormatIssueResponse.mockReturnValue({ content: [] });
@@ -197,8 +197,8 @@ describe('create-issue tool', () => {
         expect(mockedValidateInput).toHaveBeenCalledWith(
           expect.objectContaining({
             _def: expect.objectContaining({
-              typeName: 'ZodObject'
-            })
+              typeName: 'ZodObject',
+            }),
           }),
           input
         );
@@ -206,7 +206,9 @@ describe('create-issue tool', () => {
 
       it('should handle validation errors for missing required fields', async () => {
         const input = { projectKey: 'TEST' }; // missing summary and issueType
-        const validationError = new Error('Validation failed: summary is required, issueType is required');
+        const validationError = new Error(
+          'Validation failed: summary is required, issueType is required'
+        );
         const mockErrorResponse = { content: [{ type: 'text', text: 'Validation error' }] };
 
         mockedValidateInput.mockImplementation(() => {
@@ -224,7 +226,7 @@ describe('create-issue tool', () => {
         const input = {
           projectKey: 'TEST',
           summary: 123, // should be string
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
         const validationError = new Error('Validation failed: summary must be string');
         const mockErrorResponse = { content: [{ type: 'text', text: 'Validation error' }] };
@@ -244,9 +246,11 @@ describe('create-issue tool', () => {
         const input = {
           projectKey: 'TEST',
           summary: '', // empty string
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
-        const validationError = new Error('Validation failed: summary must be at least 1 character');
+        const validationError = new Error(
+          'Validation failed: summary must be at least 1 character'
+        );
         const mockErrorResponse = { content: [{ type: 'text', text: 'Validation error' }] };
 
         mockedValidateInput.mockImplementation(() => {
@@ -266,13 +270,13 @@ describe('create-issue tool', () => {
         const input = {
           projectKey: 'TEST',
           summary: 'New bug report',
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
         const apiError = {
           response: {
             status: 400,
-            data: mockJiraValidationErrorResponse
-          }
+            data: mockJiraValidationErrorResponse,
+          },
         };
         const mockErrorResponse = { content: [{ type: 'text', text: 'API error' }] };
 
@@ -290,7 +294,7 @@ describe('create-issue tool', () => {
         const input = {
           projectKey: 'TEST',
           summary: 'New bug report',
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
         const authError = { response: { status: 401, data: { errorMessages: ['Unauthorized'] } } };
         const mockErrorResponse = { content: [{ type: 'text', text: 'Auth error' }] };
@@ -309,13 +313,13 @@ describe('create-issue tool', () => {
         const input = {
           projectKey: 'TEST',
           summary: 'New bug report',
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
-        const permissionError = { 
-          response: { 
-            status: 403, 
-            data: { errorMessages: ['Insufficient permissions to create issues'] } 
-          } 
+        const permissionError = {
+          response: {
+            status: 403,
+            data: { errorMessages: ['Insufficient permissions to create issues'] },
+          },
         };
         const mockErrorResponse = { content: [{ type: 'text', text: 'Permission error' }] };
 
@@ -333,13 +337,13 @@ describe('create-issue tool', () => {
         const input = {
           projectKey: 'NONEXISTENT',
           summary: 'New bug report',
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
-        const notFoundError = { 
-          response: { 
-            status: 404, 
-            data: { errorMessages: ['Project not found'] } 
-          } 
+        const notFoundError = {
+          response: {
+            status: 404,
+            data: { errorMessages: ['Project not found'] },
+          },
         };
         const mockErrorResponse = { content: [{ type: 'text', text: 'Not found error' }] };
 
@@ -357,7 +361,7 @@ describe('create-issue tool', () => {
         const input = {
           projectKey: 'TEST',
           summary: 'New bug report',
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
         const networkError = new Error('Network Error');
         networkError.code = 'ECONNREFUSED';
@@ -377,13 +381,13 @@ describe('create-issue tool', () => {
         const input = {
           projectKey: 'TEST',
           summary: 'New bug report',
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
-        const rateLimitError = { 
-          response: { 
-            status: 429, 
-            data: { errorMessages: ['Rate limit exceeded'] } 
-          } 
+        const rateLimitError = {
+          response: {
+            status: 429,
+            data: { errorMessages: ['Rate limit exceeded'] },
+          },
         };
         const mockErrorResponse = { content: [{ type: 'text', text: 'Rate limit error' }] };
 
@@ -404,7 +408,7 @@ describe('create-issue tool', () => {
         const input = {
           projectKey: 'TEST',
           summary: longSummary,
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
 
         mockedValidateInput.mockReturnValue(input);
@@ -416,7 +420,7 @@ describe('create-issue tool', () => {
         expect(mockedCreateIssue).toHaveBeenCalledWith({
           projectKey: 'TEST',
           summary: longSummary,
-          issueType: 'Bug'
+          issueType: 'Bug',
         });
       });
 
@@ -425,7 +429,7 @@ describe('create-issue tool', () => {
           projectKey: 'TEST',
           summary: 'Bug with special chars: äöü@#$%&',
           description: 'Description with\nnewlines\tand\ttabs',
-          issueType: 'Bug'
+          issueType: 'Bug',
         };
 
         mockedValidateInput.mockReturnValue(input);
@@ -438,7 +442,7 @@ describe('create-issue tool', () => {
           projectKey: 'TEST',
           summary: 'Bug with special chars: äöü@#$%&',
           description: 'Description with\nnewlines\tand\ttabs',
-          issueType: 'Bug'
+          issueType: 'Bug',
         });
       });
 
@@ -447,8 +451,12 @@ describe('create-issue tool', () => {
           projectKey: 'TEST',
           summary: 'Bug with many labels',
           issueType: 'Bug',
-          labels: Array(50).fill('label').map((l, i) => `${l}-${i}`),
-          components: Array(20).fill('component').map((c, i) => `${c}-${i}`)
+          labels: Array(50)
+            .fill('label')
+            .map((l, i) => `${l}-${i}`),
+          components: Array(20)
+            .fill('component')
+            .map((c, i) => `${c}-${i}`),
         };
 
         mockedValidateInput.mockReturnValue(input);

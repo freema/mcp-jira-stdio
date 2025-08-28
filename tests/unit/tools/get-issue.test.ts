@@ -55,13 +55,13 @@ describe('get-issue tool', () => {
       });
 
       it('should handle issue retrieval with expand options', async () => {
-        const input = { 
-          issueKey: 'TEST-123', 
-          expand: ['comments', 'attachments'] 
+        const input = {
+          issueKey: 'TEST-123',
+          expand: ['comments', 'attachments'],
         };
-        const validatedInput = { 
-          issueKey: 'TEST-123', 
-          expand: ['comments', 'attachments'] 
+        const validatedInput = {
+          issueKey: 'TEST-123',
+          expand: ['comments', 'attachments'],
         };
         const mockResponse = { content: [{ type: 'text', text: 'formatted issue' }] };
 
@@ -72,18 +72,18 @@ describe('get-issue tool', () => {
         await handleGetIssue(input);
 
         expect(mockedGetIssue).toHaveBeenCalledWith('TEST-123', {
-          expand: ['comments', 'attachments']
+          expand: ['comments', 'attachments'],
         });
       });
 
       it('should handle issue retrieval with specific fields', async () => {
-        const input = { 
-          issueKey: 'TEST-123', 
-          fields: ['summary', 'status'] 
+        const input = {
+          issueKey: 'TEST-123',
+          fields: ['summary', 'status'],
         };
-        const validatedInput = { 
-          issueKey: 'TEST-123', 
-          fields: ['summary', 'status'] 
+        const validatedInput = {
+          issueKey: 'TEST-123',
+          fields: ['summary', 'status'],
         };
 
         mockedValidateInput.mockReturnValue(validatedInput);
@@ -93,20 +93,20 @@ describe('get-issue tool', () => {
         await handleGetIssue(input);
 
         expect(mockedGetIssue).toHaveBeenCalledWith('TEST-123', {
-          fields: ['summary', 'status']
+          fields: ['summary', 'status'],
         });
       });
 
       it('should handle issue retrieval with both expand and fields', async () => {
-        const input = { 
+        const input = {
           issueKey: 'TEST-123',
           expand: ['comments'],
-          fields: ['summary', 'status'] 
+          fields: ['summary', 'status'],
         };
-        const validatedInput = { 
+        const validatedInput = {
           issueKey: 'TEST-123',
           expand: ['comments'],
-          fields: ['summary', 'status'] 
+          fields: ['summary', 'status'],
         };
 
         mockedValidateInput.mockReturnValue(validatedInput);
@@ -117,15 +117,15 @@ describe('get-issue tool', () => {
 
         expect(mockedGetIssue).toHaveBeenCalledWith('TEST-123', {
           expand: ['comments'],
-          fields: ['summary', 'status']
+          fields: ['summary', 'status'],
         });
       });
 
       it('should handle undefined expand and fields gracefully', async () => {
-        const validatedInput = { 
+        const validatedInput = {
           issueKey: 'TEST-123',
           expand: undefined,
-          fields: undefined
+          fields: undefined,
         };
 
         mockedValidateInput.mockReturnValue(validatedInput);
@@ -150,8 +150,8 @@ describe('get-issue tool', () => {
         expect(mockedValidateInput).toHaveBeenCalledWith(
           expect.objectContaining({
             _def: expect.objectContaining({
-              typeName: 'ZodObject'
-            })
+              typeName: 'ZodObject',
+            }),
           }),
           input
         );
@@ -280,10 +280,10 @@ describe('get-issue tool', () => {
       });
 
       it('should handle very long expand and fields arrays', async () => {
-        const input = { 
+        const input = {
           issueKey: 'TEST-123',
           expand: Array(50).fill('comments'),
-          fields: Array(100).fill('summary')
+          fields: Array(100).fill('summary'),
         };
 
         mockedValidateInput.mockReturnValue(input);
@@ -294,7 +294,7 @@ describe('get-issue tool', () => {
 
         expect(mockedGetIssue).toHaveBeenCalledWith('TEST-123', {
           expand: Array(50).fill('comments'),
-          fields: Array(100).fill('summary')
+          fields: Array(100).fill('summary'),
         });
       });
     });

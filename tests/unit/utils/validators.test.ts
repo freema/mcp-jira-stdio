@@ -47,7 +47,7 @@ describe('validators', () => {
           throw mockError;
         },
       } as any;
-      
+
       expect(() => validateInput(mockSchema, {})).toThrow(mockError);
     });
   });
@@ -129,7 +129,9 @@ describe('validators', () => {
     });
 
     it('should preserve valid JQL syntax', () => {
-      expect(sanitizeJQL('project = TEST AND status = Open')).toBe('project = TEST AND status = Open');
+      expect(sanitizeJQL('project = TEST AND status = Open')).toBe(
+        'project = TEST AND status = Open'
+      );
       expect(sanitizeJQL('assignee in (user1, user2)')).toBe('assignee in (user1, user2)');
     });
   });

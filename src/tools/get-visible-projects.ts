@@ -6,6 +6,9 @@ import { getVisibleProjects } from '../utils/api-helpers.js';
 import { formatProjectsResponse } from '../utils/formatters.js';
 import { handleError } from '../utils/error-handler.js';
 import { TOOL_NAMES } from '../config/constants.js';
+import { createLogger } from '../utils/logger.js';
+
+const log = createLogger('tool:get-visible-projects');
 
 export const getVisibleProjectsTool: Tool = {
   name: TOOL_NAMES.GET_VISIBLE_PROJECTS,
@@ -36,7 +39,7 @@ export async function handleGetVisibleProjects(input: any): Promise<McpToolRespo
   try {
     const validated = validateInput(GetVisibleProjectsInputSchema, input);
 
-    console.error(`🔍 Getting visible projects...`);
+    log.info('Getting visible projects...');
 
     const getParams: any = {};
 
@@ -45,11 +48,11 @@ export async function handleGetVisibleProjects(input: any): Promise<McpToolRespo
 
     const projects = await getVisibleProjects(getParams);
 
-    console.error(`✅ Found ${projects.length} project(s)`);
+    log.info(`Found ${projects.length} project(s)`);
 
     return formatProjectsResponse(projects);
   } catch (error) {
-    console.error('❌ Error in handleGetVisibleProjects:', error);
+    log.error('Error in handleGetVisibleProjects:', error);
     return handleError(error);
   }
 }

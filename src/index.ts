@@ -2,12 +2,10 @@
 if (process.env.NODE_ENV !== 'production') {
   try {
     const { config } = await import('dotenv');
-    const result = config();
-    if (result.parsed && process.env.NODE_ENV === 'development') {
-      console.error('[DEV] Loaded .env file');
-    }
-  } catch (error) {
-    console.error('[DEV] Failed to load .env file:', error);
+    config();
+    // Loaded .env silently; logging handled by logger
+  } catch {
+    // no-op; continue without .env
   }
 }
 
@@ -22,25 +20,29 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { validateAuth, testConnection } from './utils/jira-auth.js';
+import { createLogger } from './utils/logger.js';
+import { TOOL_NAMES } from './config/constants.js';
+
+const log = createLogger('server');
 
 // Import all tools
 import * as tools from './tools/index.js';
 
 // Tool handler mapping
-const toolHandlers = new Map<string, (input: any) => Promise<any>>([
-  ['jira_get_visible_projects', tools.handleGetVisibleProjects],
-  ['jira_get_issue', tools.handleGetIssue],
-  ['jira_search_issues', tools.handleSearchIssues],
-  ['jira_get_my_issues', tools.handleGetMyIssues],
-  ['jira_get_issue_types', tools.handleGetIssueTypes],
-  ['jira_get_users', tools.handleGetUsers],
-  ['jira_get_priorities', tools.handleGetPriorities],
-  ['jira_get_statuses', tools.handleGetStatuses],
-  ['jira_create_issue', tools.handleCreateIssue],
-  ['jira_update_issue', tools.handleUpdateIssue],
-  ['jira_add_comment', tools.handleAddComment],
-  ['jira_get_project_info', tools.handleGetProjectInfo],
-  ['jira_create_subtask', tools.handleCreateSubtask],
+const toolHandlers = new Map<string, (input: unknown) => Promise<any>>([
+  [TOOL_NAMES.GET_VISIBLE_PROJECTS, tools.handleGetVisibleProjects],
+  [TOOL_NAMES.GET_ISSUE, tools.handleGetIssue],
+  [TOOL_NAMES.SEARCH_ISSUES, tools.handleSearchIssues],
+  [TOOL_NAMES.GET_MY_ISSUES, tools.handleGetMyIssues],
+  [TOOL_NAMES.GET_ISSUE_TYPES, tools.handleGetIssueTypes],
+  [TOOL_NAMES.GET_USERS, tools.handleGetUsers],
+  [TOOL_NAMES.GET_PRIORITIES, tools.handleGetPriorities],
+  [TOOL_NAMES.GET_STATUSES, tools.handleGetStatuses],
+  [TOOL_NAMES.CREATE_ISSUE, tools.handleCreateIssue],
+  [TOOL_NAMES.UPDATE_ISSUE, tools.handleUpdateIssue],
+  [TOOL_NAMES.ADD_COMMENT, tools.handleAddComment],
+  [TOOL_NAMES.GET_PROJECT_INFO, tools.handleGetProjectInfo],
+  [TOOL_NAMES.CREATE_SUBTASK, tools.handleCreateSubtask],
 ]);
 
 // All available tools
@@ -64,31 +66,30 @@ async function main() {
   // Validate authentication on startup
   try {
     const auth = validateAuth();
-    
-    // Only show detailed info and test connection in development mode
+    log.debug(`Authenticated as ${auth.email} @ ${auth.baseUrl}`);
     if (process.env.NODE_ENV === 'development') {
-      console.error(`[DEV] Authenticated as: ${auth.email}`);
-      console.error(`[DEV] Jira instance: ${auth.baseUrl}`);
-      
-      // Test connection ONLY in development
-      console.error('[DEV] Testing connection to Jira...');
-      const connectionTest = await testConnection();
-      if (connectionTest) {
-        console.error('[DEV] Connection to Jira successful');
-      } else {
-        console.error('[DEV] Connection to Jira failed');
-        process.exit(1);
-      }
+      log.debug('Testing connection to Jira...');
+      const ok = await testConnection();
+      if (!ok) process.exit(1);
     }
   } catch (error: any) {
-    console.error('Authentication Error:', error.message);
+    log.error('Authentication Error:', error.message);
     process.exit(1);
+  }
+
+  // Read version from package.json
+  let version = '0.0.0';
+  try {
+    const pkg = await import('../package.json', { assert: { type: 'json' } } as any);
+    version = (pkg as any).default?.version || (pkg as any).version || version;
+  } catch {
+    // ignore
   }
 
   const server = new Server(
     {
       name: 'jira-mcp-server',
-      version: '1.0.0',
+      version,
     },
     {
       capabilities: {
@@ -100,9 +101,7 @@ async function main() {
 
   // List available tools
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    if (process.env.NODE_ENV === 'development') {
-      console.error(`[DEV] Listing ${allTools.length} available tool(s)`);
-    }
+    log.debug(`Listing ${allTools.length} available tool(s)`);
     return {
       tools: allTools,
     };
@@ -112,9 +111,7 @@ async function main() {
   server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
     const { name, arguments: args } = request.params;
 
-    if (process.env.NODE_ENV === 'development') {
-      console.error(`[DEV] Executing tool: ${name}`);
-    }
+    log.info(`Executing tool: ${name}`);
 
     const handler = toolHandlers.get(name);
     if (!handler) {
@@ -123,12 +120,10 @@ async function main() {
 
     try {
       const result = await handler(args);
-      if (process.env.NODE_ENV === 'development') {
-        console.error(`[DEV] Tool ${name} executed successfully`);
-      }
+      log.debug(`Tool ${name} executed successfully`);
       return result;
     } catch (error: any) {
-      console.error(`Error executing tool ${name}:`, error.message);
+      log.error(`Error executing tool ${name}:`, error.message);
       throw error;
     }
   });
@@ -146,12 +141,10 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  if (process.env.NODE_ENV === 'development') {
-    console.error('[DEV] Jira MCP server running on stdio');
-  }
+  log.info('Jira MCP server running on stdio');
 }
 
 main().catch((error) => {
-  console.error('Fatal error:', error);
+  log.error('Fatal error:', error);
   process.exit(1);
 });

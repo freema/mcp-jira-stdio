@@ -15,19 +15,19 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.config.ts',
         '**/*.test.ts',
-        '**/*.spec.ts'
+        '**/*.spec.ts',
       ],
       threshold: {
         global: {
           branches: 80,
           functions: 80,
           lines: 80,
-          statements: 80
-        }
-      }
-    }
+          statements: 80,
+        },
+      },
+    },
   },
   esbuild: {
-    target: 'node18'
-  }
+    target: 'node18',
+  },
 });

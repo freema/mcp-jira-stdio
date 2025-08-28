@@ -61,8 +61,8 @@ export function formatIssueResponse(issue: JiraIssue): McpToolResponse {
 **Issue Type:** ${fields.issuetype.name}
 **Labels:** ${labelsText}
 **Components:** ${componentsText}
-**Created:** ${new Date(fields.created).toLocaleString()}
-**Updated:** ${new Date(fields.updated).toLocaleString()}
+**Created:** ${new Date(fields.created).toISOString()}
+**Updated:** ${new Date(fields.updated).toISOString()}
 
 **Description:**
 ${description}`,
@@ -269,7 +269,7 @@ export function formatCommentResponse(comment: JiraComment): McpToolResponse {
         text: `**Comment added successfully**
 
 **Author:** ${comment.author.displayName}
-**Created:** ${new Date(comment.created).toLocaleString()}${visibilityText}
+**Created:** ${new Date(comment.created).toISOString()}${visibilityText}
 
 **Content:**
 ${comment.body}`,
@@ -300,7 +300,7 @@ export function formatProjectDetailsResponse(project: JiraProjectDetails): McpTo
   const insightText = project.insight
     ? `\n\n**Project Insights:**
 Total Issues: ${project.insight.totalIssueCount}
-Last Updated: ${new Date(project.insight.lastIssueUpdateTime).toLocaleString()}`
+Last Updated: ${new Date(project.insight.lastIssueUpdateTime).toISOString()}`
     : '';
 
   return {

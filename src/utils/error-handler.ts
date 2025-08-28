@@ -1,6 +1,9 @@
 import { McpToolResponse } from '../types/common.js';
 import { formatErrorResponse } from './formatters.js';
 import { ERROR_MESSAGES } from '../config/constants.js';
+import { createLogger } from './logger.js';
+
+const log = createLogger('error-handler');
 
 export class JiraApiError extends Error {
   constructor(
@@ -15,7 +18,7 @@ export class JiraApiError extends Error {
 }
 
 export function handleError(error: any): McpToolResponse {
-  console.error('Tool error:', error);
+  log.error('Tool error:', error);
 
   // Handle known error types
   if (error instanceof JiraApiError) {

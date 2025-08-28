@@ -6,6 +6,9 @@ import { addComment } from '../utils/api-helpers.js';
 import { formatCommentResponse } from '../utils/formatters.js';
 import { handleError } from '../utils/error-handler.js';
 import { TOOL_NAMES } from '../config/constants.js';
+import { createLogger } from '../utils/logger.js';
+
+const log = createLogger('tool:add-comment');
 
 export const addCommentTool: Tool = {
   name: TOOL_NAMES.ADD_COMMENT,
@@ -44,19 +47,19 @@ export const addCommentTool: Tool = {
   },
 };
 
-export async function handleAddComment(input: any): Promise<McpToolResponse> {
+export async function handleAddComment(input: unknown): Promise<McpToolResponse> {
   try {
     const validated = validateInput(AddCommentInputSchema, input);
 
-    console.error(`🔍 Adding comment to issue ${validated.issueKey}...`);
+    log.info(`Adding comment to issue ${validated.issueKey}...`);
 
     const comment = await addComment(validated.issueKey, validated.body, validated.visibility);
 
-    console.error(`✅ Added comment to ${validated.issueKey}`);
+    log.info(`Added comment to ${validated.issueKey}`);
 
     return formatCommentResponse(comment);
   } catch (error) {
-    console.error('❌ Error in handleAddComment:', error);
+    log.error('Error in handleAddComment:', error);
     return handleError(error);
   }
 }

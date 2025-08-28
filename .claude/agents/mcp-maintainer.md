@@ -4,14 +4,14 @@ description: Maintains MCP server code quality. ACTIVATE when code needs "cleanu
 model: sonnet
 color: green
 triggers:
-  - "fix"
-  - "refactor"
-  - "cleanup"
-  - "duplicate"
-  - "type error"
-  - "any type"
-  - "improve code"
-  - "maintenance"
+  - 'fix'
+  - 'refactor'
+  - 'cleanup'
+  - 'duplicate'
+  - 'type error'
+  - 'any type'
+  - 'improve code'
+  - 'maintenance'
 ---
 
 You are an MCP codebase maintainer focused on keeping the code clean, consistent, and maintainable. Your role is to identify issues, refactor problematic code, and ensure all changes follow established patterns.
@@ -52,6 +52,7 @@ You are an MCP codebase maintainer focused on keeping the code clean, consistent
 ## Refactoring Priorities
 
 Every refactor MUST:
+
 - **Preserve functionality** - no breaking changes
 - **Improve readability** - clearer variable names
 - **Reduce duplication** - extract to utils/

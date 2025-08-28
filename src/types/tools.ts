@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidIssueKey, isValidProjectKey } from '../utils/validators.js';
 
 // Get visible projects
 export const GetVisibleProjectsInputSchema = z.object({
@@ -10,7 +11,10 @@ export type GetVisibleProjectsInput = z.infer<typeof GetVisibleProjectsInputSche
 
 // Get issue
 export const GetIssueInputSchema = z.object({
-  issueKey: z.string().describe('Issue key (e.g., PROJECT-123)'),
+  issueKey: z
+    .string()
+    .describe('Issue key (e.g., PROJECT-123)')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
   expand: z.array(z.string()).optional().describe('Additional issue details to include'),
   fields: z.array(z.string()).optional().describe('Specific fields to retrieve'),
 });
@@ -19,7 +23,7 @@ export type GetIssueInput = z.infer<typeof GetIssueInputSchema>;
 
 // Search issues
 export const SearchIssuesInputSchema = z.object({
-  jql: z.string().describe('JQL query string'),
+  jql: z.string().min(1).describe('JQL query string'),
   startAt: z.number().min(0).default(0).describe('Index of first result to return'),
   maxResults: z
     .number()
@@ -35,7 +39,10 @@ export type SearchIssuesInput = z.infer<typeof SearchIssuesInputSchema>;
 
 // Create issue
 export const CreateIssueInputSchema = z.object({
-  projectKey: z.string().describe('Project key where the issue will be created'),
+  projectKey: z
+    .string()
+    .describe('Project key where the issue will be created')
+    .refine((v) => isValidProjectKey(v), 'Invalid project key format'),
   summary: z.string().min(1).describe('Issue summary/title'),
   description: z.string().optional().describe('Issue description'),
   issueType: z.string().describe('Issue type (e.g., Bug, Story, Task)'),
@@ -43,19 +50,27 @@ export const CreateIssueInputSchema = z.object({
   assignee: z.string().optional().describe('Assignee account ID'),
   labels: z.array(z.string()).optional().describe('Issue labels'),
   components: z.array(z.string()).optional().describe('Component names'),
+  returnIssue: z
+    .boolean()
+    .optional()
+    .describe('When false, skip fetching full issue after creation'),
 });
 
 export type CreateIssueInput = z.infer<typeof CreateIssueInputSchema>;
 
 // Update issue
 export const UpdateIssueInputSchema = z.object({
-  issueKey: z.string().describe('Issue key to update'),
+  issueKey: z
+    .string()
+    .describe('Issue key to update')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
   summary: z.string().optional().describe('New summary'),
   description: z.string().optional().describe('New description'),
   priority: z.string().optional().describe('New priority'),
   assignee: z.string().optional().describe('New assignee account ID'),
   labels: z.array(z.string()).optional().describe('New labels (replaces existing)'),
   components: z.array(z.string()).optional().describe('New components (replaces existing)'),
+  returnIssue: z.boolean().optional().describe('When false, skip fetching full issue after update'),
 });
 
 export type UpdateIssueInput = z.infer<typeof UpdateIssueInputSchema>;
@@ -77,7 +92,11 @@ export type GetMyIssuesInput = z.infer<typeof GetMyIssuesInputSchema>;
 
 // Get issue types
 export const GetIssueTypesInputSchema = z.object({
-  projectKey: z.string().optional().describe('Project key to get issue types for specific project'),
+  projectKey: z
+    .string()
+    .optional()
+    .describe('Project key to get issue types for specific project')
+    .refine((v) => (v ? isValidProjectKey(v) : true), 'Invalid project key format'),
 });
 
 export type GetIssueTypesInput = z.infer<typeof GetIssueTypesInputSchema>;
@@ -100,7 +119,11 @@ export type GetPrioritiesInput = z.infer<typeof GetPrioritiesInputSchema>;
 
 // Get statuses
 export const GetStatusesInputSchema = z.object({
-  projectKey: z.string().optional().describe('Project key to get statuses for specific project'),
+  projectKey: z
+    .string()
+    .optional()
+    .describe('Project key to get statuses for specific project')
+    .refine((v) => (v ? isValidProjectKey(v) : true), 'Invalid project key format'),
   issueTypeId: z
     .string()
     .optional()
@@ -111,7 +134,10 @@ export type GetStatusesInput = z.infer<typeof GetStatusesInputSchema>;
 
 // Add comment
 export const AddCommentInputSchema = z.object({
-  issueKey: z.string().describe('Issue key to add comment to'),
+  issueKey: z
+    .string()
+    .describe('Issue key to add comment to')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
   body: z.string().min(1).describe('Comment body text'),
   visibility: z
     .object({
@@ -126,7 +152,10 @@ export type AddCommentInput = z.infer<typeof AddCommentInputSchema>;
 
 // Get project info
 export const GetProjectInfoInputSchema = z.object({
-  projectKey: z.string().describe('Project key to get detailed information for'),
+  projectKey: z
+    .string()
+    .describe('Project key to get detailed information for')
+    .refine((v) => isValidProjectKey(v), 'Invalid project key format'),
   expand: z.array(z.string()).optional().describe('Additional project details to include'),
 });
 

@@ -132,17 +132,17 @@ describe('api-helpers', () => {
     it('should fetch issue with both expand and fields', async () => {
       mockedMakeJiraRequest.mockResolvedValue(mockJiraIssue);
 
-      await getIssue('TEST-123', { 
-        expand: ['comments'], 
-        fields: ['summary', 'status'] 
+      await getIssue('TEST-123', {
+        expand: ['comments'],
+        fields: ['summary', 'status'],
       });
 
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'GET',
         url: '/issue/TEST-123',
-        params: { 
-          expand: 'comments', 
-          fields: 'summary,status' 
+        params: {
+          expand: 'comments',
+          fields: 'summary,status',
         },
       });
     });
@@ -169,10 +169,10 @@ describe('api-helpers', () => {
     it('should search issues with pagination', async () => {
       mockedMakeJiraRequest.mockResolvedValue(mockJiraSearchResult);
 
-      await searchIssues({ 
-        jql: 'project = TEST', 
-        startAt: 25, 
-        maxResults: 10 
+      await searchIssues({
+        jql: 'project = TEST',
+        startAt: 25,
+        maxResults: 10,
       });
 
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
@@ -189,10 +189,10 @@ describe('api-helpers', () => {
     it('should search issues with fields and expand', async () => {
       mockedMakeJiraRequest.mockResolvedValue(mockJiraSearchResult);
 
-      await searchIssues({ 
+      await searchIssues({
         jql: 'project = TEST',
         fields: ['summary', 'status'],
-        expand: ['changelog']
+        expand: ['changelog'],
       });
 
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
@@ -747,8 +747,9 @@ describe('api-helpers', () => {
 
       const subtaskData = { summary: 'Test subtask' };
 
-      await expect(createSubtask('TEST-123', subtaskData))
-        .rejects.toThrow('No subtask issue type found for project TEST');
+      await expect(createSubtask('TEST-123', subtaskData)).rejects.toThrow(
+        'No subtask issue type found for project TEST'
+      );
     });
 
     it('should handle empty arrays for labels and components', async () => {

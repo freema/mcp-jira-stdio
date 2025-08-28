@@ -377,7 +377,7 @@ export const sampleErrorResponses = {
     status: 400,
     data: {
       errorMessages: [
-        'Error in the JQL Query: The character \'x\' is a reserved word and cannot be used in field names. (line 1, character 14)',
+        "Error in the JQL Query: The character 'x' is a reserved word and cannot be used in field names. (line 1, character 14)",
       ],
       errors: {},
     },

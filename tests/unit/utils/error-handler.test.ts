@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import {
-  JiraApiError,
-  handleError,
-  createJiraApiError,
-} from '../../../src/utils/error-handler.js';
+import { JiraApiError, handleError, createJiraApiError } from '../../../src/utils/error-handler.js';
 import { ERROR_MESSAGES } from '../../../src/config/constants.js';
 import {
   mockUnauthorizedError,
@@ -32,7 +28,7 @@ describe('error-handler', () => {
     it('should create error with all properties', () => {
       const originalError = new Error('Original');
       const error = new JiraApiError('Test error', 404, ['Not found'], originalError);
-      
+
       expect(error.name).toBe('JiraApiError');
       expect(error.message).toBe('Test error');
       expect(error.statusCode).toBe(404);

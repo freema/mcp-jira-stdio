@@ -13,13 +13,11 @@ export default defineConfig({
   outDir: 'dist',
   target: 'node18',
   platform: 'node',
-  external: [
-    '@modelcontextprotocol/sdk'
-  ],
+  external: ['@modelcontextprotocol/sdk'],
   esbuildOptions(options) {
     options.banner = {
-      js: '#!/usr/bin/env node'
-    }
+      js: '#!/usr/bin/env node',
+    };
   },
   onSuccess: async () => {
     // Make the output file executable
@@ -29,5 +27,5 @@ export default defineConfig({
     } catch (error) {
       console.warn('Failed to make dist/index.js executable:', error);
     }
-  }
+  },
 });
