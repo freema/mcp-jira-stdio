@@ -80,4 +80,8 @@
     "url": "https://github.com/freema/mcp-jira-stdio/issues"
   },
   "homepage": "https://github.com/freema/mcp-jira-stdio#readme"
+  ,
+  "publishConfig": {
+    "access": "public"
+  }
 }
