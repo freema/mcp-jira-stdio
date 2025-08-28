@@ -25,6 +25,7 @@
     "prepublishOnly": "npm run clean && npm run build",
     "inspector": "npx @modelcontextprotocol/inspector node dist/index.js",
     "inspector:dev": "NODE_ENV=development npx @modelcontextprotocol/inspector npx tsx src/index.ts",
+    "setup:mcp": "node scripts/setup-mcp-config.js",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",

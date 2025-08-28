@@ -278,15 +278,18 @@ task check
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
-## 🎯 Roadmap
+### MCP Config Setup
 
-- [x] Project listing
-- [ ] Issue management (get, create, update)
-- [ ] Issue searching with JQL
-- [ ] Comment management
-- [ ] Attachment handling
-- [ ] Transition management
-- [ ] Sprint and board integration
-- [ ] User and group management
+Configure Claude Desktop to use this MCP server interactively:
+
+```bash
+npm run setup:mcp
+```
+
+The script will:
+- Build the project if needed and detect your Node path
+- Prompt for `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`
+- Save a `jira` entry into your Claude Desktop config or print the JSON
+- Optionally generate a local `.env` for development
