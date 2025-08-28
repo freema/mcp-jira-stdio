@@ -44,3 +44,10 @@ export function validatePagination(startAt: number, maxResults: number): void {
     throw new Error('maxResults must be between 1 and 100');
   }
 }
+
+// Extract a Jira issue key from a free-form string or URL
+export function extractIssueKey(input: string): string | null {
+  if (typeof input !== 'string') return null;
+  const match = input.match(/[A-Z][A-Z0-9]*-\d+/);
+  return match ? match[0] : null;
+}

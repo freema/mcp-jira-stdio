@@ -77,7 +77,7 @@ export async function handleUpdateIssue(input: unknown): Promise<McpToolResponse
 
     if (validated.returnIssue === false) {
       log.info(`Updated issue ${validated.issueKey}`);
-      return formatSuccessResponse(`Issue updated: ${validated.issueKey}`);
+      return formatSuccessResponse(`Issue ${validated.issueKey} updated successfully`);
     }
 
     // Get the updated issue to return current state

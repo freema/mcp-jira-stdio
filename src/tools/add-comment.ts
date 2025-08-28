@@ -13,7 +13,7 @@ const log = createLogger('tool:add-comment');
 export const addCommentTool: Tool = {
   name: TOOL_NAMES.ADD_COMMENT,
   description:
-    'Adds a comment to an existing Jira issue. Supports visibility restrictions for groups or roles. Returns the created comment with author details and timestamp.',
+    'Adds a comment to an issue. Supports visibility restrictions for groups or roles. Returns the created comment with author details and timestamp.',
   inputSchema: {
     type: 'object',
     properties: {

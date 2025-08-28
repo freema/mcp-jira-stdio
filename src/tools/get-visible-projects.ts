@@ -13,7 +13,7 @@ const log = createLogger('tool:get-visible-projects');
 export const getVisibleProjectsTool: Tool = {
   name: TOOL_NAMES.GET_VISIBLE_PROJECTS,
   description:
-    'Lists all Jira projects accessible to the authenticated user. Returns project keys, names, descriptions, and basic metadata.',
+    'Retrieves all projects accessible to the authenticated user. Returns project keys, names, descriptions, and basic metadata.',
   inputSchema: {
     type: 'object',
     properties: {

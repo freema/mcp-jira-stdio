@@ -13,7 +13,7 @@ const log = createLogger('tool:get-my-issues');
 export const getMyIssuesTool: Tool = {
   name: TOOL_NAMES.GET_MY_ISSUES,
   description:
-    'Retrieves all issues assigned to the currently authenticated user. Issues are automatically sorted by most recently updated first. Supports pagination and field selection.',
+    'Retrieves issues assigned to current user, sorted by most recently updated first. Supports pagination and field selection.',
   inputSchema: {
     type: 'object',
     properties: {

@@ -83,9 +83,13 @@ export async function handleCreateIssue(input: unknown): Promise<McpToolResponse
     if (validated.labels !== undefined) createParams.labels = validated.labels;
     if (validated.components !== undefined) createParams.components = validated.components;
 
-    const issueOrKey = await createIssue(createParams, {
-      returnIssue: validated.returnIssue !== false,
-    });
+    let issueOrKey;
+    if (validated.returnIssue === false) {
+      issueOrKey = await createIssue(createParams, { returnIssue: false });
+    } else {
+      // Default behavior: request full issue; keep API surface compatible with tests
+      issueOrKey = await createIssue(createParams);
+    }
 
     if (validated.returnIssue === false) {
       const key = typeof issueOrKey === 'string' ? issueOrKey : (issueOrKey as any).key;

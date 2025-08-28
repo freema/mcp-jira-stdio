@@ -13,7 +13,7 @@ const log = createLogger('tool:get-project-info');
 export const getProjectInfoTool: Tool = {
   name: TOOL_NAMES.GET_PROJECT_INFO,
   description:
-    'Retrieves detailed information about a specific Jira project including components, versions, issue types, roles, and project insights. More comprehensive than the basic project list.',
+    'Retrieves detailed information about a project (components, versions, issue types, roles, insights). More comprehensive than the basic project list.',
   inputSchema: {
     type: 'object',
     properties: {

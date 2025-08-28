@@ -17,8 +17,18 @@ A Model Context Protocol (MCP) server for Jira API integration. Enables reading,
 ### 2. Installation
 
 ```bash
+# Install from npm
+npm install -g mcp-jira-stdio
+
+# Or install locally in your project
+npm install mcp-jira-stdio
+```
+
+#### Development Installation
+
+```bash
 # Clone the repository
-git clone https://github.com/graslt/mcp-jira-stdio.git
+git clone https://github.com/freema/mcp-jira-stdio.git
 cd mcp-jira-stdio
 
 # Install dependencies
@@ -85,8 +95,25 @@ Add to your Claude Desktop config:
 {
   "mcpServers": {
     "jira": {
-      "command": "node",
-      "args": ["/absolute/path/to/mcp-jira-stdio/dist/index.js"],
+      "command": "mcp-jira-stdio",
+      "env": {
+        "JIRA_BASE_URL": "https://your-instance.atlassian.net",
+        "JIRA_EMAIL": "your-email@example.com",
+        "JIRA_API_TOKEN": "your-api-token"
+      }
+    }
+  }
+}
+```
+
+#### Alternative: Using npx
+
+```json
+{
+  "mcpServers": {
+    "jira": {
+      "command": "npx",
+      "args": ["mcp-jira-stdio"],
       "env": {
         "JIRA_BASE_URL": "https://your-instance.atlassian.net",
         "JIRA_EMAIL": "your-email@example.com",
@@ -101,16 +128,33 @@ Restart Claude Desktop after adding the configuration.
 
 ## 📦 Available Tools
 
-### Project Management
+### Projects
 
-- `jira_get_visible_projects` - List all accessible projects
+- `jira_get_visible_projects`: Retrieves all projects visible to the user.
+- `jira_get_project_info`: Retrieves detailed information about a project (components, versions, roles, insights).
 
-### Issue Management
+### Issues
 
-- `jira_get_issue` - Get issue details by key
-- `jira_create_issue` - Create new issues (optional: skip fetching full details)
-- `jira_update_issue` - Update existing issues (optional: return success only)
-- `jira_search_issues` - Search issues with JQL
+- `jira_get_issue`: Retrieve issue details by key (supports optional fields/expand).
+- `jira_search_issues`: Search for Jira issues using JQL with pagination and fields.
+- `jira_create_issue`: Create a new issue in a project (type, priority, assignee, labels, components).
+- `jira_update_issue`: Update an existing issue (summary, description, priority, assignee, labels, components).
+- `jira_create_subtask`: Create a subtask under a parent issue (auto-detects subtask type).
+
+### Comments
+
+- `jira_add_comment`: Add a comment to an issue (optional visibility by group/role).
+
+### Metadata & Users
+
+- `jira_get_issue_types`: List issue types (optionally per project).
+- `jira_get_users`: Search for users (by query, username, or accountId).
+- `jira_get_priorities`: List available priorities.
+- `jira_get_statuses`: List available statuses (global or project-specific).
+
+### My Work
+
+- `jira_get_my_issues`: Retrieve issues assigned to the current user (sorted by updated).
 
 ## 🛠️ Development
 
@@ -289,6 +333,7 @@ npm run setup:mcp
 ```
 
 The script will:
+
 - Build the project if needed and detect your Node path
 - Prompt for `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`
 - Save a `jira` entry into your Claude Desktop config or print the JSON

@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 // Colors for terminal output
@@ -22,11 +22,11 @@ const colors = {
   green: '\x1b[32m',
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
-  red: '\x1b[31m'
+  red: '\x1b[31m',
 };
 
 function question(query) {
-  return new Promise(resolve => rl.question(query, resolve));
+  return new Promise((resolve) => rl.question(query, resolve));
 }
 
 function detectNodePath() {
@@ -34,7 +34,7 @@ function detectNodePath() {
     // First try to get current Node.js path
     const nodeVersion = process.version;
     console.log(`${colors.green}✓ Detected Node.js version: ${nodeVersion}${colors.reset}`);
-    
+
     // Check if using nvm
     const nvmDir = process.env.NVM_DIR;
     if (nvmDir) {
@@ -46,10 +46,9 @@ function detectNodePath() {
           console.log(`${colors.green}✓ Using nvm Node.js at: ${nodePath}${colors.reset}`);
           return nodePath;
         }
-      } catch (e) {
-      }
+      } catch (e) {}
     }
-    
+
     // Use the current Node.js executable path
     console.log(`${colors.green}✓ Using Node.js at: ${process.execPath}${colors.reset}`);
     return process.execPath;
@@ -74,7 +73,9 @@ async function main() {
       execSync('npm run build', { cwd: projectPath, stdio: 'inherit' });
       console.log(`${colors.green}✓ Build completed${colors.reset}\n`);
     } catch (error) {
-      console.log(`${colors.red}❌ Build failed. Please run 'npm run build' manually${colors.reset}`);
+      console.log(
+        `${colors.red}❌ Build failed. Please run 'npm run build' manually${colors.reset}`
+      );
       process.exit(1);
     }
   }
@@ -96,16 +97,16 @@ async function main() {
 
   // Detect Node.js path
   const nodePath = detectNodePath();
-  
+
   // Ask user about Node.js configuration
   console.log(`\n${colors.bright}Node.js Configuration:${colors.reset}`);
   console.log(`1. Use detected Node.js: ${nodePath}`);
   console.log(`2. Specify custom Node.js path`);
   console.log(`3. Use system default (node)`);
-  
+
   const nodeChoice = await question('\nSelect option (1-3): ');
   let finalNodePath = nodePath;
-  
+
   switch (nodeChoice) {
     case '2':
       finalNodePath = await question('Enter full path to Node.js executable: ');
@@ -128,10 +129,10 @@ async function main() {
         env: {
           JIRA_BASE_URL: baseUrl,
           JIRA_EMAIL: jiraEmail,
-          JIRA_API_TOKEN: jiraApiToken
-        }
-      }
-    }
+          JIRA_API_TOKEN: jiraApiToken,
+        },
+      },
+    },
   };
 
   // Determine config path
@@ -154,7 +155,7 @@ async function main() {
   console.log('1. Save to Claude Desktop config');
   console.log('2. Display config (copy manually)');
   console.log('3. Save to custom file');
-  
+
   const choice = await question('\nSelect option (1-3): ');
 
   switch (choice) {
@@ -165,7 +166,9 @@ async function main() {
         try {
           existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
           if (existingConfig.mcpServers && existingConfig.mcpServers.jira) {
-            const overwrite = await question(`\n${colors.yellow}⚠️  'jira' server already exists. Overwrite? (y/n): ${colors.reset}`);
+            const overwrite = await question(
+              `\n${colors.yellow}⚠️  'jira' server already exists. Overwrite? (y/n): ${colors.reset}`
+            );
             if (overwrite.toLowerCase() !== 'y') {
               console.log('Cancelled.');
               process.exit(0);
@@ -173,7 +176,9 @@ async function main() {
             delete existingConfig.mcpServers.jira;
           }
         } catch (error) {
-          console.log(`${colors.yellow}⚠️  Could not read existing config, will create new one${colors.reset}`);
+          console.log(
+            `${colors.yellow}⚠️  Could not read existing config, will create new one${colors.reset}`
+          );
         }
       }
 
@@ -182,8 +187,8 @@ async function main() {
         ...existingConfig,
         mcpServers: {
           ...existingConfig.mcpServers,
-          ...mcpConfig.mcpServers
-        }
+          ...mcpConfig.mcpServers,
+        },
       };
 
       if (!fs.existsSync(configDir)) {
@@ -196,7 +201,9 @@ async function main() {
       break;
 
     case '2':
-      console.log(`\n${colors.bright}Copy this configuration to your Claude Desktop config:${colors.reset}\n`);
+      console.log(
+        `\n${colors.bright}Copy this configuration to your Claude Desktop config:${colors.reset}\n`
+      );
       console.log(JSON.stringify(mcpConfig, null, 2));
       break;
 
@@ -213,18 +220,22 @@ async function main() {
   // Show next steps
   console.log(`\n${colors.bright}${colors.blue}Next Steps:${colors.reset}`);
   console.log(`1. Restart Claude Desktop`);
-  console.log(`2. Test Jira connection: ${colors.bright}node scripts/test-connection.cjs${colors.reset}`);
+  console.log(
+    `2. Test Jira connection: ${colors.bright}node scripts/test-connection.cjs${colors.reset}`
+  );
   console.log(`3. In Claude, try: "List my Jira projects"`);
 
   // Create .env file option
-  const createEnv = await question(`\n${colors.yellow}Create .env file for development? (y/n): ${colors.reset}`);
+  const createEnv = await question(
+    `\n${colors.yellow}Create .env file for development? (y/n): ${colors.reset}`
+  );
   if (createEnv.toLowerCase() === 'y') {
     const envContent = `# Jira configuration
 JIRA_BASE_URL=${baseUrl}
 JIRA_EMAIL=${jiraEmail}
 JIRA_API_TOKEN=${jiraApiToken}
 `;
-    
+
     const envPath = path.join(projectPath, '.env');
     fs.writeFileSync(envPath, envContent);
     console.log(`\n${colors.green}✅ Created .env file for development${colors.reset}`);
@@ -233,7 +244,7 @@ JIRA_API_TOKEN=${jiraApiToken}
   rl.close();
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error(`${colors.red}Error: ${error.message}${colors.reset}`);
   process.exit(1);
 });

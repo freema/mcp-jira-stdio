@@ -30,6 +30,7 @@
 - Console usage is allowed; keep logs purposeful and minimal.
 
 ## Adding a Tool
+
 - Create `src/tools/<name>.ts` with a `Tool` export and `handle<Name>`.
 - Validate input in `src/types/tools.ts` via Zod and call `validateInput(...)` in the handler.
 - Export the tool from `src/tools/index.ts` and use `TOOL_NAMES` for consistent names.
@@ -55,6 +56,7 @@
 - Validate credentials with `node scripts/test-connection.cjs` before using the MCP Inspector or client integration.
 
 ## Agent Instructions
+
 - Routing: For specialized tasks, use the appropriate agent; avoid solving outside your scope.
 - Agents:
   - `jira-api-integrator`: Jira API integration and endpoints.

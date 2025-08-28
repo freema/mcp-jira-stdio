@@ -1,4 +1,5 @@
 import { McpToolResponse } from '../types/common.js';
+import { maybeRedactAccountId, maybeRedactEmail } from './redaction.js';
 import {
   JiraProject,
   JiraIssue,
@@ -29,43 +30,78 @@ export function formatProjectsResponse(projects: JiraProject[]): McpToolResponse
   };
 }
 
+function adfToPlainText(adf: any): string {
+  // Very lightweight ADF to text conversion (best-effort)
+  try {
+    const walk = (node: any): string => {
+      if (!node) return '';
+      switch (node.type) {
+        case 'text':
+          return node.text || '';
+        case 'paragraph':
+        case 'heading':
+        case 'blockquote':
+          return (node.content || []).map(walk).join('');
+        case 'codeBlock':
+          return '\n' + (node.content || []).map(walk).join('') + '\n';
+        case 'bulletList':
+        case 'orderedList':
+          return (node.content || []).map(walk).join('\n');
+        case 'listItem':
+          return '• ' + (node.content || []).map(walk).join('');
+        case 'hardBreak':
+          return '\n';
+        default:
+          if (Array.isArray(node.content)) return node.content.map(walk).join('');
+          return '';
+      }
+    };
+    if (adf && Array.isArray(adf.content)) {
+      return adf.content.map(walk).join('\n').trim();
+    }
+  } catch {
+    // ignore and fallback
+  }
+  return '';
+}
+
 export function formatIssueResponse(issue: JiraIssue): McpToolResponse {
   const { key, fields } = issue;
 
-  const assigneeText = fields.assignee
-    ? `${fields.assignee.displayName} (${fields.assignee.accountId})`
+  const summary = fields?.summary || 'No summary';
+
+  const assigneeText = fields?.assignee
+    ? `${fields.assignee.displayName} (${maybeRedactAccountId(fields.assignee.accountId)})`
     : 'Unassigned';
 
-  const reporterText = fields.reporter
-    ? `${fields.reporter.displayName} (${fields.reporter.accountId})`
+  const reporterText = fields?.reporter
+    ? `${fields.reporter.displayName} (${maybeRedactAccountId(fields.reporter.accountId)})`
     : 'Unknown';
 
-  const labelsText = fields.labels.length > 0 ? fields.labels.join(', ') : 'None';
+  const labelsArray = Array.isArray(fields?.labels) ? fields.labels : [];
+  const labelsText = labelsArray.length > 0 ? labelsArray.join(', ') : 'None';
 
+  const componentsArray = Array.isArray(fields?.components) ? fields.components : [];
   const componentsText =
-    fields.components.length > 0 ? fields.components.map((c) => c.name).join(', ') : 'None';
+    componentsArray.length > 0 ? componentsArray.map((c) => c.name).join(', ') : 'None';
 
-  const description = fields.description || 'No description provided';
+  let description = fields?.description as any;
+  if (description && typeof description === 'object') {
+    const parsed = adfToPlainText(description);
+    description = parsed || '[rich text description omitted]';
+  }
+  if (!description || typeof description !== 'string') {
+    description = 'No description provided';
+  }
+
+  const createdText = fields?.created ? new Date(fields.created).toISOString() : 'N/A';
+  const updatedText = fields?.updated ? new Date(fields.updated).toISOString() : 'N/A';
 
   return {
     content: [
       {
         type: 'text',
-        text: `**${key}: ${fields.summary}**
-
-**Status:** ${fields.status.name}
-**Priority:** ${fields.priority?.name || 'None'}
-**Assignee:** ${assigneeText}
-**Reporter:** ${reporterText}
-**Project:** ${fields.project.name} (${fields.project.key})
-**Issue Type:** ${fields.issuetype.name}
-**Labels:** ${labelsText}
-**Components:** ${componentsText}
-**Created:** ${new Date(fields.created).toISOString()}
-**Updated:** ${new Date(fields.updated).toISOString()}
-
-**Description:**
-${description}`,
+        text: `**${key}: ${summary}**\n\n**Status:** ${fields?.status?.name || 'Unknown'}\n**Priority:** ${fields?.priority?.name || 'None'}\n**Assignee:** ${assigneeText}\n**Reporter:** ${reporterText}\n**Project:** ${fields?.project?.name || 'Unknown'} (${fields?.project?.key || 'N/A'})\n**Issue Type:** ${fields?.issuetype?.name || 'Unknown'}\n**Labels:** ${labelsText}\n**Components:** ${componentsText}\n**Created:** ${createdText}\n**Updated:** ${updatedText}\n\n**Description:**\n${description}`,
       },
     ],
   };
@@ -159,7 +195,7 @@ export function formatUsersResponse(users: JiraUser[]): McpToolResponse {
   const usersList = users
     .map(
       (user) =>
-        `• **${user.displayName}** (${user.accountId})\n  Email: ${user.emailAddress || 'N/A'} | Active: ${user.active ? 'Yes' : 'No'} | Type: ${user.accountType}`
+        `• **${user.displayName}** (${maybeRedactAccountId(user.accountId)})\n  Email: ${maybeRedactEmail(user.emailAddress)} | Active: ${user.active ? 'Yes' : 'No'} | Type: ${user.accountType}`
     )
     .join('\n\n');
 

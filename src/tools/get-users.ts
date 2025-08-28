@@ -13,7 +13,7 @@ const log = createLogger('tool:get-users');
 export const getUsersTool: Tool = {
   name: TOOL_NAMES.GET_USERS,
   description:
-    'Searches for Jira users by name, email, username, or account ID. Returns user details including display name, email, account status, and account type. Supports pagination.',
+    'Search for users by name, email, username, or account ID. Returns display name, email, account status, and account type. Supports pagination.',
   inputSchema: {
     type: 'object',
     properties: {

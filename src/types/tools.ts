@@ -13,8 +13,10 @@ export type GetVisibleProjectsInput = z.infer<typeof GetVisibleProjectsInputSche
 export const GetIssueInputSchema = z.object({
   issueKey: z
     .string()
-    .describe('Issue key (e.g., PROJECT-123)')
-    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+    .min(1)
+    .describe(
+      'Issue key or full Jira URL (e.g., PROJECT-123 or https://your.atlassian.net/browse/PROJECT-123)'
+    ),
   expand: z.array(z.string()).optional().describe('Additional issue details to include'),
   fields: z.array(z.string()).optional().describe('Specific fields to retrieve'),
 });

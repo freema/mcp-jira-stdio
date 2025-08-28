@@ -421,22 +421,16 @@ describe('api-helpers', () => {
   });
 
   describe('getMyIssues', () => {
-    it('should fetch current users issues', async () => {
-      mockedMakeJiraRequest
-        .mockResolvedValueOnce(mockJiraUser)
-        .mockResolvedValueOnce(mockJiraSearchResult);
+    it("should fetch current user's issues using currentUser() JQL", async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(mockJiraSearchResult);
 
       const result = await getMyIssues();
 
-      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(1, {
-        method: 'GET',
-        url: '/myself',
-      });
-      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(2, {
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'POST',
         url: '/search',
         data: {
-          jql: `assignee = "${mockJiraUser.accountId}" ORDER BY updated DESC`,
+          jql: 'assignee = currentUser() ORDER BY updated DESC',
           startAt: 0,
           maxResults: 50,
         },
@@ -445,9 +439,7 @@ describe('api-helpers', () => {
     });
 
     it('should fetch my issues with options', async () => {
-      mockedMakeJiraRequest
-        .mockResolvedValueOnce(mockJiraUser)
-        .mockResolvedValueOnce(mockJiraSearchResult);
+      mockedMakeJiraRequest.mockResolvedValueOnce(mockJiraSearchResult);
 
       await getMyIssues({
         startAt: 10,
@@ -456,11 +448,11 @@ describe('api-helpers', () => {
         expand: ['comments'],
       });
 
-      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(2, {
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'POST',
         url: '/search',
         data: {
-          jql: `assignee = "${mockJiraUser.accountId}" ORDER BY updated DESC`,
+          jql: 'assignee = currentUser() ORDER BY updated DESC',
           startAt: 10,
           maxResults: 25,
           fields: ['summary'],

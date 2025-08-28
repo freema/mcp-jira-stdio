@@ -20,6 +20,11 @@ export class JiraApiError extends Error {
 export function handleError(error: any): McpToolResponse {
   log.error('Tool error:', error);
 
+  // Direct string errors
+  if (typeof error === 'string') {
+    return formatErrorResponse(error);
+  }
+
   // Handle known error types
   if (error instanceof JiraApiError) {
     return formatErrorResponse(error.message);

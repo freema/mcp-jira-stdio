@@ -7,7 +7,8 @@ This document has been consolidated into AGENTS.md (the single source of truth).
 - Agent-specific guidance and list of agents: see `AGENTS.md` → “Agent Instructions”.
 
 Quick Start:
-1) Create `src/tools/<name>.ts` with a `Tool` export and a handler.
-2) Add a Zod schema in `src/types/tools.ts` and use `validateInput(...)`.
-3) Export from `src/tools/index.ts` and use `TOOL_NAMES`.
-4) Run `task check` and `task test`.
+
+1. Create `src/tools/<name>.ts` with a `Tool` export and a handler.
+2. Add a Zod schema in `src/types/tools.ts` and use `validateInput(...)`.
+3. Export from `src/tools/index.ts` and use `TOOL_NAMES`.
+4. Run `task check` and `task test`.

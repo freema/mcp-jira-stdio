@@ -13,7 +13,7 @@ const log = createLogger('tool:search-issues');
 export const searchIssuesTool: Tool = {
   name: TOOL_NAMES.SEARCH_ISSUES,
   description:
-    'Searches for Jira issues using JQL (Jira Query Language). Supports complex queries with pagination and field selection. Examples: "project = PROJECT AND status = Open", "assignee = currentUser()".',
+    'Search for Jira issues using JQL. Supports complex queries with pagination and field selection. Examples: "project = PROJECT AND status = Open", "assignee = currentUser()".',
   inputSchema: {
     type: 'object',
     properties: {

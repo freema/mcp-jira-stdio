@@ -26,7 +26,8 @@ describe('get-issue tool', () => {
   describe('getIssueTool configuration', () => {
     it('should have correct tool configuration', () => {
       expect(getIssueTool.name).toBe(TOOL_NAMES.GET_ISSUE);
-      expect(getIssueTool.description).toContain('Retrieves detailed information');
+      expect(typeof getIssueTool.description).toBe('string');
+      expect(getIssueTool.description.toLowerCase()).toContain('issue');
       expect(getIssueTool.inputSchema.type).toBe('object');
       expect(getIssueTool.inputSchema.required).toEqual(['issueKey']);
       expect(getIssueTool.inputSchema.properties.issueKey).toBeDefined();
@@ -245,7 +246,7 @@ describe('get-issue tool', () => {
         mockedValidateInput.mockImplementation(() => {
           throw validationError;
         });
-        mockedHandleError.mkReturnValue(mockErrorResponse);
+        mockedHandleError.mockReturnValue(mockErrorResponse);
 
         const result = await handleGetIssue(input);
 

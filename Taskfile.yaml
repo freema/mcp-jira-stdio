@@ -77,6 +77,11 @@ tasks:
     cmds:
       - npm run inspector:dev
 
+  setup:mcp:
+    desc: Setup MCP configuration for Claude Desktop
+    cmds:
+      - node scripts/setup-mcp-config.js
+
   release:
     desc: Prepare for release (clean, install, build, check)
     cmds:
@@ -114,6 +119,16 @@ tasks:
     desc: Run tests with UI
     cmds:
       - npm run test:ui
+
+  test:fast:
+    desc: Fast run (no coverage, single thread)
+    cmds:
+      - npx vitest run --reporter=basic
+
+  test:changed:
+    desc: Only run tests related to changed files
+    cmds:
+      - npx vitest --changed
 
   ci:
     desc: Run CI pipeline (clean, install, check, test, build)

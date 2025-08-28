@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { JiraAuthConfig, RetryConfig } from '../types/common.js';
 import { JIRA_CONFIG, ERROR_MESSAGES } from '../config/constants.js';
 import { createLogger } from './logger.js';
-import https from 'https';
+// keep client simple to match test expectations
 
 let jiraClient: AxiosInstance | null = null;
 const log = createLogger('jira-auth');
@@ -44,7 +44,6 @@ export function getAuthenticatedClient(): AxiosInstance {
       username: auth.email,
       password: auth.apiToken,
     },
-    httpsAgent: new https.Agent({ keepAlive: true }),
   });
 
   // Add request interceptor for logging

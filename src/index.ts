@@ -66,15 +66,22 @@ async function main() {
   // Validate authentication on startup
   try {
     const auth = validateAuth();
-    log.debug(`Authenticated as ${auth.email} @ ${auth.baseUrl}`);
-    if (process.env.NODE_ENV === 'development') {
-      log.debug('Testing connection to Jira...');
-      const ok = await testConnection();
-      if (!ok) process.exit(1);
+    console.error(`🔐 Authenticated as: ${auth.email}`);
+    console.error(`🌐 Jira instance: ${auth.baseUrl}`);
+
+    // Always test connection on startup for predictable behavior in tests
+    console.error('🔍 Testing connection to Jira...');
+    const ok = await testConnection();
+    if (!ok) {
+      console.error('❌ Connection to Jira failed');
+      process.exit(1);
+      return;
     }
+    console.error('✅ Connection to Jira successful');
   } catch (error: any) {
-    log.error('Authentication Error:', error.message);
+    console.error('❌ Authentication Error:', error.message);
     process.exit(1);
+    return;
   }
 
   // Read version from package.json
@@ -101,17 +108,15 @@ async function main() {
 
   // List available tools
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    log.debug(`Listing ${allTools.length} available tool(s)`);
-    return {
-      tools: allTools,
-    };
+    console.error(`📋 Listing ${allTools.length} available tool(s)`);
+    return { tools: allTools };
   });
 
   // Handle tool execution
   server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
     const { name, arguments: args } = request.params;
 
-    log.info(`Executing tool: ${name}`);
+    console.error(`🛠️ Executing tool: ${name}`);
 
     const handler = toolHandlers.get(name);
     if (!handler) {
@@ -120,10 +125,10 @@ async function main() {
 
     try {
       const result = await handler(args);
-      log.debug(`Tool ${name} executed successfully`);
+      console.error(`✅ Tool ${name} executed successfully`);
       return result;
     } catch (error: any) {
-      log.error(`Error executing tool ${name}:`, error.message);
+      console.error(`❌ Error executing tool ${name}:`, error.message);
       throw error;
     }
   });
@@ -140,8 +145,7 @@ async function main() {
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
-
-  log.info('Jira MCP server running on stdio');
+  console.error('🚀 Jira MCP server running on stdio');
 }
 
 main().catch((error) => {

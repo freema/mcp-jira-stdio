@@ -13,7 +13,7 @@ const log = createLogger('tool:get-priorities');
 export const getPrioritiesTool: Tool = {
   name: TOOL_NAMES.GET_PRIORITIES,
   description:
-    'Retrieves all available priority levels in Jira (e.g., Highest, High, Medium, Low, Lowest). Returns priority details including IDs, names, and descriptions.',
+    'Retrieves available priorities (e.g., Highest, High, Medium, Low, Lowest). Returns IDs, names, and descriptions.',
   inputSchema: {
     type: 'object',
     properties: {},

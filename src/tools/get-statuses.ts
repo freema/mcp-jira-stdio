@@ -13,7 +13,7 @@ const log = createLogger('tool:get-statuses');
 export const getStatusesTool: Tool = {
   name: TOOL_NAMES.GET_STATUSES,
   description:
-    'Retrieves available issue statuses and their transitions. Can get global statuses or project/issue-type specific statuses (e.g., To Do, In Progress, Done). Returns status categories and workflow information.',
+    'Retrieves available statuses (global or project-specific, e.g., To Do, In Progress, Done). Returns status categories and workflow information.',
   inputSchema: {
     type: 'object',
     properties: {

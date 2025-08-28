@@ -7,6 +7,7 @@ import {
   isValidJQL,
   sanitizeJQL,
   validatePagination,
+  extractIssueKey,
 } from '../../../src/utils/validators.js';
 import { ERROR_MESSAGES } from '../../../src/config/constants.js';
 
@@ -160,6 +161,22 @@ describe('validators', () => {
       expect(() => validatePagination(0, 1)).not.toThrow(); // min maxResults
       expect(() => validatePagination(0, 100)).not.toThrow(); // max maxResults
       expect(() => validatePagination(0, 50)).not.toThrow(); // typical value
+    });
+  });
+
+  describe('extractIssueKey', () => {
+    it('should extract issue key from URL', () => {
+      expect(extractIssueKey('https://example.atlassian.net/browse/PROJ-42')).toBe('PROJ-42');
+      expect(
+        extractIssueKey(
+          'https://example.atlassian.net/jira/software/c/projects/PROJ/boards/1?selectedIssue=PROJ-100'
+        )
+      ).toBe('PROJ-100');
+    });
+
+    it('should return null when no key present', () => {
+      expect(extractIssueKey('https://example.atlassian.net/browse/not-a-key')).toBeNull();
+      expect(extractIssueKey('no key here')).toBeNull();
     });
   });
 });

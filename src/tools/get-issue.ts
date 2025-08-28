@@ -13,13 +13,14 @@ const log = createLogger('tool:get-issue');
 export const getIssueTool: Tool = {
   name: TOOL_NAMES.GET_ISSUE,
   description:
-    'Retrieves detailed information about a specific Jira issue by its key (e.g., PROJECT-123). Returns comprehensive issue details including status, assignee, priority, comments, and custom fields.',
+    'Retrieve details for a specific Jira issue by key or URL. Use this when the user mentions an issue like "PAYWALL-943" or pastes a Jira link (e.g., https://your.atlassian.net/browse/PAYWALL-943). Returns status, assignee, priority, project, type, labels, components, timestamps, and description.',
   inputSchema: {
     type: 'object',
     properties: {
       issueKey: {
         type: 'string',
-        description: 'Issue key (e.g., PROJECT-123)',
+        description:
+          'Issue key or full Jira URL (e.g., PROJECT-123 or https://your.atlassian.net/browse/PROJECT-123)',
       },
       expand: {
         type: 'array',
@@ -42,14 +43,17 @@ export async function handleGetIssue(input: unknown): Promise<McpToolResponse> {
   try {
     const validated = validateInput(GetIssueInputSchema, input);
 
-    log.info(`Getting issue ${validated.issueKey}...`);
+    // Accept either an issue key or a full Jira URL and extract the key
+    const key = (validated.issueKey || '').trim();
+
+    log.info(`Getting issue ${key}...`);
 
     const getParams: any = {};
 
     if (validated.expand !== undefined) getParams.expand = validated.expand;
     if (validated.fields !== undefined) getParams.fields = validated.fields;
 
-    const issue = await getIssue(validated.issueKey, getParams);
+    const issue = await getIssue(key, getParams);
 
     log.info(`Retrieved issue ${issue.key}`);
 

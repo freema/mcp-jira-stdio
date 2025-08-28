@@ -140,6 +140,25 @@ describe('formatters', () => {
 
       expect(result.content[0].text).toContain('**Labels:** None');
     });
+
+    it('should handle ADF rich-text description', () => {
+      const issueWithAdf = {
+        ...mockJiraIssue,
+        fields: {
+          ...mockJiraIssue.fields,
+          description: {
+            type: 'doc',
+            version: 1,
+            content: [
+              { type: 'paragraph', content: [{ type: 'text', text: 'ADF description text' }] },
+            ],
+          } as any,
+        },
+      };
+
+      const result = formatIssueResponse(issueWithAdf);
+      expect(result.content[0].text).toContain('ADF description text');
+    });
   });
 
   describe('formatSearchResultsResponse', () => {
