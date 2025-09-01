@@ -65,7 +65,10 @@ function ensureAdfDescription(desc: any): any {
     const soloLabelMatch = /^(?<title>[^:]{2,}):\s*$/.exec(line);
     if (soloLabelMatch?.groups?.title) {
       const title = `${soloLabelMatch.groups.title}:`;
-      content.push({ type: 'paragraph', content: [{ type: 'text', text: title, marks: [{ type: 'strong' }] }] });
+      content.push({
+        type: 'paragraph',
+        content: [{ type: 'text', text: title, marks: [{ type: 'strong' }] }],
+      });
       i++;
 
       // Special-case: Stack trace section → capture following non-empty lines as codeBlock
@@ -138,7 +141,10 @@ function ensureAdfDescription(desc: any): any {
 
     // Fallback paragraph; make lines that look like paths/methods monospace
     if (/^\//.test(line) || /[A-Za-z]:\\/.test(line)) {
-      content.push({ type: 'paragraph', content: [{ type: 'text', text: line, marks: [{ type: 'code' }] }] });
+      content.push({
+        type: 'paragraph',
+        content: [{ type: 'text', text: line, marks: [{ type: 'code' }] }],
+      });
     } else {
       content.push({ type: 'paragraph', content: makeTextNodes(line) });
     }
