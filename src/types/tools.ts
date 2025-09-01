@@ -46,7 +46,10 @@ export const CreateIssueInputSchema = z.object({
     .describe('Project key where the issue will be created')
     .refine((v) => isValidProjectKey(v), 'Invalid project key format'),
   summary: z.string().min(1).describe('Issue summary/title'),
-  description: z.string().optional().describe('Issue description'),
+  description: z
+    .union([z.string(), z.any()])
+    .optional()
+    .describe('Issue description. Accepts plain text or ADF object.'),
   issueType: z.string().describe('Issue type (e.g., Bug, Story, Task)'),
   priority: z.string().optional().describe('Issue priority'),
   assignee: z.string().optional().describe('Assignee account ID'),
@@ -73,7 +76,10 @@ export const UpdateIssueInputSchema = z.object({
     .describe('Issue key to update')
     .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
   summary: z.string().optional().describe('New summary'),
-  description: z.string().optional().describe('New description'),
+  description: z
+    .union([z.string(), z.any()])
+    .optional()
+    .describe('New description. Accepts plain text or ADF object.'),
   priority: z.string().optional().describe('New priority'),
   assignee: z.string().optional().describe('New assignee account ID'),
   labels: z.array(z.string()).optional().describe('New labels (replaces existing)'),
@@ -173,7 +179,10 @@ export type GetProjectInfoInput = z.infer<typeof GetProjectInfoInputSchema>;
 export const CreateSubtaskInputSchema = z.object({
   parentIssueKey: z.string().describe('Parent issue key'),
   summary: z.string().min(1).describe('Subtask summary/title'),
-  description: z.string().optional().describe('Subtask description'),
+  description: z
+    .union([z.string(), z.any()])
+    .optional()
+    .describe('Subtask description. Accepts plain text or ADF object.'),
   priority: z.string().optional().describe('Subtask priority'),
   assignee: z.string().optional().describe('Assignee account ID'),
   labels: z.array(z.string()).optional().describe('Subtask labels'),

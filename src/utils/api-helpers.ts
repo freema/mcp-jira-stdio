@@ -15,6 +15,30 @@ import {
 import { PaginatedResponse } from '../types/common.js';
 import { validatePagination, sanitizeJQL } from './validators.js';
 
+function ensureAdfDescription(desc: any): any {
+  if (!desc) return desc;
+  if (typeof desc === 'object') return desc; // assume already ADF
+  if (typeof desc === 'string') {
+    const lines = desc.split(/\r?\n/);
+    return {
+      type: 'doc',
+      version: 1,
+      content: lines.map((line) => ({
+        type: 'paragraph',
+        content: line
+          ? [
+              {
+                type: 'text',
+                text: line,
+              },
+            ]
+          : [],
+      })),
+    };
+  }
+  return desc;
+}
+
 export async function getVisibleProjects(
   options: {
     expand?: string[];
@@ -125,8 +149,8 @@ export async function createIssue(
     issuetype: { name: issueData.issueType },
   };
 
-  if (issueData.description) {
-    fields.description = issueData.description;
+  if (issueData.description !== undefined) {
+    fields.description = ensureAdfDescription(issueData.description);
   }
 
   if (issueData.priority) {
@@ -189,7 +213,7 @@ export async function updateIssue(
   }
 
   if (updates.description !== undefined) {
-    fields.description = updates.description;
+    fields.description = ensureAdfDescription(updates.description);
   }
 
   if (updates.priority !== undefined) {
@@ -416,8 +440,8 @@ export async function createSubtask(
     issuetype: { id: subtaskType.id },
   };
 
-  if (subtaskData.description) {
-    fields.description = subtaskData.description;
+  if (subtaskData.description !== undefined) {
+    fields.description = ensureAdfDescription(subtaskData.description);
   }
 
   if (subtaskData.priority) {

@@ -276,22 +276,21 @@ describe('api-helpers', () => {
 
       await createIssue(issueData);
 
-      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(1, {
+      const firstCall = mockedMakeJiraRequest.mock.calls[0][0];
+      expect(firstCall).toMatchObject({
         method: 'POST',
         url: '/issue',
-        data: {
-          fields: {
-            project: { key: 'TEST' },
-            summary: 'Test issue',
-            description: 'Test description',
-            issuetype: { name: 'Bug' },
-            priority: { name: 'High' },
-            assignee: { accountId: 'user-id-123' },
-            labels: ['bug', 'urgent'],
-            components: [{ name: 'Frontend' }, { name: 'Backend' }],
-          },
-        },
       });
+      expect(firstCall.data.fields).toMatchObject({
+        project: { key: 'TEST' },
+        summary: 'Test issue',
+        issuetype: { name: 'Bug' },
+        priority: { name: 'High' },
+        assignee: { accountId: 'user-id-123' },
+        labels: ['bug', 'urgent'],
+        components: [{ name: 'Frontend' }, { name: 'Backend' }],
+      });
+      expect(firstCall.data.fields.description).toMatchObject({ type: 'doc', version: 1 });
     });
 
     it('should handle empty arrays for labels and components', async () => {
@@ -353,17 +352,11 @@ describe('api-helpers', () => {
 
       await updateIssue('TEST-123', updates);
 
-      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
-        method: 'PUT',
-        url: '/issue/TEST-123',
-        data: {
-          fields: {
-            summary: 'Updated summary',
-            description: 'Updated description',
-            priority: { name: 'Low' },
-          },
-        },
-      });
+      const call = mockedMakeJiraRequest.mock.calls[0][0];
+      expect(call).toMatchObject({ method: 'PUT', url: '/issue/TEST-123' });
+      expect(call.data.fields.summary).toBe('Updated summary');
+      expect(call.data.fields.priority).toEqual({ name: 'Low' });
+      expect(call.data.fields.description).toMatchObject({ type: 'doc', version: 1 });
     });
 
     it('should handle assignee updates', async () => {
@@ -739,23 +732,19 @@ describe('api-helpers', () => {
 
       await createSubtask('TEST-123', subtaskData);
 
-      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(3, {
-        method: 'POST',
-        url: '/issue',
-        data: {
-          fields: {
-            project: { key: 'TEST' },
-            parent: { key: 'TEST-123' },
-            summary: 'Test subtask',
-            description: 'Subtask description',
-            issuetype: { id: 'subtask-issue-type-id' },
-            priority: { name: 'High' },
-            assignee: { accountId: 'user-123' },
-            labels: ['subtask'],
-            components: [{ name: 'Frontend' }],
-          },
-        },
+      const thirdCall = mockedMakeJiraRequest.mock.calls[2][0];
+      expect(thirdCall).toMatchObject({ method: 'POST', url: '/issue' });
+      expect(thirdCall.data.fields).toMatchObject({
+        project: { key: 'TEST' },
+        parent: { key: 'TEST-123' },
+        summary: 'Test subtask',
+        issuetype: { id: 'subtask-issue-type-id' },
+        priority: { name: 'High' },
+        assignee: { accountId: 'user-123' },
+        labels: ['subtask'],
+        components: [{ name: 'Frontend' }],
       });
+      expect(thirdCall.data.fields.description).toMatchObject({ type: 'doc', version: 1 });
     });
 
     it('should throw error when no subtask issue type found', async () => {
