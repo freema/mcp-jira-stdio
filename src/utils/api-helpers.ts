@@ -61,11 +61,28 @@ function ensureAdfDescription(desc: any): any {
       continue;
     }
 
-    // Heading pattern: "Something:"
-    const headingMatch = /^(?<title>[^:]{2,}):\s*$/.exec(line);
-    if (headingMatch?.groups?.title) {
-      content.push({ type: 'heading', attrs: { level: 3 }, content: makeTextNodes(headingMatch.groups.title) });
+    // Section label on its own line: "Something:" → bold label paragraph
+    const soloLabelMatch = /^(?<title>[^:]{2,}):\s*$/.exec(line);
+    if (soloLabelMatch?.groups?.title) {
+      const title = `${soloLabelMatch.groups.title}:`;
+      content.push({ type: 'paragraph', content: [{ type: 'text', text: title, marks: [{ type: 'strong' }] }] });
       i++;
+
+      // Special-case: Stack trace section → capture following non-empty lines as codeBlock
+      if (/^stack\s*trace$/i.test(soloLabelMatch.groups.title.trim())) {
+        const codeLines: string[] = [];
+        while (i < lines.length && (lines[i] ?? '').trim().length > 0) {
+          codeLines.push(lines[i] as string);
+          i++;
+        }
+        if (codeLines.length) {
+          content.push({
+            type: 'codeBlock',
+            attrs: { language: '' },
+            content: [{ type: 'text', text: codeLines.join('\n') }],
+          });
+        }
+      }
       continue;
     }
 
@@ -76,7 +93,10 @@ function ensureAdfDescription(desc: any): any {
         const cur = lines[i] ?? '';
         if (!/^\d+\.\s+/.test(cur)) break;
         const itemText = cur.replace(/^\d+\.\s+/, '');
-        items.push({ type: 'listItem', content: [{ type: 'paragraph', content: makeTextNodes(itemText) }] });
+        items.push({
+          type: 'listItem',
+          content: [{ type: 'paragraph', content: makeTextNodes(itemText) }],
+        });
         i++;
       }
       content.push({ type: 'orderedList', content: items });
@@ -90,7 +110,10 @@ function ensureAdfDescription(desc: any): any {
         const cur = lines[i] ?? '';
         if (!/^(?:[-•])\s+/.test(cur)) break;
         const itemText = cur.replace(/^(?:[-•])\s+/, '');
-        items.push({ type: 'listItem', content: [{ type: 'paragraph', content: makeTextNodes(itemText) }] });
+        items.push({
+          type: 'listItem',
+          content: [{ type: 'paragraph', content: makeTextNodes(itemText) }],
+        });
         i++;
       }
       content.push({ type: 'bulletList', content: items });
@@ -98,9 +121,8 @@ function ensureAdfDescription(desc: any): any {
     }
 
     // Label: value → bold label then text
-    const labelMatch = /^(?<label>[A-ZÁČĎÉĚÍĽĹŇÓŘŠŤÚŮÝŽa-záčďéěíľĺňóřšťúůýž\s]+):\s+(?<value>.+)$/.exec(
-      line
-    );
+    const labelMatch =
+      /^(?<label>[A-ZÁČĎÉĚÍĽĹŇÓŘŠŤÚŮÝŽa-záčďéěíľĺňóřšťúůýž\s]+):\s+(?<value>.+)$/.exec(line);
     if (labelMatch?.groups?.label && labelMatch.groups.value) {
       content.push({
         type: 'paragraph',
@@ -114,8 +136,12 @@ function ensureAdfDescription(desc: any): any {
       continue;
     }
 
-    // Fallback paragraph
-    content.push({ type: 'paragraph', content: makeTextNodes(line) });
+    // Fallback paragraph; make lines that look like paths/methods monospace
+    if (/^\//.test(line) || /[A-Za-z]:\\/.test(line)) {
+      content.push({ type: 'paragraph', content: [{ type: 'text', text: line, marks: [{ type: 'code' }] }] });
+    } else {
+      content.push({ type: 'paragraph', content: makeTextNodes(line) });
+    }
     i++;
   }
 
