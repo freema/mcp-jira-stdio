@@ -3,6 +3,12 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Node](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://badge.fury.io/js/mcp-jira-stdio.svg)](https://www.npmjs.com/package/mcp-jira-stdio)
+[![MCP Server](https://img.shields.io/badge/MCP-Server-blue)](https://glama.ai/mcp/servers)
+
+<a href="https://glama.ai/mcp/servers/@freema/mcp-jira-stdio">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@freema/mcp-jira-stdio/badge" />
+</a>
 
 A Model Context Protocol (MCP) server for Jira API integration. Enables reading, writing, and managing Jira issues and projects directly from your MCP client (e.g., Claude Desktop).
 
