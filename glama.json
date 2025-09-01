@@ -8,15 +8,7 @@
   "license": "MIT",
   "homepage": "https://github.com/freema/mcp-jira-stdio#readme",
   "repository": "https://github.com/freema/mcp-jira-stdio",
-  "keywords": [
-    "mcp",
-    "model-context-protocol",
-    "jira",
-    "atlassian",
-    "api",
-    "claude",
-    "ai"
-  ],
+  "keywords": ["mcp", "model-context-protocol", "jira", "atlassian", "api", "claude", "ai"],
   "categories": ["Productivity", "Issue Tracking", "DevTools"],
   "runtime": { "type": "node", "minimumVersion": "18" },
   "publisher": { "name": "freema", "url": "https://github.com/freema" },
