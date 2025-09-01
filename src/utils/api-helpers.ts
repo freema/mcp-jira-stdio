@@ -52,7 +52,8 @@ function ensureAdfDescription(desc: any): any {
 
   let i = 0;
   while (i < lines.length) {
-    const line = lines[i].trimEnd();
+    const raw = lines[i] ?? '';
+    const line = raw.trimEnd();
     if (line.trim().length === 0) {
       // Blank line – add empty paragraph for spacing
       content.push({ type: 'paragraph', content: [] });
@@ -71,8 +72,10 @@ function ensureAdfDescription(desc: any): any {
     // Ordered list group
     if (/^\d+\.\s+/.test(line)) {
       const items: any[] = [];
-      while (i < lines.length && /^\d+\.\s+/.test(lines[i])) {
-        const itemText = lines[i].replace(/^\d+\.\s+/, '');
+      while (i < lines.length) {
+        const cur = lines[i] ?? '';
+        if (!/^\d+\.\s+/.test(cur)) break;
+        const itemText = cur.replace(/^\d+\.\s+/, '');
         items.push({ type: 'listItem', content: [{ type: 'paragraph', content: makeTextNodes(itemText) }] });
         i++;
       }
@@ -83,8 +86,10 @@ function ensureAdfDescription(desc: any): any {
     // Bullet list group
     if (/^(?:[-•])\s+/.test(line)) {
       const items: any[] = [];
-      while (i < lines.length && /^(?:[-•])\s+/.test(lines[i])) {
-        const itemText = lines[i].replace(/^(?:[-•])\s+/, '');
+      while (i < lines.length) {
+        const cur = lines[i] ?? '';
+        if (!/^(?:[-•])\s+/.test(cur)) break;
+        const itemText = cur.replace(/^(?:[-•])\s+/, '');
         items.push({ type: 'listItem', content: [{ type: 'paragraph', content: makeTextNodes(itemText) }] });
         i++;
       }
