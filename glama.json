@@ -1,0 +1,39 @@
+{
+  "$schema": "https://glama.ai/schemas/glamajson/v1.json",
+  "id": "@freema/mcp-jira-stdio",
+  "kind": "mcp_server",
+  "name": "Jira MCP Server",
+  "description": "Model Context Protocol (MCP) server for Jira API integration",
+  "version": "1.1.2",
+  "license": "MIT",
+  "homepage": "https://github.com/freema/mcp-jira-stdio#readme",
+  "repository": "https://github.com/freema/mcp-jira-stdio",
+  "keywords": ["mcp", "model-context-protocol", "jira", "atlassian", "api", "claude", "ai"],
+  "categories": ["Productivity", "Issue Tracking", "DevTools"],
+  "runtime": { "type": "node", "minimumVersion": "18" },
+  "publisher": { "name": "freema", "url": "https://github.com/freema" },
+  "authors": [{ "name": "graslt" }],
+  "mcp": {
+    "transport": "stdio",
+    "command": "mcp-jira-stdio",
+    "args": [],
+    "env": {
+      "JIRA_BASE_URL": {
+        "type": "string",
+        "required": true,
+        "description": "Jira instance URL (e.g. https://your-instance.atlassian.net)"
+      },
+      "JIRA_EMAIL": {
+        "type": "string",
+        "required": true,
+        "description": "Jira account email"
+      },
+      "JIRA_API_TOKEN": {
+        "type": "string",
+        "required": true,
+        "secret": true,
+        "description": "Jira API token"
+      }
+    }
+  }
+}

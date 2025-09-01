@@ -1,6 +1,6 @@
 {
   "name": "mcp-jira-stdio",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "Model Context Protocol (MCP) server for Jira API integration",
   "author": "graslt",
   "license": "MIT",
