@@ -15,28 +15,106 @@ import {
 import { PaginatedResponse } from '../types/common.js';
 import { validatePagination, sanitizeJQL } from './validators.js';
 
+// Convert a plain string into a nicely structured Atlassian Document Format (ADF) document.
+// Heuristics:
+// - Lines like "Heading:" become heading level 3 without the colon
+// - Consecutive lines starting with "1. ", "2. ", ... form an orderedList
+// - Lines starting with "- ", "• " form a bulletList
+// - URLs are linkified
 function ensureAdfDescription(desc: any): any {
   if (!desc) return desc;
   if (typeof desc === 'object') return desc; // assume already ADF
-  if (typeof desc === 'string') {
-    const lines = desc.split(/\r?\n/);
-    return {
-      type: 'doc',
-      version: 1,
-      content: lines.map((line) => ({
+  if (typeof desc !== 'string') return desc;
+
+  const urlRegex = /https?:\/\/[^\s)]+/g;
+
+  const makeTextNodes = (text: string): any[] => {
+    const nodes: any[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = urlRegex.exec(text)) !== null) {
+      const [url] = match;
+      const start = match.index;
+      if (start > lastIndex) {
+        nodes.push({ type: 'text', text: text.slice(lastIndex, start) });
+      }
+      nodes.push({ type: 'text', text: url, marks: [{ type: 'link', attrs: { href: url } }] });
+      lastIndex = start + url.length;
+    }
+    if (lastIndex < text.length) {
+      nodes.push({ type: 'text', text: text.slice(lastIndex) });
+    }
+    return nodes.length ? nodes : [{ type: 'text', text }];
+  };
+
+  const lines = desc.split(/\r?\n/);
+  const content: any[] = [];
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i].trimEnd();
+    if (line.trim().length === 0) {
+      // Blank line – add empty paragraph for spacing
+      content.push({ type: 'paragraph', content: [] });
+      i++;
+      continue;
+    }
+
+    // Heading pattern: "Something:"
+    const headingMatch = /^(?<title>[^:]{2,}):\s*$/.exec(line);
+    if (headingMatch?.groups?.title) {
+      content.push({ type: 'heading', attrs: { level: 3 }, content: makeTextNodes(headingMatch.groups.title) });
+      i++;
+      continue;
+    }
+
+    // Ordered list group
+    if (/^\d+\.\s+/.test(line)) {
+      const items: any[] = [];
+      while (i < lines.length && /^\d+\.\s+/.test(lines[i])) {
+        const itemText = lines[i].replace(/^\d+\.\s+/, '');
+        items.push({ type: 'listItem', content: [{ type: 'paragraph', content: makeTextNodes(itemText) }] });
+        i++;
+      }
+      content.push({ type: 'orderedList', content: items });
+      continue;
+    }
+
+    // Bullet list group
+    if (/^(?:[-•])\s+/.test(line)) {
+      const items: any[] = [];
+      while (i < lines.length && /^(?:[-•])\s+/.test(lines[i])) {
+        const itemText = lines[i].replace(/^(?:[-•])\s+/, '');
+        items.push({ type: 'listItem', content: [{ type: 'paragraph', content: makeTextNodes(itemText) }] });
+        i++;
+      }
+      content.push({ type: 'bulletList', content: items });
+      continue;
+    }
+
+    // Label: value → bold label then text
+    const labelMatch = /^(?<label>[A-ZÁČĎÉĚÍĽĹŇÓŘŠŤÚŮÝŽa-záčďéěíľĺňóřšťúůýž\s]+):\s+(?<value>.+)$/.exec(
+      line
+    );
+    if (labelMatch?.groups?.label && labelMatch.groups.value) {
+      content.push({
         type: 'paragraph',
-        content: line
-          ? [
-              {
-                type: 'text',
-                text: line,
-              },
-            ]
-          : [],
-      })),
-    };
+        content: [
+          { type: 'text', text: `${labelMatch.groups.label}:`, marks: [{ type: 'strong' }] },
+          { type: 'text', text: ' ' },
+          ...makeTextNodes(labelMatch.groups.value),
+        ],
+      });
+      i++;
+      continue;
+    }
+
+    // Fallback paragraph
+    content.push({ type: 'paragraph', content: makeTextNodes(line) });
+    i++;
   }
-  return desc;
+
+  return { type: 'doc', version: 1, content };
 }
 
 export async function getVisibleProjects(
