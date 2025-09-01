@@ -126,16 +126,18 @@ export function formatSearchResultsResponse(result: JiraSearchResult): McpToolRe
     })
     .join('\n\n');
 
-  const paginationInfo =
-    result.total > result.maxResults
-      ? `\n\n*Showing ${result.startAt + 1}-${Math.min(result.startAt + result.maxResults, result.total)} of ${result.total} results*`
-      : '';
+  const rangeStart = result.startAt + 1;
+  const rangeEnd = Math.min(result.startAt + result.maxResults, result.total);
+  const showRangeInline = result.total > result.maxResults || result.startAt > 0;
+  const paginationInfo = showRangeInline
+    ? `\n\n*Showing ${rangeStart}-${rangeEnd} of ${result.total} results*`
+    : '';
 
   return {
     content: [
       {
         type: 'text',
-        text: `Found ${result.total} issue(s):\n\n${issuesList}${paginationInfo}`,
+        text: `Found ${result.total} issue(s)${showRangeInline ? ` (showing ${rangeStart}-${rangeEnd})` : ''}:\n\n${issuesList}${paginationInfo}`,
       },
     ],
   };

@@ -14,7 +14,7 @@ const log = createLogger('tool:update-issue');
 export const updateIssueTool: Tool = {
   name: TOOL_NAMES.UPDATE_ISSUE,
   description:
-    'Updates an existing Jira issue by its key. Supports updating summary, description, priority, assignee, labels, and components. Only specified fields will be updated.',
+    'Updates an existing Jira issue by its key. Supports updating summary, description, priority, assignee, labels, and components. Description accepts plain text and is auto-formatted to ADF: headings (lines ending with ":"), numbered/bullet lists, and links. Only specified fields will be updated.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -27,8 +27,9 @@ export const updateIssueTool: Tool = {
         description: 'New issue summary/title (optional)',
       },
       description: {
-        type: 'string',
-        description: 'New issue description (optional)',
+        anyOf: [{ type: 'string' }, { type: 'object' }],
+        description:
+          'New issue description (optional). Accepts plain text (auto-formatted to ADF) or an ADF document.',
       },
       priority: {
         type: 'string',

@@ -14,7 +14,7 @@ const log = createLogger('tool:create-issue');
 export const createIssueTool: Tool = {
   name: TOOL_NAMES.CREATE_ISSUE,
   description:
-    'Creates a new Jira issue in the specified project. Supports setting issue type, priority, assignee, labels, and components. Returns the created issue with all details.',
+    'Creates a new Jira issue in the specified project. Supports setting issue type, priority, assignee, labels, components, and custom fields. Description accepts plain text and is auto-formatted to ADF: lines ending with ":" become headings, numbered lines create ordered lists, and URLs are linkified. For required custom fields, supply them via customFields (e.g., { "customfield_12345": { id: "..." } }). Returns the created issue with all details.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -28,8 +28,9 @@ export const createIssueTool: Tool = {
         minLength: 1,
       },
       description: {
-        type: 'string',
-        description: 'Detailed issue description (optional)',
+        anyOf: [{ type: 'string' }, { type: 'object' }],
+        description:
+          'Detailed issue description (optional). Accepts plain text (auto-formatted to ADF) or an ADF document.',
       },
       issueType: {
         type: 'string',
@@ -54,6 +55,12 @@ export const createIssueTool: Tool = {
         items: { type: 'string' },
         description: 'Component names (optional)',
         default: [],
+      },
+      customFields: {
+        type: 'object',
+        additionalProperties: true,
+        description:
+          'Additional Jira fields, e.g. { "customfield_10071": value }. Use this to set required custom fields.',
       },
       returnIssue: {
         type: 'boolean',
@@ -82,6 +89,7 @@ export async function handleCreateIssue(input: unknown): Promise<McpToolResponse
     if (validated.assignee !== undefined) createParams.assignee = validated.assignee;
     if (validated.labels !== undefined) createParams.labels = validated.labels;
     if (validated.components !== undefined) createParams.components = validated.components;
+    if (validated.customFields !== undefined) createParams.customFields = validated.customFields;
 
     let issueOrKey;
     if (validated.returnIssue === false) {

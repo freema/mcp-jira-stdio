@@ -15,6 +15,139 @@ import {
 import { PaginatedResponse } from '../types/common.js';
 import { validatePagination, sanitizeJQL } from './validators.js';
 
+// Convert a plain string into a nicely structured Atlassian Document Format (ADF) document.
+// Heuristics:
+// - Lines like "Heading:" become heading level 3 without the colon
+// - Consecutive lines starting with "1. ", "2. ", ... form an orderedList
+// - Lines starting with "- ", "• " form a bulletList
+// - URLs are linkified
+function ensureAdfDescription(desc: any): any {
+  if (!desc) return desc;
+  if (typeof desc === 'object') return desc; // assume already ADF
+  if (typeof desc !== 'string') return desc;
+
+  const urlRegex = /https?:\/\/[^\s)]+/g;
+
+  const makeTextNodes = (text: string): any[] => {
+    const nodes: any[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = urlRegex.exec(text)) !== null) {
+      const [url] = match;
+      const start = match.index;
+      if (start > lastIndex) {
+        nodes.push({ type: 'text', text: text.slice(lastIndex, start) });
+      }
+      nodes.push({ type: 'text', text: url, marks: [{ type: 'link', attrs: { href: url } }] });
+      lastIndex = start + url.length;
+    }
+    if (lastIndex < text.length) {
+      nodes.push({ type: 'text', text: text.slice(lastIndex) });
+    }
+    return nodes.length ? nodes : [{ type: 'text', text }];
+  };
+
+  const lines = desc.split(/\r?\n/);
+  const content: any[] = [];
+
+  let i = 0;
+  while (i < lines.length) {
+    const raw = lines[i] ?? '';
+    const line = raw.trimEnd();
+    if (line.trim().length === 0) {
+      // Blank line – add empty paragraph for spacing
+      content.push({ type: 'paragraph', content: [] });
+      i++;
+      continue;
+    }
+
+    // Section label on its own line: "Something:" → bold label paragraph
+    const soloLabelMatch = /^(?<title>[^:]{2,}):\s*$/.exec(line);
+    if (soloLabelMatch?.groups?.title) {
+      const title = `${soloLabelMatch.groups.title}:`;
+      content.push({ type: 'paragraph', content: [{ type: 'text', text: title, marks: [{ type: 'strong' }] }] });
+      i++;
+
+      // Special-case: Stack trace section → capture following non-empty lines as codeBlock
+      if (/^stack\s*trace$/i.test(soloLabelMatch.groups.title.trim())) {
+        const codeLines: string[] = [];
+        while (i < lines.length && (lines[i] ?? '').trim().length > 0) {
+          codeLines.push(lines[i] as string);
+          i++;
+        }
+        if (codeLines.length) {
+          content.push({
+            type: 'codeBlock',
+            attrs: { language: '' },
+            content: [{ type: 'text', text: codeLines.join('\n') }],
+          });
+        }
+      }
+      continue;
+    }
+
+    // Ordered list group
+    if (/^\d+\.\s+/.test(line)) {
+      const items: any[] = [];
+      while (i < lines.length) {
+        const cur = lines[i] ?? '';
+        if (!/^\d+\.\s+/.test(cur)) break;
+        const itemText = cur.replace(/^\d+\.\s+/, '');
+        items.push({
+          type: 'listItem',
+          content: [{ type: 'paragraph', content: makeTextNodes(itemText) }],
+        });
+        i++;
+      }
+      content.push({ type: 'orderedList', content: items });
+      continue;
+    }
+
+    // Bullet list group
+    if (/^(?:[-•])\s+/.test(line)) {
+      const items: any[] = [];
+      while (i < lines.length) {
+        const cur = lines[i] ?? '';
+        if (!/^(?:[-•])\s+/.test(cur)) break;
+        const itemText = cur.replace(/^(?:[-•])\s+/, '');
+        items.push({
+          type: 'listItem',
+          content: [{ type: 'paragraph', content: makeTextNodes(itemText) }],
+        });
+        i++;
+      }
+      content.push({ type: 'bulletList', content: items });
+      continue;
+    }
+
+    // Label: value → bold label then text
+    const labelMatch =
+      /^(?<label>[A-ZÁČĎÉĚÍĽĹŇÓŘŠŤÚŮÝŽa-záčďéěíľĺňóřšťúůýž\s]+):\s+(?<value>.+)$/.exec(line);
+    if (labelMatch?.groups?.label && labelMatch.groups.value) {
+      content.push({
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: `${labelMatch.groups.label}:`, marks: [{ type: 'strong' }] },
+          { type: 'text', text: ' ' },
+          ...makeTextNodes(labelMatch.groups.value),
+        ],
+      });
+      i++;
+      continue;
+    }
+
+    // Fallback paragraph; make lines that look like paths/methods monospace
+    if (/^\//.test(line) || /[A-Za-z]:\\/.test(line)) {
+      content.push({ type: 'paragraph', content: [{ type: 'text', text: line, marks: [{ type: 'code' }] }] });
+    } else {
+      content.push({ type: 'paragraph', content: makeTextNodes(line) });
+    }
+    i++;
+  }
+
+  return { type: 'doc', version: 1, content };
+}
+
 export async function getVisibleProjects(
   options: {
     expand?: string[];
@@ -115,6 +248,7 @@ export async function createIssue(
     assignee?: string;
     labels?: string[];
     components?: string[];
+    customFields?: Record<string, any>;
   },
   options: { returnIssue?: boolean } = { returnIssue: true }
 ): Promise<JiraIssue | string> {
@@ -124,8 +258,8 @@ export async function createIssue(
     issuetype: { name: issueData.issueType },
   };
 
-  if (issueData.description) {
-    fields.description = issueData.description;
+  if (issueData.description !== undefined) {
+    fields.description = ensureAdfDescription(issueData.description);
   }
 
   if (issueData.priority) {
@@ -142,6 +276,16 @@ export async function createIssue(
 
   if (issueData.components && issueData.components.length > 0) {
     fields.components = issueData.components.map((name) => ({ name }));
+  }
+
+  // Merge any custom fields provided by the caller
+  if (issueData.customFields && typeof issueData.customFields === 'object') {
+    for (const [key, value] of Object.entries(issueData.customFields)) {
+      // Do not overwrite standard fields if accidentally duplicated
+      if (!(key in fields)) {
+        fields[key] = value;
+      }
+    }
   }
 
   const config: AxiosRequestConfig = {
@@ -178,7 +322,7 @@ export async function updateIssue(
   }
 
   if (updates.description !== undefined) {
-    fields.description = updates.description;
+    fields.description = ensureAdfDescription(updates.description);
   }
 
   if (updates.priority !== undefined) {
@@ -405,8 +549,8 @@ export async function createSubtask(
     issuetype: { id: subtaskType.id },
   };
 
-  if (subtaskData.description) {
-    fields.description = subtaskData.description;
+  if (subtaskData.description !== undefined) {
+    fields.description = ensureAdfDescription(subtaskData.description);
   }
 
   if (subtaskData.priority) {

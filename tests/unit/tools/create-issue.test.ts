@@ -127,6 +127,31 @@ describe('create-issue tool', () => {
         });
       });
 
+      it('should forward customFields to API helper', async () => {
+        const input = {
+          projectKey: 'TEST',
+          summary: 'New task',
+          issueType: 'Task',
+          customFields: {
+            customfield_10071: { id: '20010' },
+          },
+        } as any;
+        const validatedInput = { ...input };
+
+        mockedValidateInput.mockReturnValue(validatedInput);
+        mockedCreateIssue.mockResolvedValue(mockJiraIssue);
+        mockedFormatIssueResponse.mockReturnValue({ content: [] });
+
+        await handleCreateIssue(input);
+
+        expect(mockedCreateIssue).toHaveBeenCalledWith({
+          projectKey: 'TEST',
+          summary: 'New task',
+          issueType: 'Task',
+          customFields: { customfield_10071: { id: '20010' } },
+        });
+      });
+
       it('should handle empty arrays for labels and components', async () => {
         const input = {
           projectKey: 'TEST',
