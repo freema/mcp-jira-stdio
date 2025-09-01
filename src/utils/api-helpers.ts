@@ -115,6 +115,7 @@ export async function createIssue(
     assignee?: string;
     labels?: string[];
     components?: string[];
+    customFields?: Record<string, any>;
   },
   options: { returnIssue?: boolean } = { returnIssue: true }
 ): Promise<JiraIssue | string> {
@@ -142,6 +143,16 @@ export async function createIssue(
 
   if (issueData.components && issueData.components.length > 0) {
     fields.components = issueData.components.map((name) => ({ name }));
+  }
+
+  // Merge any custom fields provided by the caller
+  if (issueData.customFields && typeof issueData.customFields === 'object') {
+    for (const [key, value] of Object.entries(issueData.customFields)) {
+      // Do not overwrite standard fields if accidentally duplicated
+      if (!(key in fields)) {
+        fields[key] = value;
+      }
+    }
   }
 
   const config: AxiosRequestConfig = {

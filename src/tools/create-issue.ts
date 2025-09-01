@@ -55,6 +55,12 @@ export const createIssueTool: Tool = {
         description: 'Component names (optional)',
         default: [],
       },
+      customFields: {
+        type: 'object',
+        additionalProperties: true,
+        description:
+          'Additional Jira fields, e.g. { "customfield_10071": value }. Use this to set required custom fields.',
+      },
       returnIssue: {
         type: 'boolean',
         description: 'If false, returns only the issue key without fetching full details',
@@ -82,6 +88,7 @@ export async function handleCreateIssue(input: unknown): Promise<McpToolResponse
     if (validated.assignee !== undefined) createParams.assignee = validated.assignee;
     if (validated.labels !== undefined) createParams.labels = validated.labels;
     if (validated.components !== undefined) createParams.components = validated.components;
+    if (validated.customFields !== undefined) createParams.customFields = validated.customFields;
 
     let issueOrKey;
     if (validated.returnIssue === false) {

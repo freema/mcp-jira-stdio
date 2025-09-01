@@ -313,6 +313,32 @@ describe('api-helpers', () => {
       expect(callData.fields.labels).toBeUndefined();
       expect(callData.fields.components).toBeUndefined();
     });
+
+    it('should pass through customFields into payload', async () => {
+      mockedMakeJiraRequest
+        .mockResolvedValueOnce(mockJiraCreateIssueResponse)
+        .mockResolvedValueOnce(mockJiraIssue);
+
+      const issueData = {
+        projectKey: 'TEST',
+        summary: 'Test issue',
+        issueType: 'Task',
+        customFields: {
+          customfield_10071: { id: '20010' },
+          customfield_12345: 'some value',
+        },
+      } as any;
+
+      await createIssue(issueData);
+
+      const firstCall = mockedMakeJiraRequest.mock.calls[0][0];
+      expect(firstCall).toMatchObject({ method: 'POST', url: '/issue' });
+      expect(firstCall.data.fields.customfield_10071).toEqual({ id: '20010' });
+      expect(firstCall.data.fields.customfield_12345).toEqual('some value');
+      // Ensure standard fields preserved
+      expect(firstCall.data.fields.summary).toBe('Test issue');
+      expect(firstCall.data.fields.issuetype).toEqual({ name: 'Task' });
+    });
   });
 
   describe('updateIssue', () => {
