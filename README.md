@@ -6,11 +6,9 @@
 [![npm version](https://badge.fury.io/js/mcp-jira-stdio.svg)](https://www.npmjs.com/package/mcp-jira-stdio)
 [![MCP Server](https://img.shields.io/badge/MCP-Server-blue)](https://glama.ai/mcp/servers)
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/freema/mcp-jira-stdio)](https://hub.docker.com/r/freema/mcp-jira-stdio)
 [![CI](https://github.com/freema/mcp-jira-stdio/actions/workflows/ci.yml/badge.svg)](https://github.com/freema/mcp-jira-stdio/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/freema/mcp-jira-stdio/branch/main/graph/badge.svg)](https://codecov.io/gh/freema/mcp-jira-stdio)
 [![GitHub issues](https://img.shields.io/github/issues/freema/mcp-jira-stdio)](https://github.com/freema/mcp-jira-stdio/issues)
-[![Docker Image Size](https://img.shields.io/docker/image-size/freema/mcp-jira-stdio/latest)](https://hub.docker.com/r/freema/mcp-jira-stdio)
 
 <a href="https://glama.ai/mcp/servers/@freema/mcp-jira-stdio">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@freema/mcp-jira-stdio/badge" />
