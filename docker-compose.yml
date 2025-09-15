@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  mcp-jira-stdio:
+    image: ghcr.io/freema/mcp-jira-stdio:latest
+    environment:
+      - JIRA_BASE_URL=${JIRA_BASE_URL}
+      - JIRA_EMAIL=${JIRA_EMAIL}
+      - JIRA_API_TOKEN=${JIRA_API_TOKEN}
+    stdin_open: true
+    tty: true

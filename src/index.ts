@@ -63,25 +63,33 @@ const allTools = [
 ];
 
 async function main() {
-  // Validate authentication on startup
-  try {
-    const auth = validateAuth();
-    console.error(`🔐 Authenticated as: ${auth.email}`);
-    console.error(`🌐 Jira instance: ${auth.baseUrl}`);
+  const isDryRun =
+    (process.env.DRY_RUN || '').toLowerCase() === '1' ||
+    (process.env.DRY_RUN || '').toLowerCase() === 'true';
 
-    // Always test connection on startup for predictable behavior in tests
-    console.error('🔍 Testing connection to Jira...');
-    const ok = await testConnection();
-    if (!ok) {
-      console.error('❌ Connection to Jira failed');
+  // Validate authentication on startup (skip in DRY_RUN)
+  if (!isDryRun) {
+    try {
+      const auth = validateAuth();
+      console.error(`🔐 Authenticated as: ${auth.email}`);
+      console.error(`🌐 Jira instance: ${auth.baseUrl}`);
+
+      // Always test connection on startup for predictable behavior in tests
+      console.error('🔍 Testing connection to Jira...');
+      const ok = await testConnection();
+      if (!ok) {
+        console.error('❌ Connection to Jira failed');
+        process.exit(1);
+        return;
+      }
+      console.error('✅ Connection to Jira successful');
+    } catch (error: any) {
+      console.error('❌ Authentication Error:', error.message);
       process.exit(1);
       return;
     }
-    console.error('✅ Connection to Jira successful');
-  } catch (error: any) {
-    console.error('❌ Authentication Error:', error.message);
-    process.exit(1);
-    return;
+  } else {
+    console.error('🧪 DRY_RUN=1 set — skipping Jira auth and connection test');
   }
 
   // Read version from package.json

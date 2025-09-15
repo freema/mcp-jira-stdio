@@ -59,12 +59,18 @@ tasks:
     cmds:
       - npm run format:check
 
+  audit:
+    desc: Run security audit check
+    cmds:
+      - npm audit --audit-level=high
+
   check:
-    desc: Run all checks (typecheck, lint, format)
+    desc: Run all checks (typecheck, lint, format, security)
     cmds:
       - task: typecheck
       - task: lint
       - task: fmt:check
+      - task: audit
 
   inspector:
     desc: Run MCP inspector for debugging

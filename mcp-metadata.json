@@ -1,0 +1,20 @@
+{
+  "name": "mcp-jira-stdio",
+  "version": "1.0.0",
+  "description": "MCP server for Jira integration with stdio transport",
+  "author": "freema",
+  "license": "MIT",
+  "mcp": {
+    "version": "1.0.0",
+    "transport": "stdio",
+    "capabilities": ["tools", "resources"]
+  },
+  "docker": {
+    "image": "freema/mcp-jira-stdio",
+    "registry": "docker.io",
+    "platforms": ["linux/amd64", "linux/arm64"]
+  },
+  "repository": "https://github.com/freema/mcp-jira-stdio",
+  "categories": ["productivity", "project-management", "atlassian"],
+  "tags": ["jira", "mcp", "stdio", "atlassian", "issue-tracking"]
+}

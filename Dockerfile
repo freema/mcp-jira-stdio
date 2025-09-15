@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20.18-alpine AS builder
+FROM node:18-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache python3 make g++
@@ -19,7 +19,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:20.18-alpine
+FROM node:18-alpine
 
 WORKDIR /app
 
@@ -41,16 +41,15 @@ RUN chown -R nodejs:nodejs /app
 
 USER nodejs
 
-# MCP servers typically use stdio, not HTTP ports
-# So EXPOSE is not needed for stdio-based MCP servers
+# Expose MCP server port (if applicable)
 # EXPOSE 3000
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV MCP_MODE=stdio
 
-# Health check is not applicable for stdio MCP servers
-# as they communicate via stdin/stdout, not HTTP
+# Health check (optional)
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+#   CMD node -e "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"
 
 # Start the MCP server
 CMD ["node", "dist/index.js"]
