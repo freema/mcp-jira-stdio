@@ -49,10 +49,15 @@ Add to your Claude Desktop config:
     "jira": {
       "command": "docker",
       "args": [
-        "run", "-i", "--rm",
-        "-e", "JIRA_BASE_URL",
-        "-e", "JIRA_EMAIL",
-        "-e", "JIRA_API_TOKEN",
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "JIRA_BASE_URL",
+        "-e",
+        "JIRA_EMAIL",
+        "-e",
+        "JIRA_API_TOKEN",
         "freema/mcp-jira-stdio:latest"
       ],
       "env": {
@@ -64,4 +69,3 @@ Add to your Claude Desktop config:
   }
 }
 ```
-
