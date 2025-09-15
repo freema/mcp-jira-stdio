@@ -63,7 +63,8 @@ const allTools = [
 ];
 
 async function main() {
-  const isDryRun = (process.env.DRY_RUN || '').toLowerCase() === '1' ||
+  const isDryRun =
+    (process.env.DRY_RUN || '').toLowerCase() === '1' ||
     (process.env.DRY_RUN || '').toLowerCase() === 'true';
 
   // Validate authentication on startup (skip in DRY_RUN)
