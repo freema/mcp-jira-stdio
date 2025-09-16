@@ -1,4 +1,4 @@
-// Load .env file in development mode
+// Load .env file in non-production modes
 if (process.env.NODE_ENV !== 'production') {
   try {
     const { config } = await import('dotenv');
@@ -66,27 +66,41 @@ async function main() {
   const isDryRun =
     (process.env.DRY_RUN || '').toLowerCase() === '1' ||
     (process.env.DRY_RUN || '').toLowerCase() === 'true';
+  const nodeEnv = process.env.NODE_ENV || 'production';
+  const isDevLike = nodeEnv === 'development' || nodeEnv === 'test';
 
-  // Validate authentication on startup (skip in DRY_RUN)
+  // Validate authentication on startup when configured (skip in DRY_RUN)
   if (!isDryRun) {
-    try {
-      const auth = validateAuth();
-      console.error(`🔐 Authenticated as: ${auth.email}`);
-      console.error(`🌐 Jira instance: ${auth.baseUrl}`);
+    const hasAuthVars = Boolean(
+      process.env.JIRA_BASE_URL && process.env.JIRA_EMAIL && process.env.JIRA_API_TOKEN
+    );
 
-      // Always test connection on startup for predictable behavior in tests
-      console.error('🔍 Testing connection to Jira...');
-      const ok = await testConnection();
-      if (!ok) {
-        console.error('❌ Connection to Jira failed');
-        process.exit(1);
-        return;
+    if (hasAuthVars) {
+      try {
+        const auth = validateAuth();
+        console.error(`🔐 Authenticated as: ${auth.email}`);
+        console.error(`🌐 Jira instance: ${auth.baseUrl}`);
+
+        // Only test connection in development/test environments
+        if (isDevLike) {
+          console.error('🔍 Testing connection to Jira...');
+          const ok = await testConnection();
+          if (!ok) {
+            console.error('⚠️  Connection to Jira failed (continuing; tools available)');
+          } else {
+            console.error('✅ Connection to Jira successful');
+          }
+        }
+      } catch (error: any) {
+        console.error('❌ Authentication Error:', error.message);
+        console.error(
+          '⚠️  Continuing without Jira connection; tools will error on use until env vars are valid.'
+        );
       }
-      console.error('✅ Connection to Jira successful');
-    } catch (error: any) {
-      console.error('❌ Authentication Error:', error.message);
-      process.exit(1);
-      return;
+    } else {
+      console.error(
+        '⚠️  Jira env vars missing. Tools will be listed, but calls require JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN.'
+      );
     }
   } else {
     console.error('🧪 DRY_RUN=1 set — skipping Jira auth and connection test');

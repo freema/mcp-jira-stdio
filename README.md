@@ -210,6 +210,10 @@ npm run inspector:dev
 task inspector:dev
 ```
 
+Notes:
+- Startup no longer blocks on Jira connectivity. If Jira env vars are missing, the server still starts and lists tools; tool calls will fail with a clear auth error until you set `JIRA_BASE_URL`, `JIRA_EMAIL`, and `JIRA_API_TOKEN`.
+- Connection testing runs only in development/test (`NODE_ENV=development` or `test`). Failures are logged but do not terminate the server, so the inspector can still display tools.
+
 ### Testing
 
 ```bash
@@ -310,6 +314,15 @@ task inspector:dev
 
 # Check all configuration
 task check
+```
+
+If the inspector shows an SSE error and the server exits immediately, ensure you are not forcing an early exit with invalid credentials. With the current behavior, the server should not exit on missing credentials; export your Jira vars to exercise the tools:
+
+```bash
+export JIRA_BASE_URL="https://your-instance.atlassian.net"
+export JIRA_EMAIL="your-email@example.com"
+export JIRA_API_TOKEN="your-api-token"
+npm run inspector
 ```
 
 ## 🔍 Environment Variables

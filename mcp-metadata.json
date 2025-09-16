@@ -17,4 +17,30 @@
   "repository": "https://github.com/freema/mcp-jira-stdio",
   "categories": ["productivity", "project-management", "atlassian"],
   "tags": ["jira", "mcp", "stdio", "atlassian", "issue-tracking"]
+,
+  "environmentVariables": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "JIRA_BASE_URL": {
+          "type": "string",
+          "format": "uri",
+          "description": "Jira instance URL (https, no trailing slash)"
+        },
+        "JIRA_EMAIL": {
+          "type": "string",
+          "format": "email",
+          "description": "Jira account email"
+        },
+        "JIRA_API_TOKEN": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Jira API token"
+        }
+      },
+      "required": ["JIRA_BASE_URL", "JIRA_EMAIL", "JIRA_API_TOKEN"],
+      "additionalProperties": false
+    },
+    "placeholderArguments": ["JIRA_BASE_URL", "JIRA_EMAIL", "JIRA_API_TOKEN"]
+  }
 }
