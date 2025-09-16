@@ -16,8 +16,7 @@
   },
   "repository": "https://github.com/freema/mcp-jira-stdio",
   "categories": ["productivity", "project-management", "atlassian"],
-  "tags": ["jira", "mcp", "stdio", "atlassian", "issue-tracking"]
-,
+  "tags": ["jira", "mcp", "stdio", "atlassian", "issue-tracking"],
   "environmentVariables": {
     "schema": {
       "type": "object",
