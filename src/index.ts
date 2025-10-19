@@ -1,4 +1,4 @@
-// Load .env file in development mode
+// Load .env file in non-production modes
 if (process.env.NODE_ENV !== 'production') {
   try {
     const { config } = await import('dotenv');
@@ -19,7 +19,7 @@ import {
   CallToolRequest,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import { validateAuth, testConnection } from './utils/jira-auth.js';
+import { validateAuth } from './utils/jira-auth.js';
 import { createLogger } from './utils/logger.js';
 import { TOOL_NAMES } from './config/constants.js';
 
@@ -67,29 +67,25 @@ async function main() {
     (process.env.DRY_RUN || '').toLowerCase() === '1' ||
     (process.env.DRY_RUN || '').toLowerCase() === 'true';
 
-  // Validate authentication on startup (skip in DRY_RUN)
+  // Show auth info on startup when configured (skip in DRY_RUN)
   if (!isDryRun) {
-    try {
-      const auth = validateAuth();
-      console.error(`🔐 Authenticated as: ${auth.email}`);
-      console.error(`🌐 Jira instance: ${auth.baseUrl}`);
+    const hasAuthVars = Boolean(
+      process.env.JIRA_BASE_URL && process.env.JIRA_EMAIL && process.env.JIRA_API_TOKEN
+    );
 
-      // Always test connection on startup for predictable behavior in tests
-      console.error('🔍 Testing connection to Jira...');
-      const ok = await testConnection();
-      if (!ok) {
-        console.error('❌ Connection to Jira failed');
-        process.exit(1);
-        return;
+    if (hasAuthVars) {
+      try {
+        const auth = validateAuth();
+        console.error(`🔐 Authenticated as: ${auth.email}`);
+        console.error(`🌐 Jira instance: ${auth.baseUrl}`);
+      } catch (error: any) {
+        console.error('⚠️  Invalid Jira credentials:', error.message);
       }
-      console.error('✅ Connection to Jira successful');
-    } catch (error: any) {
-      console.error('❌ Authentication Error:', error.message);
-      process.exit(1);
-      return;
+    } else {
+      console.error('⚠️  Jira env vars missing (JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN)');
     }
   } else {
-    console.error('🧪 DRY_RUN=1 set — skipping Jira auth and connection test');
+    console.error('🧪 DRY_RUN=1 set — skipping Jira auth check');
   }
 
   // Read version from package.json
