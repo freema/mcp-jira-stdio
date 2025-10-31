@@ -156,31 +156,30 @@ describe('api-helpers', () => {
 
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'POST',
-        url: '/search',
+        url: '/search/jql',
         data: {
           jql: 'project = TEST',
-          startAt: 0,
           maxResults: 50,
         },
       });
       expect(result).toEqual(mockJiraSearchResult);
     });
 
-    it('should search issues with pagination', async () => {
+    it('should search issues with pagination token', async () => {
       mockedMakeJiraRequest.mockResolvedValue(mockJiraSearchResult);
 
       await searchIssues({
         jql: 'project = TEST',
-        startAt: 25,
+        nextPageToken: 'token-abc-123',
         maxResults: 10,
       });
 
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'POST',
-        url: '/search',
+        url: '/search/jql',
         data: {
           jql: 'project = TEST',
-          startAt: 25,
+          nextPageToken: 'token-abc-123',
           maxResults: 10,
         },
       });
@@ -197,10 +196,9 @@ describe('api-helpers', () => {
 
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'POST',
-        url: '/search',
+        url: '/search/jql',
         data: {
           jql: 'project = TEST',
-          startAt: 0,
           maxResults: 50,
           fields: ['summary', 'status'],
           expand: ['changelog'],
@@ -215,10 +213,9 @@ describe('api-helpers', () => {
 
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'POST',
-        url: '/search',
+        url: '/search/jql',
         data: {
           jql: 'summary ~ testscript',
-          startAt: 0,
           maxResults: 50,
         },
       });
@@ -447,10 +444,9 @@ describe('api-helpers', () => {
 
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'POST',
-        url: '/search',
+        url: '/search/jql',
         data: {
           jql: 'assignee = currentUser() ORDER BY updated DESC',
-          startAt: 0,
           maxResults: 50,
         },
       });
@@ -461,7 +457,7 @@ describe('api-helpers', () => {
       mockedMakeJiraRequest.mockResolvedValueOnce(mockJiraSearchResult);
 
       await getMyIssues({
-        startAt: 10,
+        nextPageToken: 'token-def-456',
         maxResults: 25,
         fields: ['summary'],
         expand: ['comments'],
@@ -469,10 +465,10 @@ describe('api-helpers', () => {
 
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'POST',
-        url: '/search',
+        url: '/search/jql',
         data: {
           jql: 'assignee = currentUser() ORDER BY updated DESC',
-          startAt: 10,
+          nextPageToken: 'token-def-456',
           maxResults: 25,
           fields: ['summary'],
           expand: ['comments'],

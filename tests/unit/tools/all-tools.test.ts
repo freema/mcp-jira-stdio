@@ -139,7 +139,7 @@ describe('All Jira Tools', () => {
     });
 
     it('should handle successful my issues retrieval', async () => {
-      const input = { startAt: 0, maxResults: 25 };
+      const input = { maxResults: 25 };
       const mockResponse = { content: [{ type: 'text', text: 'my issues' }] };
 
       mockedValidateInput.mockReturnValue(input);

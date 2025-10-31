@@ -115,18 +115,22 @@ export interface JiraVersion {
 
 export interface JiraSearchRequest {
   jql: string;
-  startAt?: number;
+  nextPageToken?: string;
   maxResults?: number;
   fields?: string[];
   expand?: string[];
+  fieldsByKeys?: boolean;
+  properties?: string[];
 }
 
 export interface JiraSearchResult {
   expand: string;
-  startAt: number;
+  startAt: number; // Still returned for backward compatibility
   maxResults: number;
   total: number;
   issues: JiraIssue[];
+  nextPageToken?: string; // Token for pagination in new API
+  isLast?: boolean; // Indicates if this is the last page
 }
 
 export interface JiraComment {

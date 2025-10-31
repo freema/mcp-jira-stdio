@@ -208,24 +208,24 @@ export async function getIssue(
 
 export async function searchIssues(options: {
   jql: string;
-  startAt?: number;
+  nextPageToken?: string;
   maxResults?: number;
   fields?: string[];
   expand?: string[];
 }): Promise<JiraSearchResult> {
-  const { jql, startAt = 0, maxResults = 50 } = options;
-
-  // Validate pagination
-  validatePagination(startAt, maxResults);
+  const { jql, nextPageToken, maxResults = 50 } = options;
 
   // Sanitize JQL
   const sanitizedJql = sanitizeJQL(jql);
 
   const data: Record<string, any> = {
     jql: sanitizedJql,
-    startAt,
     maxResults,
   };
+
+  if (nextPageToken) {
+    data.nextPageToken = nextPageToken;
+  }
 
   if (options.fields) {
     data.fields = options.fields;
@@ -237,7 +237,7 @@ export async function searchIssues(options: {
 
   const config: AxiosRequestConfig = {
     method: 'POST',
-    url: '/search',
+    url: '/search/jql',
     data,
   };
 
@@ -367,7 +367,7 @@ export async function getCurrentUser(): Promise<JiraUser> {
 
 export async function getMyIssues(
   options: {
-    startAt?: number;
+    nextPageToken?: string;
     maxResults?: number;
     fields?: string[];
     expand?: string[];
@@ -377,10 +377,10 @@ export async function getMyIssues(
 
   const searchParams: any = {
     jql,
-    startAt: options.startAt || 0,
     maxResults: options.maxResults || 50,
   };
 
+  if (options.nextPageToken !== undefined) searchParams.nextPageToken = options.nextPageToken;
   if (options.fields !== undefined) searchParams.fields = options.fields;
   if (options.expand !== undefined) searchParams.expand = options.expand;
 

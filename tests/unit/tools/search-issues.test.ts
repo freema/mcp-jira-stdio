@@ -34,7 +34,7 @@ describe('search-issues tool', () => {
       expect(searchIssuesTool.inputSchema.properties.jql).toBeDefined();
 
       // Check optional fields with defaults
-      expect(searchIssuesTool.inputSchema.properties.startAt).toBeDefined();
+      expect(searchIssuesTool.inputSchema.properties.nextPageToken).toBeDefined();
       expect(searchIssuesTool.inputSchema.properties.maxResults).toBeDefined();
       expect(searchIssuesTool.inputSchema.properties.fields).toBeDefined();
       expect(searchIssuesTool.inputSchema.properties.expand).toBeDefined();
@@ -45,7 +45,7 @@ describe('search-issues tool', () => {
     describe('Success Cases', () => {
       it('should search issues with basic JQL', async () => {
         const input = { jql: 'project = TEST' };
-        const validatedInput = { jql: 'project = TEST', startAt: 0, maxResults: 50 };
+        const validatedInput = { jql: 'project = TEST', maxResults: 50 };
         const mockResponse = { content: [{ type: 'text', text: 'search results' }] };
 
         mockedValidateInput.mockReturnValue(validatedInput);
@@ -57,7 +57,6 @@ describe('search-issues tool', () => {
         expect(mockedValidateInput).toHaveBeenCalledWith(expect.any(Object), input);
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: 'project = TEST',
-          startAt: 0,
           maxResults: 50,
         });
         expect(mockedFormatSearchResultsResponse).toHaveBeenCalledWith(mockJiraSearchResult);
@@ -67,7 +66,7 @@ describe('search-issues tool', () => {
       it('should search issues with pagination parameters', async () => {
         const input = {
           jql: 'project = TEST',
-          startAt: 25,
+          nextPageToken: 'token-abc-123',
           maxResults: 10,
         };
         const validatedInput = { ...input };
@@ -80,7 +79,7 @@ describe('search-issues tool', () => {
 
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: 'project = TEST',
-          startAt: 25,
+          nextPageToken: 'token-abc-123',
           maxResults: 10,
         });
       });
@@ -92,7 +91,6 @@ describe('search-issues tool', () => {
         };
         const validatedInput = {
           ...input,
-          startAt: 0,
           maxResults: 50,
         };
 
@@ -104,7 +102,6 @@ describe('search-issues tool', () => {
 
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: 'project = TEST',
-          startAt: 0,
           maxResults: 50,
           fields: ['summary', 'status', 'assignee'],
         });
@@ -117,7 +114,6 @@ describe('search-issues tool', () => {
         };
         const validatedInput = {
           ...input,
-          startAt: 0,
           maxResults: 50,
         };
 
@@ -129,7 +125,6 @@ describe('search-issues tool', () => {
 
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: 'project = TEST',
-          startAt: 0,
           maxResults: 50,
           expand: ['comments', 'changelog'],
         });
@@ -138,7 +133,7 @@ describe('search-issues tool', () => {
       it('should search issues with all parameters', async () => {
         const input = {
           jql: 'project = TEST AND assignee = currentUser()',
-          startAt: 10,
+          nextPageToken: 'token-xyz-789',
           maxResults: 25,
           fields: ['summary', 'status'],
           expand: ['comments'],
@@ -153,7 +148,7 @@ describe('search-issues tool', () => {
 
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: 'project = TEST AND assignee = currentUser()',
-          startAt: 10,
+          nextPageToken: 'token-xyz-789',
           maxResults: 25,
           fields: ['summary', 'status'],
           expand: ['comments'],
@@ -166,7 +161,6 @@ describe('search-issues tool', () => {
         const input = { jql: complexJql };
         const validatedInput = {
           jql: complexJql,
-          startAt: 0,
           maxResults: 50,
         };
 
@@ -178,7 +172,6 @@ describe('search-issues tool', () => {
 
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: complexJql,
-          startAt: 0,
           maxResults: 50,
         });
       });
@@ -186,7 +179,6 @@ describe('search-issues tool', () => {
       it('should handle undefined optional fields gracefully', async () => {
         const validatedInput = {
           jql: 'project = TEST',
-          startAt: 0,
           maxResults: 50,
           fields: undefined,
           expand: undefined,
@@ -200,7 +192,6 @@ describe('search-issues tool', () => {
 
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: 'project = TEST',
-          startAt: 0,
           maxResults: 50,
         });
       });
@@ -210,7 +201,7 @@ describe('search-issues tool', () => {
       it('should validate input using schema', async () => {
         const input = { jql: 'project = TEST' };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockResolvedValue(mockJiraSearchResult);
         mockedFormatSearchResultsResponse.mockReturnValue({ content: [] });
 
@@ -242,9 +233,9 @@ describe('search-issues tool', () => {
         expect(result).toEqual(mockErrorResponse);
       });
 
-      it('should handle validation errors for invalid startAt', async () => {
-        const input = { jql: 'project = TEST', startAt: -1 };
-        const validationError = new Error('Validation failed: startAt must be non-negative');
+      it('should handle validation errors for invalid nextPageToken', async () => {
+        const input = { jql: 'project = TEST', nextPageToken: 123 };
+        const validationError = new Error('Validation failed: nextPageToken must be string');
         const mockErrorResponse = { content: [{ type: 'text', text: 'Validation error' }] };
 
         mockedValidateInput.mockImplementation(() => {
@@ -295,11 +286,11 @@ describe('search-issues tool', () => {
       it('should handle validation errors for invalid field types', async () => {
         const input = {
           jql: 'project = TEST',
-          startAt: 'invalid',
+          nextPageToken: 123,
           fields: 'not-an-array',
         };
         const validationError = new Error(
-          'Validation failed: startAt must be number, fields must be array'
+          'Validation failed: nextPageToken must be string, fields must be array'
         );
         const mockErrorResponse = { content: [{ type: 'text', text: 'Validation error' }] };
 
@@ -326,7 +317,7 @@ describe('search-issues tool', () => {
         };
         const mockErrorResponse = { content: [{ type: 'text', text: 'API error' }] };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockRejectedValue(apiError);
         mockedHandleError.mockReturnValue(mockErrorResponse);
 
@@ -340,7 +331,7 @@ describe('search-issues tool', () => {
         const input = { jql: 'project = TEST' };
         const mockErrorResponse = { content: [{ type: 'text', text: 'Auth error' }] };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockRejectedValue(mockUnauthorizedError);
         mockedHandleError.mockReturnValue(mockErrorResponse);
 
@@ -360,7 +351,7 @@ describe('search-issues tool', () => {
         };
         const mockErrorResponse = { content: [{ type: 'text', text: 'Permission error' }] };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockRejectedValue(permissionError);
         mockedHandleError.mockReturnValue(mockErrorResponse);
 
@@ -384,7 +375,7 @@ describe('search-issues tool', () => {
         };
         const mockErrorResponse = { content: [{ type: 'text', text: 'JQL error' }] };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockRejectedValue(jqlError);
         mockedHandleError.mockReturnValue(mockErrorResponse);
 
@@ -400,7 +391,7 @@ describe('search-issues tool', () => {
         networkError.code = 'ECONNREFUSED';
         const mockErrorResponse = { content: [{ type: 'text', text: 'Network error' }] };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockRejectedValue(networkError);
         mockedHandleError.mockReturnValue(mockErrorResponse);
 
@@ -416,7 +407,7 @@ describe('search-issues tool', () => {
         timeoutError.code = 'ECONNABORTED';
         const mockErrorResponse = { content: [{ type: 'text', text: 'Timeout error' }] };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockRejectedValue(timeoutError);
         mockedHandleError.mockReturnValue(mockErrorResponse);
 
@@ -436,7 +427,7 @@ describe('search-issues tool', () => {
         };
         const mockErrorResponse = { content: [{ type: 'text', text: 'Rate limit error' }] };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockRejectedValue(rateLimitError);
         mockedHandleError.mockReturnValue(mockErrorResponse);
 
@@ -450,22 +441,22 @@ describe('search-issues tool', () => {
     describe('Edge Cases', () => {
       it('should handle very complex JQL with multiple conditions', async () => {
         const complexJql = `
-          project in (TEST, DEMO, PROD) 
-          AND status in ("To Do", "In Progress", "Code Review", "Testing", "Done") 
-          AND priority in (Blocker, Critical, High) 
-          AND assignee in membersOf("jira-developers") 
-          AND reporter in membersOf("product-owners") 
-          AND created >= -30d 
-          AND updated >= -7d 
-          AND labels in (urgent, critical, bug, feature) 
-          AND component in ("Frontend", "Backend", "Database", "API") 
-          AND fixVersion in ("v1.0", "v1.1", "v2.0") 
+          project in (TEST, DEMO, PROD)
+          AND status in ("To Do", "In Progress", "Code Review", "Testing", "Done")
+          AND priority in (Blocker, Critical, High)
+          AND assignee in membersOf("jira-developers")
+          AND reporter in membersOf("product-owners")
+          AND created >= -30d
+          AND updated >= -7d
+          AND labels in (urgent, critical, bug, feature)
+          AND component in ("Frontend", "Backend", "Database", "API")
+          AND fixVersion in ("v1.0", "v1.1", "v2.0")
           ORDER BY priority DESC, created ASC
         `;
 
         const input = { jql: complexJql };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockResolvedValue(mockJiraSearchResult);
         mockedFormatSearchResultsResponse.mockReturnValue({ content: [] });
 
@@ -473,7 +464,6 @@ describe('search-issues tool', () => {
 
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: complexJql,
-          startAt: 0,
           maxResults: 50,
         });
       });
@@ -483,7 +473,7 @@ describe('search-issues tool', () => {
           'summary ~ "test\'s \\"quoted\\" string" AND description ~ "Line 1\\nLine 2\\tTabbed"';
         const input = { jql: specialJql };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockResolvedValue(mockJiraSearchResult);
         mockedFormatSearchResultsResponse.mockReturnValue({ content: [] });
 
@@ -491,7 +481,6 @@ describe('search-issues tool', () => {
 
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: specialJql,
-          startAt: 0,
           maxResults: 50,
         });
       });
@@ -507,7 +496,7 @@ describe('search-issues tool', () => {
             .map((e, i) => `${e}${i}`),
         };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockResolvedValue(mockJiraSearchResult);
         mockedFormatSearchResultsResponse.mockReturnValue({ content: [] });
 
@@ -515,7 +504,6 @@ describe('search-issues tool', () => {
 
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: 'project = TEST',
-          startAt: 0,
           maxResults: 50,
           fields: input.fields,
           expand: input.expand,
@@ -525,7 +513,6 @@ describe('search-issues tool', () => {
       it('should handle boundary values for pagination', async () => {
         const input = {
           jql: 'project = TEST',
-          startAt: 0,
           maxResults: 1,
         };
 
@@ -538,10 +525,10 @@ describe('search-issues tool', () => {
         expect(mockedSearchIssues).toHaveBeenCalledWith(input);
       });
 
-      it('should handle maximum pagination values', async () => {
+      it('should handle maximum pagination values with nextPageToken', async () => {
         const input = {
           jql: 'project = TEST',
-          startAt: 999999,
+          nextPageToken: 'very-long-token-' + 'x'.repeat(200),
           maxResults: 100,
         };
 
@@ -572,7 +559,7 @@ describe('search-issues tool', () => {
         const input = { jql: 'project = NONEXISTENT' };
         const emptyResults = { ...mockJiraSearchResult, total: 0, issues: [] };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockResolvedValue(emptyResults);
         mockedFormatSearchResultsResponse.mockReturnValue({
           content: [{ type: 'text', text: 'No issues found' }],
@@ -586,16 +573,16 @@ describe('search-issues tool', () => {
 
       it('should handle JQL functions and operators', async () => {
         const functionalJql = `
-          assignee = currentUser() 
-          AND reporter in membersOf("jira-users") 
-          AND duedate >= startOfWeek() 
-          AND created >= startOfMonth(-1) 
+          assignee = currentUser()
+          AND reporter in membersOf("jira-users")
+          AND duedate >= startOfWeek()
+          AND created >= startOfMonth(-1)
           AND worklogDate >= now("-1w")
         `;
 
         const input = { jql: functionalJql };
 
-        mockedValidateInput.mockReturnValue({ ...input, startAt: 0, maxResults: 50 });
+        mockedValidateInput.mockReturnValue({ ...input, maxResults: 50 });
         mockedSearchIssues.mockResolvedValue(mockJiraSearchResult);
         mockedFormatSearchResultsResponse.mockReturnValue({ content: [] });
 
@@ -603,7 +590,6 @@ describe('search-issues tool', () => {
 
         expect(mockedSearchIssues).toHaveBeenCalledWith({
           jql: functionalJql,
-          startAt: 0,
           maxResults: 50,
         });
       });

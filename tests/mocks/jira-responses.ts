@@ -102,7 +102,9 @@ export const mockJiraSearchResult = {
   startAt: 0,
   maxResults: 50,
   total: 1,
+  expand: '',
   isLast: true,
+  nextPageToken: undefined,
   issues: [mockJiraIssue],
 };
 
