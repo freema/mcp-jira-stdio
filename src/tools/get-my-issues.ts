@@ -13,19 +13,18 @@ const log = createLogger('tool:get-my-issues');
 export const getMyIssuesTool: Tool = {
   name: TOOL_NAMES.GET_MY_ISSUES,
   description:
-    'Retrieves issues assigned to current user, sorted by most recently updated first. Supports pagination and field selection.',
+    'Retrieves issues assigned to current user, sorted by most recently updated first. Supports pagination and field selection. For pagination, use nextPageToken from previous response.',
   inputSchema: {
     type: 'object',
     properties: {
-      startAt: {
-        type: 'number',
-        description: 'Index of first result to return (for pagination)',
-        minimum: 0,
-        default: 0,
+      nextPageToken: {
+        type: 'string',
+        description:
+          'Token for pagination. Omit for first page, use value from previous response for next page.',
       },
       maxResults: {
         type: 'number',
-        description: 'Maximum number of results to return',
+        description: 'Maximum number of results to return per page',
         minimum: 1,
         maximum: 100,
         default: 50,
@@ -54,7 +53,7 @@ export async function handleGetMyIssues(input: unknown): Promise<McpToolResponse
 
     const getParams: any = {};
 
-    if (validated.startAt !== undefined) getParams.startAt = validated.startAt;
+    if (validated.nextPageToken !== undefined) getParams.nextPageToken = validated.nextPageToken;
     if (validated.maxResults !== undefined) getParams.maxResults = validated.maxResults;
     if (validated.fields !== undefined) getParams.fields = validated.fields;
     if (validated.expand !== undefined) getParams.expand = validated.expand;

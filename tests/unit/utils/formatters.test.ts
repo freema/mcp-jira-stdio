@@ -198,6 +198,21 @@ describe('formatters', () => {
       expect(result.content[0].text).toContain('*Showing 1-25 of 100 results*');
     });
 
+    it('should show last page message when isLast is true', () => {
+      const lastPageResult = {
+        ...mockJiraSearchResult,
+        total: 100,
+        maxResults: 25,
+        startAt: 75,
+        isLast: true,
+        nextPageToken: undefined,
+      };
+      const result = formatSearchResultsResponse(lastPageResult);
+
+      expect(result.content[0].text).toContain('*This is the last page of results*');
+      expect(result.content[0].text).not.toContain('*Next page token:');
+    });
+
     it('should handle issues without assignee', () => {
       const resultWithUnassigned = {
         ...mockJiraSearchResult,

@@ -44,7 +44,7 @@ tasks:
     cmds:
       - npm run lint
 
-  lint:fix:
+  'lint:fix':
     desc: Run ESLint with auto-fix
     cmds:
       - npm run lint:fix
@@ -54,7 +54,7 @@ tasks:
     cmds:
       - npm run format
 
-  fmt:check:
+  'fmt:check':
     desc: Check code formatting
     cmds:
       - npm run format:check
@@ -78,15 +78,21 @@ tasks:
     cmds:
       - npm run inspector
 
-  inspector:dev:
+  'inspector:dev':
     desc: Run MCP inspector in development mode
     cmds:
       - npm run inspector:dev
 
-  setup:mcp:
+  'setup:mcp':
     desc: Setup MCP configuration for Claude Desktop
     cmds:
       - node scripts/setup-mcp-config.js
+
+  version:
+    desc: 'Bump version (usage: task version VERSION=1.4.0)'
+    cmds:
+      - 'npm version {{.VERSION}} --no-git-tag-version'
+      - npm install --package-lock-only
 
   release:
     desc: Prepare for release (clean, install, build, check)
@@ -106,32 +112,32 @@ tasks:
     cmds:
       - npm test
 
-  test:run:
+  'test:run':
     desc: Run tests once (no watch mode)
     cmds:
       - npm run test:run
 
-  test:coverage:
+  'test:coverage':
     desc: Run tests with coverage report
     cmds:
       - npm run test:coverage
 
-  test:watch:
+  'test:watch':
     desc: Run tests in watch mode
     cmds:
       - npm run test:watch
 
-  test:ui:
+  'test:ui':
     desc: Run tests with UI
     cmds:
       - npm run test:ui
 
-  test:fast:
+  'test:fast':
     desc: Fast run (no coverage, single thread)
     cmds:
       - npx vitest run --reporter=basic
 
-  test:changed:
+  'test:changed':
     desc: Only run tests related to changed files
     cmds:
       - npx vitest --changed
@@ -142,5 +148,5 @@ tasks:
       - task: clean
       - task: install
       - task: check
-      - task: test:coverage
+      - task: 'test:coverage'
       - task: build

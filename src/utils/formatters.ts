@@ -129,9 +129,19 @@ export function formatSearchResultsResponse(result: JiraSearchResult): McpToolRe
   const rangeStart = result.startAt + 1;
   const rangeEnd = Math.min(result.startAt + result.maxResults, result.total);
   const showRangeInline = result.total > result.maxResults || result.startAt > 0;
-  const paginationInfo = showRangeInline
-    ? `\n\n*Showing ${rangeStart}-${rangeEnd} of ${result.total} results*`
-    : '';
+
+  // Build pagination info
+  let paginationInfo = '';
+  if (showRangeInline) {
+    paginationInfo = `\n\n*Showing ${rangeStart}-${rangeEnd} of ${result.total} results*`;
+  }
+
+  // Add nextPageToken info if present and not last page
+  if (result.nextPageToken && !result.isLast) {
+    paginationInfo += `\n*Next page token: \`${result.nextPageToken}\`*`;
+  } else if (result.isLast) {
+    paginationInfo += '\n*This is the last page of results*';
+  }
 
   return {
     content: [

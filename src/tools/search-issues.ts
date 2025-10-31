@@ -13,7 +13,7 @@ const log = createLogger('tool:search-issues');
 export const searchIssuesTool: Tool = {
   name: TOOL_NAMES.SEARCH_ISSUES,
   description:
-    'Search for Jira issues using JQL. Supports complex queries with pagination and field selection. Examples: "project = PROJECT AND status = Open", "assignee = currentUser()".',
+    'Search for Jira issues using JQL. Supports complex queries with pagination and field selection. Examples: "project = PROJECT AND status = Open", "assignee = currentUser()". For pagination, use nextPageToken from previous response.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -21,15 +21,14 @@ export const searchIssuesTool: Tool = {
         type: 'string',
         description: 'JQL query string (e.g., "project = PROJECT AND status = Open")',
       },
-      startAt: {
-        type: 'number',
-        description: 'Index of first result to return (for pagination)',
-        minimum: 0,
-        default: 0,
+      nextPageToken: {
+        type: 'string',
+        description:
+          'Token for pagination. Omit for first page, use value from previous response for next page.',
       },
       maxResults: {
         type: 'number',
-        description: 'Maximum number of results to return',
+        description: 'Maximum number of results to return per page',
         minimum: 1,
         maximum: 100,
         default: 50,
@@ -60,7 +59,7 @@ export async function handleSearchIssues(input: unknown): Promise<McpToolRespons
       jql: validated.jql,
     };
 
-    if (validated.startAt !== undefined) searchParams.startAt = validated.startAt;
+    if (validated.nextPageToken !== undefined) searchParams.nextPageToken = validated.nextPageToken;
     if (validated.maxResults !== undefined) searchParams.maxResults = validated.maxResults;
     if (validated.fields !== undefined) searchParams.fields = validated.fields;
     if (validated.expand !== undefined) searchParams.expand = validated.expand;

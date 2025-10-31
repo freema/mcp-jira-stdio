@@ -26,13 +26,18 @@ export type GetIssueInput = z.infer<typeof GetIssueInputSchema>;
 // Search issues
 export const SearchIssuesInputSchema = z.object({
   jql: z.string().min(1).describe('JQL query string'),
-  startAt: z.number().min(0).default(0).describe('Index of first result to return'),
+  nextPageToken: z
+    .string()
+    .optional()
+    .describe(
+      'Token for pagination. Omit for first page, use value from previous response for next page.'
+    ),
   maxResults: z
     .number()
     .min(1)
     .max(100)
     .default(50)
-    .describe('Maximum number of results to return'),
+    .describe('Maximum number of results to return per page'),
   fields: z.array(z.string()).optional().describe('Specific fields to retrieve'),
   expand: z.array(z.string()).optional().describe('Additional details to include'),
 });
@@ -91,13 +96,18 @@ export type UpdateIssueInput = z.infer<typeof UpdateIssueInputSchema>;
 
 // Get my issues
 export const GetMyIssuesInputSchema = z.object({
-  startAt: z.number().min(0).default(0).describe('Index of first result to return'),
+  nextPageToken: z
+    .string()
+    .optional()
+    .describe(
+      'Token for pagination. Omit for first page, use value from previous response for next page.'
+    ),
   maxResults: z
     .number()
     .min(1)
     .max(100)
     .default(50)
-    .describe('Maximum number of results to return'),
+    .describe('Maximum number of results to return per page'),
   fields: z.array(z.string()).optional().describe('Specific fields to retrieve'),
   expand: z.array(z.string()).optional().describe('Additional details to include'),
 });

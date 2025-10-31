@@ -1,7 +1,7 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { McpToolResponse } from '../types/common.js';
 import { GetIssueInputSchema } from '../types/tools.js';
-import { validateInput } from '../utils/validators.js';
+import { validateInput, extractIssueKey } from '../utils/validators.js';
 import { getIssue } from '../utils/api-helpers.js';
 import { formatIssueResponse } from '../utils/formatters.js';
 import { handleError } from '../utils/error-handler.js';
@@ -44,7 +44,8 @@ export async function handleGetIssue(input: unknown): Promise<McpToolResponse> {
     const validated = validateInput(GetIssueInputSchema, input);
 
     // Accept either an issue key or a full Jira URL and extract the key
-    const key = (validated.issueKey || '').trim();
+    const trimmedInput = (validated.issueKey || '').trim();
+    const key = extractIssueKey(trimmedInput) || trimmedInput;
 
     log.info(`Getting issue ${key}...`);
 

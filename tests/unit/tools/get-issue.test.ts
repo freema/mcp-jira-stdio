@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { handleGetIssue, getIssueTool } from '../../../src/tools/get-issue.js';
-import { validateInput } from '../../../src/utils/validators.js';
+import { validateInput, extractIssueKey } from '../../../src/utils/validators.js';
 import { getIssue } from '../../../src/utils/api-helpers.js';
 import { formatIssueResponse } from '../../../src/utils/formatters.js';
 import { handleError } from '../../../src/utils/error-handler.js';
@@ -14,6 +14,7 @@ vi.mock('../../../src/utils/formatters.js');
 vi.mock('../../../src/utils/error-handler.js');
 
 const mockedValidateInput = vi.mocked(validateInput);
+const mockedExtractIssueKey = vi.mocked(extractIssueKey);
 const mockedGetIssue = vi.mocked(getIssue);
 const mockedFormatIssueResponse = vi.mocked(formatIssueResponse);
 const mockedHandleError = vi.mocked(handleError);
@@ -21,6 +22,12 @@ const mockedHandleError = vi.mocked(handleError);
 describe('get-issue tool', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default behavior: extractIssueKey returns the input as-is (for plain issue keys)
+    mockedExtractIssueKey.mockImplementation((input) => {
+      // Simulate real behavior: extract from URL or return null
+      const match = input.match(/[A-Z][A-Z0-9]*-\d+/);
+      return match ? match[0] : null;
+    });
   });
 
   describe('getIssueTool configuration', () => {
@@ -51,6 +58,52 @@ describe('get-issue tool', () => {
 
         expect(mockedValidateInput).toHaveBeenCalledWith(expect.any(Object), input);
         expect(mockedGetIssue).toHaveBeenCalledWith('TEST-123', {});
+        expect(mockedFormatIssueResponse).toHaveBeenCalledWith(mockJiraIssue);
+        expect(result).toEqual(mockResponse);
+      });
+
+      it('should extract issue key from Jira URL', async () => {
+        const input = { issueKey: 'https://example.atlassian.net/browse/PROJ-456' };
+        const validatedInput = { issueKey: 'https://example.atlassian.net/browse/PROJ-456' };
+        const mockResponse = { content: [{ type: 'text', text: 'formatted issue' }] };
+
+        mockedValidateInput.mockReturnValue(validatedInput);
+        mockedGetIssue.mockResolvedValue(mockJiraIssue);
+        mockedFormatIssueResponse.mockReturnValue(mockResponse);
+
+        const result = await handleGetIssue(input);
+
+        expect(mockedValidateInput).toHaveBeenCalledWith(expect.any(Object), input);
+        expect(mockedExtractIssueKey).toHaveBeenCalledWith(
+          'https://example.atlassian.net/browse/PROJ-456'
+        );
+        expect(mockedGetIssue).toHaveBeenCalledWith('PROJ-456', {});
+        expect(mockedFormatIssueResponse).toHaveBeenCalledWith(mockJiraIssue);
+        expect(result).toEqual(mockResponse);
+      });
+
+      it('should extract issue key from Jira URL with query parameters', async () => {
+        const input = {
+          issueKey:
+            'https://example.atlassian.net/jira/software/projects/ABC/boards/1?selectedIssue=ABC-789',
+        };
+        const validatedInput = {
+          issueKey:
+            'https://example.atlassian.net/jira/software/projects/ABC/boards/1?selectedIssue=ABC-789',
+        };
+        const mockResponse = { content: [{ type: 'text', text: 'formatted issue' }] };
+
+        mockedValidateInput.mockReturnValue(validatedInput);
+        mockedGetIssue.mockResolvedValue(mockJiraIssue);
+        mockedFormatIssueResponse.mockReturnValue(mockResponse);
+
+        const result = await handleGetIssue(input);
+
+        expect(mockedValidateInput).toHaveBeenCalledWith(expect.any(Object), input);
+        expect(mockedExtractIssueKey).toHaveBeenCalledWith(
+          'https://example.atlassian.net/jira/software/projects/ABC/boards/1?selectedIssue=ABC-789'
+        );
+        expect(mockedGetIssue).toHaveBeenCalledWith('ABC-789', {});
         expect(mockedFormatIssueResponse).toHaveBeenCalledWith(mockJiraIssue);
         expect(result).toEqual(mockResponse);
       });
@@ -267,9 +320,9 @@ describe('get-issue tool', () => {
         expect(result).toEqual(mockErrorResponse);
       });
 
-      it('should handle issue key with special characters', async () => {
-        const input = { issueKey: 'TEST-123-SPECIAL' };
-        const validatedInput = { issueKey: 'TEST-123-SPECIAL' };
+      it('should handle issue key with whitespace', async () => {
+        const input = { issueKey: '  TEST-456  ' };
+        const validatedInput = { issueKey: '  TEST-456  ' };
 
         mockedValidateInput.mockReturnValue(validatedInput);
         mockedGetIssue.mockResolvedValue(mockJiraIssue);
@@ -277,7 +330,7 @@ describe('get-issue tool', () => {
 
         await handleGetIssue(input);
 
-        expect(mockedGetIssue).toHaveBeenCalledWith('TEST-123-SPECIAL', {});
+        expect(mockedGetIssue).toHaveBeenCalledWith('TEST-456', {});
       });
 
       it('should handle very long expand and fields arrays', async () => {
