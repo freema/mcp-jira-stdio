@@ -29,7 +29,9 @@ export const SearchIssuesInputSchema = z.object({
   nextPageToken: z
     .string()
     .optional()
-    .describe('Token for pagination. Omit for first page, use value from previous response for next page.'),
+    .describe(
+      'Token for pagination. Omit for first page, use value from previous response for next page.'
+    ),
   maxResults: z
     .number()
     .min(1)
@@ -97,7 +99,9 @@ export const GetMyIssuesInputSchema = z.object({
   nextPageToken: z
     .string()
     .optional()
-    .describe('Token for pagination. Omit for first page, use value from previous response for next page.'),
+    .describe(
+      'Token for pagination. Omit for first page, use value from previous response for next page.'
+    ),
   maxResults: z
     .number()
     .min(1)

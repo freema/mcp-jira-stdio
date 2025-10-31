@@ -23,7 +23,8 @@ export const searchIssuesTool: Tool = {
       },
       nextPageToken: {
         type: 'string',
-        description: 'Token for pagination. Omit for first page, use value from previous response for next page.',
+        description:
+          'Token for pagination. Omit for first page, use value from previous response for next page.',
       },
       maxResults: {
         type: 'number',

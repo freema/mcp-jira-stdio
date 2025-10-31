@@ -13,7 +13,7 @@ import {
   JiraCreateIssueResponse,
 } from '../types/jira.js';
 import { PaginatedResponse } from '../types/common.js';
-import { validatePagination, sanitizeJQL } from './validators.js';
+import { sanitizeJQL } from './validators.js';
 
 // Convert a plain string into a nicely structured Atlassian Document Format (ADF) document.
 // Heuristics:
