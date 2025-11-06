@@ -157,10 +157,12 @@ Restart Claude Desktop after adding the configuration.
 
 ### Metadata & Users
 
+- `jira_get_create_meta`: Get create metadata for a project showing all available fields (including custom fields) with their allowed values. Essential for discovering required fields before creating issues.
 - `jira_get_issue_types`: List issue types (optionally per project).
 - `jira_get_users`: Search for users (by query, username, or accountId).
 - `jira_get_priorities`: List available priorities.
 - `jira_get_statuses`: List available statuses (global or project-specific).
+- `jira_get_custom_fields`: List all custom fields in Jira with their types and schemas.
 
 ### My Work
 
