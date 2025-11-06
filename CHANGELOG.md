@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] - 2025-01-06
+
+### Fixed
+
+- Fixed `jira_get_create_meta` to properly return custom field metadata and allowed values
+  - Changed to use classic `/issue/createmeta` endpoint with `expand` parameter for better reliability
+  - Now correctly returns `allowedValues` for select/radio/checkbox custom fields
+  - Fixes "Resource not found or insufficient permissions" errors on some Jira instances
+  - Enables automated issue creation in projects with required custom fields
+  - Simplified implementation from per-issue-type endpoint to classic endpoint
+
+### Changed
+
+- Removed unused imports and variables to pass linter checks
+- Updated test suite to match new `getCreateMeta` implementation
+- All 222 tests passing
+
+### Added
+
+- Documentation for `jira_get_create_meta` tool in README.md
+
 ## [1.4.0] - 2025-01-31
 
 ### Fixed
