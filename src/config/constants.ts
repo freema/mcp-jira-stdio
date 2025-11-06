@@ -35,4 +35,6 @@ export const TOOL_NAMES = {
   ADD_COMMENT: 'jira_add_comment',
   GET_PROJECT_INFO: 'jira_get_project_info',
   CREATE_SUBTASK: 'jira_create_subtask',
+  GET_CREATE_META: 'jira_get_create_meta',
+  GET_CUSTOM_FIELDS: 'jira_get_custom_fields',
 } as const;

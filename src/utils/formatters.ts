@@ -10,6 +10,8 @@ import {
   JiraStatus,
   JiraComment,
   JiraProjectDetails,
+  JiraCreateMetaResponse,
+  JiraField,
 } from '../types/jira.js';
 
 export function formatProjectsResponse(projects: JiraProject[]): McpToolResponse {
@@ -121,8 +123,11 @@ export function formatSearchResultsResponse(result: JiraSearchResult): McpToolRe
 
   const issuesList = result.issues
     .map((issue) => {
-      const assignee = issue.fields.assignee?.displayName || 'Unassigned';
-      return `• **${issue.key}** - ${issue.fields.summary}\n  Status: ${issue.fields.status.name} | Assignee: ${assignee} | Priority: ${issue.fields.priority?.name || 'None'}`;
+      const assignee = issue.fields?.assignee?.displayName || 'Unassigned';
+      const summary = issue.fields?.summary || 'No summary';
+      const status = issue.fields?.status?.name || 'Unknown';
+      const priority = issue.fields?.priority?.name || 'None';
+      return `• **${issue.key}** - ${summary}\n  Status: ${status} | Assignee: ${assignee} | Priority: ${priority}`;
     })
     .join('\n\n');
 
@@ -155,27 +160,38 @@ export function formatSearchResultsResponse(result: JiraSearchResult): McpToolRe
 
 export function formatErrorResponse(error: any): McpToolResponse {
   let errorMessage = 'An unexpected error occurred.';
+  let hasCustomFieldError = false;
 
   if (typeof error === 'string') {
     errorMessage = error;
+    hasCustomFieldError = error.includes('customfield_');
   } else if (error instanceof Error) {
     errorMessage = error.message;
+    hasCustomFieldError = error.message.includes('customfield_');
   } else if (error?.response?.data) {
     const jiraError = error.response.data;
     if (jiraError.errorMessages && jiraError.errorMessages.length > 0) {
       errorMessage = jiraError.errorMessages.join(', ');
     } else if (jiraError.errors) {
-      errorMessage = Object.entries(jiraError.errors)
-        .map(([field, message]) => `${field}: ${message}`)
-        .join(', ');
+      const errors = Object.entries(jiraError.errors);
+      errorMessage = errors.map(([field, message]) => `${field}: ${message}`).join(', ');
+
+      // Check if any error is related to custom fields
+      hasCustomFieldError = errors.some(([field]) => field.startsWith('customfield_'));
     }
+  }
+
+  // Add helpful hint for custom field errors
+  let hint = '';
+  if (hasCustomFieldError) {
+    hint = `\n\n💡 **Hint:** This error involves custom fields. Use 'jira_get_create_meta' tool to discover required fields and their allowed values before creating an issue.`;
   }
 
   return {
     content: [
       {
         type: 'text',
-        text: `❌ Error: ${errorMessage}`,
+        text: `❌ Error: ${errorMessage}${hint}`,
       },
     ],
   };
@@ -366,6 +382,115 @@ Last Updated: ${new Date(project.insight.lastIssueUpdateTime).toISOString()}`
 **Versions:** ${versionsText}
 **Issue Types:** ${issueTypesText}
 **Roles:** ${rolesText}${insightText}`,
+      },
+    ],
+  };
+}
+
+export function formatCreateMetaResponse(meta: JiraCreateMetaResponse): McpToolResponse {
+  if (!meta.projects || meta.projects.length === 0) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: 'No create metadata found for the specified project.',
+        },
+      ],
+    };
+  }
+
+  const project = meta.projects[0];
+  if (!project) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: 'No create metadata found for the specified project.',
+        },
+      ],
+    };
+  }
+
+  const issueTypesList = project.issuetypes
+    .map((issueType) => {
+      const requiredFields: string[] = [];
+      const optionalFields: string[] = [];
+
+      Object.entries(issueType.fields).forEach(([fieldKey, field]) => {
+        const allowedValuesText = field.allowedValues
+          ? `\n    Allowed values: ${field.allowedValues.map((v) => v.name || v.value || v.id).join(', ')}`
+          : '';
+        const defaultValueText = field.hasDefaultValue
+          ? `\n    Default: ${JSON.stringify(field.defaultValue)}`
+          : '';
+
+        const fieldInfo = `  • **${field.name}** (${fieldKey})\n    Type: ${field.schema.type}${allowedValuesText}${defaultValueText}`;
+
+        if (field.required) {
+          requiredFields.push(fieldInfo);
+        } else {
+          optionalFields.push(fieldInfo);
+        }
+      });
+
+      const requiredSection =
+        requiredFields.length > 0
+          ? `**Required Fields:**\n${requiredFields.join('\n\n')}`
+          : 'No required fields';
+      const optionalSection =
+        optionalFields.length > 0 ? `\n\n**Optional Fields:**\n${optionalFields.join('\n\n')}` : '';
+
+      return `### ${issueType.name} (${issueType.subtask ? 'Subtask' : 'Issue'})\n${issueType.description}\n\n${requiredSection}${optionalSection}`;
+    })
+    .join('\n\n---\n\n');
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: `**Create Metadata for Project: ${project.name} (${project.key})**\n\n${issueTypesList}`,
+      },
+    ],
+  };
+}
+
+export function formatCustomFieldsResponse(
+  fields: JiraField[],
+  projectKey?: string
+): McpToolResponse {
+  const customFields = fields.filter((field) => field.custom);
+
+  if (customFields.length === 0) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: projectKey
+            ? `No custom fields found for project ${projectKey}.`
+            : 'No custom fields found.',
+        },
+      ],
+    };
+  }
+
+  const fieldsList = customFields
+    .map((field) => {
+      const schemaInfo = field.schema.custom
+        ? `Custom Type: ${field.schema.custom}`
+        : `Type: ${field.schema.type}`;
+      return `• **${field.name}** (${field.key})\n  ${schemaInfo}\n  ID: ${field.id}`;
+    })
+    .join('\n\n');
+
+  const header = projectKey
+    ? `Found ${customFields.length} custom field(s) for project ${projectKey}:`
+    : `Found ${customFields.length} custom field(s):`;
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: `${header}\n\n${fieldsList}`,
       },
     ],
   };
