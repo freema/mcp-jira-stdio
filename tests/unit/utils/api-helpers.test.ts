@@ -623,7 +623,18 @@ describe('api-helpers', () => {
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'POST',
         url: '/issue/TEST-123/comment',
-        data: { body: 'This is a comment' },
+        data: {
+          body: {
+            type: 'doc',
+            version: 1,
+            content: [
+              {
+                type: 'paragraph',
+                content: [{ type: 'text', text: 'This is a comment' }],
+              },
+            ],
+          },
+        },
       });
       expect(result).toEqual(mockJiraComment);
     });
@@ -638,7 +649,16 @@ describe('api-helpers', () => {
         method: 'POST',
         url: '/issue/TEST-123/comment',
         data: {
-          body: 'Private comment',
+          body: {
+            type: 'doc',
+            version: 1,
+            content: [
+              {
+                type: 'paragraph',
+                content: [{ type: 'text', text: 'Private comment' }],
+              },
+            ],
+          },
           visibility: { type: 'group', value: 'jira-developers' },
         },
       });
