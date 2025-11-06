@@ -4,22 +4,22 @@ codecov:
 coverage:
   precision: 2
   round: down
-  range: "50...90"
+  range: '50...90'
 
   status:
     project:
       default:
-        target: 50%  # Snížený threshold z 68.72% na 50%
-        threshold: 5%  # Tolerujeme pokles až o 5%
+        target: 50% # Snížený threshold z 68.72% na 50%
+        threshold: 5% # Tolerujeme pokles až o 5%
         if_ci_failed: error
 
     patch:
       default:
-        target: 40%  # Pro nový kód stačí 40%
-        threshold: 10%  # Větší tolerance pro nový kód
+        target: 40% # Pro nový kód stačí 40%
+        threshold: 10% # Větší tolerance pro nový kód
         if_ci_failed: error
 
 comment:
-  layout: "reach,diff,flags,tree"
+  layout: 'reach,diff,flags,tree'
   behavior: default
   require_changes: false
