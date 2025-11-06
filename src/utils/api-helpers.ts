@@ -616,8 +616,8 @@ export async function getCreateMeta(
     // Filter issue types if specific ones were requested
     let issueTypesToFetch = allIssueTypes;
     if (options.issueTypeNames && options.issueTypeNames.length > 0) {
-      issueTypesToFetch = allIssueTypes.filter(
-        (type) => options.issueTypeNames?.includes(type.name)
+      issueTypesToFetch = allIssueTypes.filter((type) =>
+        options.issueTypeNames?.includes(type.name)
       );
     }
 
