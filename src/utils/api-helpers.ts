@@ -13,14 +13,9 @@ import {
   JiraCreateIssueResponse,
   JiraCreateMetaResponse,
   JiraField,
-  JiraCreateMetaIssueType,
-  JiraCreateMetaField,
 } from '../types/jira.js';
 import { PaginatedResponse } from '../types/common.js';
 import { sanitizeJQL } from './validators.js';
-import { createLogger } from './logger.js';
-
-const log = createLogger('api-helpers');
 
 // Convert a plain string into a nicely structured Atlassian Document Format (ADF) document.
 // Heuristics:
