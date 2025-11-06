@@ -162,24 +162,39 @@ export async function getVisibleProjects(
     recent?: number;
   } = {}
 ): Promise<JiraProject[]> {
-  const params: Record<string, any> = {};
+  const allProjects: JiraProject[] = [];
+  let startAt = 0;
+  let isLast = false;
 
-  if (options.expand) {
-    params.expand = options.expand.join(',');
+  // Fetch all pages of projects
+  while (!isLast) {
+    const params: Record<string, any> = {
+      startAt,
+      maxResults: 50, // Jira default, fetch 50 projects per page
+    };
+
+    if (options.expand) {
+      params.expand = options.expand.join(',');
+    }
+
+    if (options.recent) {
+      params.recent = options.recent;
+    }
+
+    const config: AxiosRequestConfig = {
+      method: 'GET',
+      url: '/project/search',
+      params,
+    };
+
+    const response = await makeJiraRequest<PaginatedResponse<JiraProject>>(config);
+
+    allProjects.push(...response.values);
+    isLast = response.isLast;
+    startAt += response.maxResults;
   }
 
-  if (options.recent) {
-    params.recent = options.recent;
-  }
-
-  const config: AxiosRequestConfig = {
-    method: 'GET',
-    url: '/project/search',
-    params,
-  };
-
-  const response = await makeJiraRequest<PaginatedResponse<JiraProject>>(config);
-  return response.values;
+  return allProjects;
 }
 
 export async function getIssue(
