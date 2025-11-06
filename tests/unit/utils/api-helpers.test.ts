@@ -836,90 +836,49 @@ describe('api-helpers', () => {
   });
 
   describe('getCreateMeta', () => {
-    it('should use new endpoint for single project', async () => {
-      // Mock the sequence of calls for the new endpoint path
-      mockedMakeJiraRequest
-        .mockResolvedValueOnce([mockJiraIssueType]) // getIssueTypes
-        .mockResolvedValueOnce(mockJiraCreateMetaIssueTypeFields) // new endpoint for issue type
-        .mockResolvedValueOnce(mockJiraProjectDetails); // getProjectDetails
+    it('should fetch metadata for single project', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(mockJiraCreateMetaResponse);
 
       const result = await getCreateMeta({
         projectKeys: ['TEST'],
       });
 
-      // Verify it called the new endpoints
-      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(1, {
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'GET',
-        url: '/project/TEST/issuetype',
+        url: '/issue/createmeta',
+        params: {
+          projectKeys: 'TEST',
+        },
       });
-      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(2, {
-        method: 'GET',
-        url: '/issue/createmeta/TEST/issuetypes/test-issue-type-id',
-      });
-      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(3, {
-        method: 'GET',
-        url: '/project/TEST',
-        params: {},
-      });
-
-      // Verify the response structure
-      expect(result.projects).toHaveLength(1);
-      expect(result.projects[0]?.key).toBe('TEST');
-      expect(result.projects[0]?.issuetypes).toHaveLength(1);
-      expect(result.projects[0]?.issuetypes[0]?.fields).toBeDefined();
+      expect(result).toEqual(mockJiraCreateMetaResponse);
     });
 
-    it('should filter issue types when issueTypeNames provided', async () => {
-      const bugType = { ...mockJiraIssueType, id: 'bug-id', name: 'Bug' };
-      const taskType = { ...mockJiraIssueType, id: 'task-id', name: 'Task' };
-
-      mockedMakeJiraRequest
-        .mockResolvedValueOnce([bugType, taskType]) // getIssueTypes
-        .mockResolvedValueOnce(mockJiraCreateMetaIssueTypeFields) // metadata for Bug
-        .mockResolvedValueOnce(mockJiraProjectDetails); // getProjectDetails
+    it('should fetch metadata with issue type filter', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(mockJiraCreateMetaResponse);
 
       const result = await getCreateMeta({
         projectKeys: ['TEST'],
         issueTypeNames: ['Bug'],
       });
 
-      // Should only fetch metadata for Bug, not Task
-      expect(mockedMakeJiraRequest).toHaveBeenCalledTimes(3);
-      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(2, {
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'GET',
-        url: '/issue/createmeta/TEST/issuetypes/bug-id',
+        url: '/issue/createmeta',
+        params: {
+          projectKeys: 'TEST',
+          issuetypeNames: 'Bug',
+        },
       });
-      expect(result.projects[0]?.issuetypes).toHaveLength(1);
-      expect(result.projects[0]?.issuetypes[0]?.name).toBe('Bug');
+      expect(result).toEqual(mockJiraCreateMetaResponse);
     });
 
-    it('should handle errors gracefully for individual issue types', async () => {
-      const bugType = { ...mockJiraIssueType, id: 'bug-id', name: 'Bug' };
-      const taskType = { ...mockJiraIssueType, id: 'task-id', name: 'Task' };
-
-      mockedMakeJiraRequest
-        .mockResolvedValueOnce([bugType, taskType]) // getIssueTypes
-        .mockRejectedValueOnce(new Error('Failed to fetch Bug metadata')) // Bug fails
-        .mockResolvedValueOnce(mockJiraCreateMetaIssueTypeFields) // Task succeeds
-        .mockResolvedValueOnce(mockJiraProjectDetails); // getProjectDetails
-
-      const result = await getCreateMeta({
-        projectKeys: ['TEST'],
-      });
-
-      // Should continue despite error and return Task metadata
-      expect(result.projects[0]?.issuetypes).toHaveLength(1);
-      expect(result.projects[0]?.issuetypes[0]?.name).toBe('Task');
-    });
-
-    it('should use fallback endpoint for multiple projects', async () => {
+    it('should fetch metadata for multiple projects', async () => {
       mockedMakeJiraRequest.mockResolvedValueOnce(mockJiraCreateMetaResponse);
 
       const result = await getCreateMeta({
         projectKeys: ['TEST', 'PROJ2'],
       });
 
-      // Should use old endpoint
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'GET',
         url: '/issue/createmeta',
@@ -930,7 +889,7 @@ describe('api-helpers', () => {
       expect(result).toEqual(mockJiraCreateMetaResponse);
     });
 
-    it('should use fallback endpoint when no project keys provided', async () => {
+    it('should fetch metadata when no project keys provided', async () => {
       mockedMakeJiraRequest.mockResolvedValueOnce(mockJiraCreateMetaResponse);
 
       const result = await getCreateMeta();
@@ -943,11 +902,11 @@ describe('api-helpers', () => {
       expect(result).toEqual(mockJiraCreateMetaResponse);
     });
 
-    it('should pass expand parameter to fallback endpoint', async () => {
+    it('should pass expand parameter to get full field metadata', async () => {
       mockedMakeJiraRequest.mockResolvedValueOnce(mockJiraCreateMetaResponse);
 
       await getCreateMeta({
-        projectKeys: ['TEST', 'PROJ2'],
+        projectKeys: ['TEST'],
         expand: 'projects.issuetypes.fields',
       });
 
@@ -955,39 +914,28 @@ describe('api-helpers', () => {
         method: 'GET',
         url: '/issue/createmeta',
         params: {
-          projectKeys: 'TEST,PROJ2',
+          projectKeys: 'TEST',
           expand: 'projects.issuetypes.fields',
         },
       });
     });
 
-    it('should map field keys correctly from new endpoint response', async () => {
-      const metadataWithFieldId = {
-        values: [
-          {
-            fieldId: 'customfield_10071',
-            name: 'Controlling Category',
-            required: true,
-            schema: { type: 'option' },
-            allowedValues: [{ id: '1', name: 'Option 1' }],
-          },
-        ],
-      };
+    it('should handle multiple issue types', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(mockJiraCreateMetaResponse);
 
-      mockedMakeJiraRequest
-        .mockResolvedValueOnce([mockJiraIssueType]) // getIssueTypes
-        .mockResolvedValueOnce(metadataWithFieldId) // metadata with fieldId
-        .mockResolvedValueOnce(mockJiraProjectDetails); // getProjectDetails
-
-      const result = await getCreateMeta({
+      await getCreateMeta({
         projectKeys: ['TEST'],
+        issueTypeNames: ['Bug', 'Task'],
       });
 
-      const fields = result.projects[0]?.issuetypes[0]?.fields;
-      expect(fields).toBeDefined();
-      expect(fields?.['customfield_10071']).toBeDefined();
-      expect(fields?.['customfield_10071']?.name).toBe('Controlling Category');
-      expect(fields?.['customfield_10071']?.allowedValues).toHaveLength(1);
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'GET',
+        url: '/issue/createmeta',
+        params: {
+          projectKeys: 'TEST',
+          issuetypeNames: 'Bug,Task',
+        },
+      });
     });
   });
 });
