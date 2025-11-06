@@ -13,9 +13,14 @@ import {
   JiraCreateIssueResponse,
   JiraCreateMetaResponse,
   JiraField,
+  JiraCreateMetaIssueType,
+  JiraCreateMetaField,
 } from '../types/jira.js';
 import { PaginatedResponse } from '../types/common.js';
 import { sanitizeJQL } from './validators.js';
+import { createLogger } from './logger.js';
+
+const log = createLogger('api-helpers');
 
 // Convert a plain string into a nicely structured Atlassian Document Format (ADF) document.
 // Heuristics:
@@ -616,6 +621,80 @@ export async function getCreateMeta(
     expand?: string;
   } = {}
 ): Promise<JiraCreateMetaResponse> {
+  // If we have a specific project, use the newer, more reliable endpoint
+  if (options.projectKeys && options.projectKeys.length === 1) {
+    const projectKey = options.projectKeys[0] as string;
+
+    // Get all issue types for the project
+    const allIssueTypes = await getIssueTypes(projectKey);
+
+    // Filter issue types if specific ones were requested
+    let issueTypesToFetch = allIssueTypes;
+    if (options.issueTypeNames && options.issueTypeNames.length > 0) {
+      issueTypesToFetch = allIssueTypes.filter((type) =>
+        options.issueTypeNames?.includes(type.name)
+      );
+    }
+
+    // Fetch metadata for each issue type using the newer endpoint
+    const issueTypesWithFields: JiraCreateMetaIssueType[] = [];
+
+    for (const issueType of issueTypesToFetch) {
+      try {
+        const config: AxiosRequestConfig = {
+          method: 'GET',
+          url: `/issue/createmeta/${projectKey}/issuetypes/${issueType.id}`,
+        };
+
+        const issueTypeMetadata = await makeJiraRequest<{
+          values?: JiraCreateMetaField[];
+          [key: string]: any;
+        }>(config);
+
+        // Convert the response to the expected format
+        const fieldsMap: Record<string, JiraCreateMetaField> = {};
+
+        if (issueTypeMetadata.values && Array.isArray(issueTypeMetadata.values)) {
+          for (const field of issueTypeMetadata.values) {
+            // Use the field key or fieldId as the key in the map
+            const fieldKey = field.key || field.fieldId || field.name;
+            if (fieldKey) {
+              fieldsMap[fieldKey] = field;
+            }
+          }
+        }
+
+        issueTypesWithFields.push({
+          id: issueType.id,
+          name: issueType.name,
+          description: issueType.description,
+          iconUrl: issueType.iconUrl,
+          subtask: issueType.subtask,
+          fields: fieldsMap,
+        });
+      } catch (error) {
+        // If the new endpoint fails for this issue type, log and continue
+        log.error(`Failed to get metadata for issue type ${issueType.name}:`, error);
+      }
+    }
+
+    // Get project details to construct the full response
+    const projectDetails = await getProjectDetails(projectKey);
+
+    return {
+      projects: [
+        {
+          id: projectDetails.id,
+          key: projectDetails.key,
+          name: projectDetails.name,
+          issuetypes: issueTypesWithFields,
+        },
+      ],
+    };
+  }
+
+  // Fallback to the old endpoint for backward compatibility
+  // (e.g., when multiple projects are requested or no project is specified)
   const params: Record<string, any> = {};
 
   if (options.projectKeys && options.projectKeys.length > 0) {

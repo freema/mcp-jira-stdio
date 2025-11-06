@@ -187,3 +187,60 @@ export const mockServerError = {
     },
   },
 };
+
+// Create Meta responses
+export const mockJiraCreateMetaField = {
+  key: 'summary',
+  fieldId: 'summary',
+  name: 'Summary',
+  required: true,
+  schema: {
+    type: 'string',
+    system: 'summary',
+  },
+  operations: ['set'],
+};
+
+export const mockJiraCreateMetaCustomField = {
+  key: 'customfield_10071',
+  fieldId: 'customfield_10071',
+  name: 'Controlling Category',
+  required: true,
+  schema: {
+    type: 'option',
+    custom: 'com.atlassian.jira.plugin.system.customfieldtypes:select',
+    customId: 10071,
+  },
+  allowedValues: [
+    { id: '20010', name: 'Category A', value: 'Category A' },
+    { id: '20011', name: 'Category B', value: 'Category B' },
+  ],
+  operations: ['set'],
+};
+
+export const mockJiraCreateMetaIssueTypeFields = {
+  values: [mockJiraCreateMetaField, mockJiraCreateMetaCustomField],
+};
+
+export const mockJiraCreateMetaResponse = {
+  projects: [
+    {
+      id: 'test-project-id',
+      key: 'TEST',
+      name: 'Test Project',
+      issuetypes: [
+        {
+          id: 'test-issue-type-id',
+          name: 'Bug',
+          description: 'A problem which impairs or prevents the functions of the product.',
+          iconUrl: 'https://test.atlassian.net/images/icons/issuetypes/bug.png',
+          subtask: false,
+          fields: {
+            summary: mockJiraCreateMetaField,
+            customfield_10071: mockJiraCreateMetaCustomField,
+          },
+        },
+      ],
+    },
+  ],
+};

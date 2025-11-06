@@ -15,6 +15,7 @@ import {
   addComment,
   getProjectDetails,
   createSubtask,
+  getCreateMeta,
 } from '../../../src/utils/api-helpers.js';
 import {
   mockJiraProject,
@@ -29,6 +30,8 @@ import {
   mockJiraProjectDetails,
   mockJiraPaginatedProjects,
   mockJiraCreateIssueResponse,
+  mockJiraCreateMetaResponse,
+  mockJiraCreateMetaIssueTypeFields,
 } from '../../mocks/jira-responses.js';
 
 // Mock the jira-auth module
@@ -829,6 +832,162 @@ describe('api-helpers', () => {
       const callData = mockedMakeJiraRequest.mock.calls[2][0].data;
       expect(callData.fields.labels).toBeUndefined();
       expect(callData.fields.components).toBeUndefined();
+    });
+  });
+
+  describe('getCreateMeta', () => {
+    it('should use new endpoint for single project', async () => {
+      // Mock the sequence of calls for the new endpoint path
+      mockedMakeJiraRequest
+        .mockResolvedValueOnce([mockJiraIssueType]) // getIssueTypes
+        .mockResolvedValueOnce(mockJiraCreateMetaIssueTypeFields) // new endpoint for issue type
+        .mockResolvedValueOnce(mockJiraProjectDetails); // getProjectDetails
+
+      const result = await getCreateMeta({
+        projectKeys: ['TEST'],
+      });
+
+      // Verify it called the new endpoints
+      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(1, {
+        method: 'GET',
+        url: '/project/TEST/issuetype',
+      });
+      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(2, {
+        method: 'GET',
+        url: '/issue/createmeta/TEST/issuetypes/test-issue-type-id',
+      });
+      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(3, {
+        method: 'GET',
+        url: '/project/TEST',
+        params: {},
+      });
+
+      // Verify the response structure
+      expect(result.projects).toHaveLength(1);
+      expect(result.projects[0]?.key).toBe('TEST');
+      expect(result.projects[0]?.issuetypes).toHaveLength(1);
+      expect(result.projects[0]?.issuetypes[0]?.fields).toBeDefined();
+    });
+
+    it('should filter issue types when issueTypeNames provided', async () => {
+      const bugType = { ...mockJiraIssueType, id: 'bug-id', name: 'Bug' };
+      const taskType = { ...mockJiraIssueType, id: 'task-id', name: 'Task' };
+
+      mockedMakeJiraRequest
+        .mockResolvedValueOnce([bugType, taskType]) // getIssueTypes
+        .mockResolvedValueOnce(mockJiraCreateMetaIssueTypeFields) // metadata for Bug
+        .mockResolvedValueOnce(mockJiraProjectDetails); // getProjectDetails
+
+      const result = await getCreateMeta({
+        projectKeys: ['TEST'],
+        issueTypeNames: ['Bug'],
+      });
+
+      // Should only fetch metadata for Bug, not Task
+      expect(mockedMakeJiraRequest).toHaveBeenCalledTimes(3);
+      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(2, {
+        method: 'GET',
+        url: '/issue/createmeta/TEST/issuetypes/bug-id',
+      });
+      expect(result.projects[0]?.issuetypes).toHaveLength(1);
+      expect(result.projects[0]?.issuetypes[0]?.name).toBe('Bug');
+    });
+
+    it('should handle errors gracefully for individual issue types', async () => {
+      const bugType = { ...mockJiraIssueType, id: 'bug-id', name: 'Bug' };
+      const taskType = { ...mockJiraIssueType, id: 'task-id', name: 'Task' };
+
+      mockedMakeJiraRequest
+        .mockResolvedValueOnce([bugType, taskType]) // getIssueTypes
+        .mockRejectedValueOnce(new Error('Failed to fetch Bug metadata')) // Bug fails
+        .mockResolvedValueOnce(mockJiraCreateMetaIssueTypeFields) // Task succeeds
+        .mockResolvedValueOnce(mockJiraProjectDetails); // getProjectDetails
+
+      const result = await getCreateMeta({
+        projectKeys: ['TEST'],
+      });
+
+      // Should continue despite error and return Task metadata
+      expect(result.projects[0]?.issuetypes).toHaveLength(1);
+      expect(result.projects[0]?.issuetypes[0]?.name).toBe('Task');
+    });
+
+    it('should use fallback endpoint for multiple projects', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(mockJiraCreateMetaResponse);
+
+      const result = await getCreateMeta({
+        projectKeys: ['TEST', 'PROJ2'],
+      });
+
+      // Should use old endpoint
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'GET',
+        url: '/issue/createmeta',
+        params: {
+          projectKeys: 'TEST,PROJ2',
+        },
+      });
+      expect(result).toEqual(mockJiraCreateMetaResponse);
+    });
+
+    it('should use fallback endpoint when no project keys provided', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(mockJiraCreateMetaResponse);
+
+      const result = await getCreateMeta();
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'GET',
+        url: '/issue/createmeta',
+        params: {},
+      });
+      expect(result).toEqual(mockJiraCreateMetaResponse);
+    });
+
+    it('should pass expand parameter to fallback endpoint', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(mockJiraCreateMetaResponse);
+
+      await getCreateMeta({
+        projectKeys: ['TEST', 'PROJ2'],
+        expand: 'projects.issuetypes.fields',
+      });
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'GET',
+        url: '/issue/createmeta',
+        params: {
+          projectKeys: 'TEST,PROJ2',
+          expand: 'projects.issuetypes.fields',
+        },
+      });
+    });
+
+    it('should map field keys correctly from new endpoint response', async () => {
+      const metadataWithFieldId = {
+        values: [
+          {
+            fieldId: 'customfield_10071',
+            name: 'Controlling Category',
+            required: true,
+            schema: { type: 'option' },
+            allowedValues: [{ id: '1', name: 'Option 1' }],
+          },
+        ],
+      };
+
+      mockedMakeJiraRequest
+        .mockResolvedValueOnce([mockJiraIssueType]) // getIssueTypes
+        .mockResolvedValueOnce(metadataWithFieldId) // metadata with fieldId
+        .mockResolvedValueOnce(mockJiraProjectDetails); // getProjectDetails
+
+      const result = await getCreateMeta({
+        projectKeys: ['TEST'],
+      });
+
+      const fields = result.projects[0]?.issuetypes[0]?.fields;
+      expect(fields).toBeDefined();
+      expect(fields?.['customfield_10071']).toBeDefined();
+      expect(fields?.['customfield_10071']?.name).toBe('Controlling Category');
+      expect(fields?.['customfield_10071']?.allowedValues).toHaveLength(1);
     });
   });
 });

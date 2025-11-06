@@ -194,7 +194,8 @@ export interface JiraFieldSchema {
 }
 
 export interface JiraCreateMetaField {
-  key: string;
+  key?: string;
+  fieldId?: string;
   name: string;
   required: boolean;
   schema: JiraFieldSchema;
