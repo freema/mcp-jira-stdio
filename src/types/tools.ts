@@ -200,3 +200,28 @@ export const CreateSubtaskInputSchema = z.object({
 });
 
 export type CreateSubtaskInput = z.infer<typeof CreateSubtaskInputSchema>;
+
+// Get create meta
+export const GetCreateMetaInputSchema = z.object({
+  projectKey: z
+    .string()
+    .describe('Project key to get create metadata for')
+    .refine((v) => isValidProjectKey(v), 'Invalid project key format'),
+  issueTypeName: z
+    .string()
+    .optional()
+    .describe('Specific issue type name to get metadata for (optional)'),
+});
+
+export type GetCreateMetaInput = z.infer<typeof GetCreateMetaInputSchema>;
+
+// Get custom fields
+export const GetCustomFieldsInputSchema = z.object({
+  projectKey: z
+    .string()
+    .optional()
+    .describe('Project key to filter custom fields (optional)')
+    .refine((v) => (v ? isValidProjectKey(v) : true), 'Invalid project key format'),
+});
+
+export type GetCustomFieldsInput = z.infer<typeof GetCustomFieldsInputSchema>;

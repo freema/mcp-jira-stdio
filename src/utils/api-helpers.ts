@@ -11,6 +11,8 @@ import {
   JiraComment,
   JiraProjectDetails,
   JiraCreateIssueResponse,
+  JiraCreateMetaResponse,
+  JiraField,
 } from '../types/jira.js';
 import { PaginatedResponse } from '../types/common.js';
 import { sanitizeJQL } from './validators.js';
@@ -491,7 +493,12 @@ export async function addComment(
   body: string,
   visibility?: { type: string; value: string }
 ): Promise<JiraComment> {
-  const data: any = { body };
+  // Convert body to ADF format (Jira expects ADF for comments)
+  const adfBody = ensureAdfDescription(body);
+
+  const data: any = {
+    body: adfBody,
+  };
 
   if (visibility) {
     data.visibility = visibility;
@@ -585,4 +592,43 @@ export async function createSubtask(
 
   // Return the created subtask
   return await getIssue(response.key);
+}
+
+export async function getCreateMeta(
+  options: {
+    projectKeys?: string[];
+    issueTypeNames?: string[];
+    expand?: string;
+  } = {}
+): Promise<JiraCreateMetaResponse> {
+  const params: Record<string, any> = {};
+
+  if (options.projectKeys && options.projectKeys.length > 0) {
+    params.projectKeys = options.projectKeys.join(',');
+  }
+
+  if (options.issueTypeNames && options.issueTypeNames.length > 0) {
+    params.issuetypeNames = options.issueTypeNames.join(',');
+  }
+
+  if (options.expand) {
+    params.expand = options.expand;
+  }
+
+  const config: AxiosRequestConfig = {
+    method: 'GET',
+    url: '/issue/createmeta',
+    params,
+  };
+
+  return await makeJiraRequest<JiraCreateMetaResponse>(config);
+}
+
+export async function getFields(): Promise<JiraField[]> {
+  const config: AxiosRequestConfig = {
+    method: 'GET',
+    url: '/field',
+  };
+
+  return await makeJiraRequest<JiraField[]>(config);
 }

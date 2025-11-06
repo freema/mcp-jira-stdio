@@ -178,3 +178,60 @@ export interface JiraCreateIssueResponse {
   key: string;
   self: string;
 }
+
+export interface JiraFieldAllowedValue {
+  id?: string;
+  name?: string;
+  value?: string;
+}
+
+export interface JiraFieldSchema {
+  type: string;
+  items?: string;
+  system?: string;
+  custom?: string;
+  customId?: number;
+}
+
+export interface JiraCreateMetaField {
+  key: string;
+  name: string;
+  required: boolean;
+  schema: JiraFieldSchema;
+  allowedValues?: JiraFieldAllowedValue[];
+  autoCompleteUrl?: string;
+  hasDefaultValue?: boolean;
+  defaultValue?: any;
+  operations?: string[];
+}
+
+export interface JiraCreateMetaIssueType {
+  id: string;
+  name: string;
+  description: string;
+  iconUrl: string;
+  subtask: boolean;
+  fields: Record<string, JiraCreateMetaField>;
+}
+
+export interface JiraCreateMetaProject {
+  id: string;
+  key: string;
+  name: string;
+  issuetypes: JiraCreateMetaIssueType[];
+}
+
+export interface JiraCreateMetaResponse {
+  projects: JiraCreateMetaProject[];
+}
+
+export interface JiraField {
+  id: string;
+  key: string;
+  name: string;
+  custom: boolean;
+  orderable: boolean;
+  navigable: boolean;
+  searchable: boolean;
+  schema: JiraFieldSchema;
+}
