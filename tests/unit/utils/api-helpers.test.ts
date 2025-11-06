@@ -49,7 +49,7 @@ describe('api-helpers', () => {
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'GET',
         url: '/project/search',
-        params: {},
+        params: { startAt: 0, maxResults: 50 },
       });
       expect(result).toEqual([mockJiraProject]);
     });
@@ -62,7 +62,7 @@ describe('api-helpers', () => {
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'GET',
         url: '/project/search',
-        params: { expand: 'lead,description' },
+        params: { startAt: 0, maxResults: 50, expand: 'lead,description' },
       });
     });
 
@@ -74,7 +74,7 @@ describe('api-helpers', () => {
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'GET',
         url: '/project/search',
-        params: { recent: 5 },
+        params: { startAt: 0, maxResults: 50, recent: 5 },
       });
     });
 
@@ -86,8 +86,44 @@ describe('api-helpers', () => {
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'GET',
         url: '/project/search',
-        params: { expand: 'lead', recent: 3 },
+        params: { startAt: 0, maxResults: 50, expand: 'lead', recent: 3 },
       });
+    });
+
+    it('should fetch all pages when pagination is needed', async () => {
+      const page1 = {
+        startAt: 0,
+        maxResults: 50,
+        total: 75,
+        isLast: false,
+        values: [mockJiraProject],
+      };
+      const page2 = {
+        startAt: 50,
+        maxResults: 50,
+        total: 75,
+        isLast: true,
+        values: [{ ...mockJiraProject, key: 'TEST2', id: '10001' }],
+      };
+
+      mockedMakeJiraRequest.mockResolvedValueOnce(page1).mockResolvedValueOnce(page2);
+
+      const result = await getVisibleProjects();
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledTimes(2);
+      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(1, {
+        method: 'GET',
+        url: '/project/search',
+        params: { startAt: 0, maxResults: 50 },
+      });
+      expect(mockedMakeJiraRequest).toHaveBeenNthCalledWith(2, {
+        method: 'GET',
+        url: '/project/search',
+        params: { startAt: 50, maxResults: 50 },
+      });
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual(mockJiraProject);
+      expect(result[1]).toEqual({ ...mockJiraProject, key: 'TEST2', id: '10001' });
     });
   });
 
