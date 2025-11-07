@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+
+# Markdown files
+*.md
+
+# Package lock files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Config files that shouldn't be formatted
+.env
+.env.*
