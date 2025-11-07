@@ -21,10 +21,13 @@ A Model Context Protocol (MCP) server for Jira API integration. Enables reading,
 The fastest way to add this MCP server to Claude Code:
 
 ```bash
-claude mcp add jira npx mcp-jira-stdio@latest
+claude mcp add jira npx mcp-jira-stdio@latest \
+  --env JIRA_BASE_URL=https://yourcompany.atlassian.net \
+  --env JIRA_EMAIL=your-email@example.com \
+  --env JIRA_API_TOKEN=your-api-token
 ```
 
-You will be prompted to enter your Jira credentials:
+Replace the values with your actual Jira credentials:
 - **JIRA_BASE_URL**: Your Jira instance URL (e.g., `https://yourcompany.atlassian.net`)
 - **JIRA_EMAIL**: Your Jira account email
 - **JIRA_API_TOKEN**: Your Jira API token ([generate here](https://id.atlassian.com/manage-profile/security/api-tokens))
@@ -119,7 +122,10 @@ task jira:projects
 Use the quick install command (recommended):
 
 ```bash
-claude mcp add jira npx mcp-jira-stdio@latest
+claude mcp add jira npx mcp-jira-stdio@latest \
+  --env JIRA_BASE_URL=https://yourcompany.atlassian.net \
+  --env JIRA_EMAIL=your-email@example.com \
+  --env JIRA_API_TOKEN=your-api-token
 ```
 
 #### For Claude Desktop
