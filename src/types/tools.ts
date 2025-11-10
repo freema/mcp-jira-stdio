@@ -253,3 +253,22 @@ export const GetCustomFieldsInputSchema = z.object({
 });
 
 export type GetCustomFieldsInput = z.infer<typeof GetCustomFieldsInputSchema>;
+
+// Create issue link
+export const CreateIssueLinkInputSchema = z.object({
+  fromIssue: z
+    .string()
+    .describe('Source issue key')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+  toIssue: z
+    .string()
+    .describe('Target issue key')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+  linkType: z
+    .string()
+    .describe(
+      'Link type: "blocks", "is blocked by", "relates", "duplicates", "clones", or custom link type name'
+    ),
+});
+
+export type CreateIssueLinkInput = z.infer<typeof CreateIssueLinkInputSchema>;
