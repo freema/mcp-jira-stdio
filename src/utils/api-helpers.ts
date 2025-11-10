@@ -706,7 +706,10 @@ export async function createIssueLink(
   // Determine issue direction based on link type
   // For "blocks": fromIssue blocks toIssue (fromIssue = outward, toIssue = inward)
   // For "is blocked by": fromIssue is blocked by toIssue (fromIssue = inward, toIssue = outward)
-  const isInward = normalizedLinkType === 'is blocked by' || normalizedLinkType === 'is duplicated by' || normalizedLinkType === 'is cloned by';
+  const isInward =
+    normalizedLinkType === 'is blocked by' ||
+    normalizedLinkType === 'is duplicated by' ||
+    normalizedLinkType === 'is cloned by';
 
   const data: any = {
     type: {
