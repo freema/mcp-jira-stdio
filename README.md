@@ -203,6 +203,101 @@ Restart Claude Desktop after adding the configuration.
 
 - `jira_get_my_issues`: Retrieve issues assigned to the current user (sorted by updated).
 
+### Attachments
+
+- `jira_list_issue_attachments`: List all attachments for a Jira issue with metadata (filename, size, MIME type, author, creation date, download URIs).
+
+**Note:** Attachment **download** is handled via the MCP Resources protocol, not as a tool. After listing attachments, you can download them using their resource URI.
+
+## 📎 Working with Attachments
+
+The MCP Jira server supports viewing and downloading attachments from Jira issues via the MCP Resources protocol.
+
+### Listing Attachments
+
+There are two ways to see what files are attached to an issue:
+
+**Option 1: Using the dedicated tool**
+
+```javascript
+jira_list_issue_attachments({
+  issueKey: "PROJECT-123"
+});
+```
+
+**Option 2: Using get-issue with expand parameter**
+
+```javascript
+jira_get_issue({
+  issueKey: "PROJECT-123",
+  expand: ["attachment"]
+});
+```
+
+Both methods will return attachment metadata including:
+- Filename and file size
+- MIME type
+- Created date and author
+- Resource URIs for downloading
+
+### Downloading Attachments
+
+Attachments are available as MCP Resources. After listing attachments, you can download them using their URI via the MCP Resources protocol:
+
+**Regular attachment:**
+```
+jira://attachment/{attachmentId}
+```
+
+**Thumbnail (for images):**
+```
+jira://attachment/{attachmentId}/thumbnail
+```
+
+The attachment will be returned as a base64-encoded blob with the appropriate MIME type.
+
+### Size Limitations
+
+- **Default maximum size:** 2 MB per attachment
+- Files larger than the limit will return an error
+- Configure the limit using the `JIRA_MAX_ATTACHMENT_SIZE_MB` environment variable
+
+### Supported File Types
+
+All file types supported by Jira are supported for download:
+- **Images:** PNG, JPG, GIF, SVG
+- **Documents:** PDF, DOC, DOCX, XLS, XLSX
+- **Archives:** ZIP, TAR, GZ
+- **Code:** TXT, JSON, XML, etc.
+
+### Configuration
+
+Add these optional environment variables to customize attachment behavior:
+
+| Variable                        | Default | Description                                      |
+| ------------------------------- | ------- | ------------------------------------------------ |
+| `JIRA_MAX_ATTACHMENT_SIZE_MB`   | `2`     | Maximum attachment size in megabytes             |
+| `JIRA_ENABLE_THUMBNAILS`        | `true`  | Enable thumbnail support for image attachments   |
+
+Example configuration:
+
+```json
+{
+  "mcpServers": {
+    "jira": {
+      "command": "npx",
+      "args": ["mcp-jira-stdio"],
+      "env": {
+        "JIRA_BASE_URL": "https://your-instance.atlassian.net",
+        "JIRA_EMAIL": "your-email@example.com",
+        "JIRA_API_TOKEN": "your-api-token",
+        "JIRA_MAX_ATTACHMENT_SIZE_MB": "5"
+      }
+    }
+  }
+}
+```
+
 ## 🛠️ Development
 
 ### Development Commands
@@ -365,12 +460,14 @@ npm run inspector
 
 ## 🔍 Environment Variables
 
-| Variable         | Required | Description       | Example                         |
-| ---------------- | -------- | ----------------- | ------------------------------- |
-| `JIRA_BASE_URL`  | Yes      | Jira instance URL | `https://company.atlassian.net` |
-| `JIRA_EMAIL`     | Yes      | Your Jira email   | `user@example.com`              |
-| `JIRA_API_TOKEN` | Yes      | Jira API token    | `ATxxx...`                      |
-| `NODE_ENV`       | No       | Environment mode  | `development` or `production`   |
+| Variable                        | Required | Description                                      | Default      | Example                         |
+| ------------------------------- | -------- | ------------------------------------------------ | ------------ | ------------------------------- |
+| `JIRA_BASE_URL`                 | Yes      | Jira instance URL                                | -            | `https://company.atlassian.net` |
+| `JIRA_EMAIL`                    | Yes      | Your Jira email                                  | -            | `user@example.com`              |
+| `JIRA_API_TOKEN`                | Yes      | Jira API token                                   | -            | `ATxxx...`                      |
+| `JIRA_MAX_ATTACHMENT_SIZE_MB`   | No       | Maximum attachment download size in megabytes    | `2`          | `5`                             |
+| `JIRA_ENABLE_THUMBNAILS`        | No       | Enable thumbnail support for image attachments   | `true`       | `false`                         |
+| `NODE_ENV`                      | No       | Environment mode                                 | `production` | `development`                   |
 
 ## 🤝 Contributing
 

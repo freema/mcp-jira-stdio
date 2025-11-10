@@ -175,8 +175,8 @@ async function main() {
       // Download content
       const buffer = await getAttachmentContent(attachmentId, isThumbnail);
 
-      // Validate size (max 10MB for now)
-      const maxSizeMB = parseInt(process.env.JIRA_MAX_ATTACHMENT_SIZE_MB || '10');
+      // Validate size (max 2MB by default)
+      const maxSizeMB = parseInt(process.env.JIRA_MAX_ATTACHMENT_SIZE_MB || '2');
       const sizeMB = buffer.length / 1024 / 1024;
       if (sizeMB > maxSizeMB) {
         throw new Error(

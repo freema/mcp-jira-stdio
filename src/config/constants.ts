@@ -9,7 +9,7 @@ export const JIRA_CONFIG = {
     WINDOW_MS: 60000, // 1 minute
   },
   ATTACHMENTS: {
-    MAX_SIZE_MB: parseInt(process.env.JIRA_MAX_ATTACHMENT_SIZE_MB || '10'),
+    MAX_SIZE_MB: parseInt(process.env.JIRA_MAX_ATTACHMENT_SIZE_MB || '2'),
     ENABLE_THUMBNAILS: process.env.JIRA_ENABLE_THUMBNAILS !== 'false',
   },
 } as const;
