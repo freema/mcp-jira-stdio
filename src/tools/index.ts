@@ -14,3 +14,4 @@ export * from './get-project-info.js';
 export * from './create-subtask.js';
 export * from './get-create-meta.js';
 export * from './get-custom-fields.js';
+export * from './create-issue-link.js';

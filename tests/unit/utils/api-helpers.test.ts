@@ -240,7 +240,7 @@ describe('api-helpers', () => {
           jql: 'project = TEST',
           maxResults: 50,
           fields: ['summary', 'status'],
-          expand: ['changelog'],
+          expand: 'changelog',
         },
       });
     });
@@ -512,7 +512,7 @@ describe('api-helpers', () => {
           nextPageToken: 'token-def-456',
           maxResults: 25,
           fields: ['summary'],
-          expand: ['comments'],
+          expand: 'comments',
         },
       });
     });

@@ -267,8 +267,9 @@ export async function searchIssues(options: {
     data.fields = options.fields;
   }
 
-  if (options.expand) {
-    data.expand = options.expand;
+  if (options.expand && options.expand.length > 0) {
+    // Jira API expects expand as comma-separated string for POST /search/jql
+    data.expand = options.expand.join(',');
   }
 
   const config: AxiosRequestConfig = {
@@ -678,4 +679,54 @@ export async function getFields(): Promise<JiraField[]> {
   };
 
   return await makeJiraRequest<JiraField[]>(config);
+}
+
+export async function createIssueLink(
+  fromIssue: string,
+  toIssue: string,
+  linkType: string
+): Promise<void> {
+  // Map common link type names to Jira link type format
+  // Jira link types are case-sensitive
+  const linkTypeMap: Record<string, string> = {
+    blocks: 'Blocks',
+    'is blocked by': 'Blocks',
+    relates: 'Relates',
+    'relates to': 'Relates',
+    duplicates: 'Duplicate',
+    duplicate: 'Duplicate',
+    'is duplicated by': 'Duplicate',
+    clones: 'Cloners',
+    'is cloned by': 'Cloners',
+  };
+
+  const normalizedLinkType = linkType.toLowerCase();
+  const jiraLinkType = linkTypeMap[normalizedLinkType] || linkType;
+
+  // Determine issue direction based on link type
+  // For "blocks": fromIssue blocks toIssue (fromIssue = outward, toIssue = inward)
+  // For "is blocked by": fromIssue is blocked by toIssue (fromIssue = inward, toIssue = outward)
+  const isInward = normalizedLinkType === 'is blocked by' || normalizedLinkType === 'is duplicated by' || normalizedLinkType === 'is cloned by';
+
+  const data: any = {
+    type: {
+      name: jiraLinkType,
+    },
+  };
+
+  if (isInward) {
+    data.inwardIssue = { key: fromIssue };
+    data.outwardIssue = { key: toIssue };
+  } else {
+    data.outwardIssue = { key: fromIssue };
+    data.inwardIssue = { key: toIssue };
+  }
+
+  const config: AxiosRequestConfig = {
+    method: 'POST',
+    url: '/issueLink',
+    data,
+  };
+
+  await makeJiraRequest(config);
 }

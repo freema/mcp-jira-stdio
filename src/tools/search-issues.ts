@@ -66,7 +66,7 @@ export async function handleSearchIssues(input: unknown): Promise<McpToolRespons
 
     const result = await searchIssues(searchParams);
 
-    log.info(`Found ${result.total} issue(s), showing ${result.issues.length}`);
+    log.info(`Found ${result.total ?? 0} issue(s), showing ${result.issues.length}`);
 
     return formatSearchResultsResponse(result);
   } catch (error) {
