@@ -28,7 +28,8 @@ export const createSubtaskTool: Tool = {
       },
       description: {
         type: 'string',
-        description: 'Detailed subtask description (optional). Format depends on the "format" parameter.',
+        description:
+          'Detailed subtask description (optional). Format depends on the "format" parameter.',
       },
       priority: {
         type: 'string',
