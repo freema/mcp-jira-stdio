@@ -16,6 +16,7 @@ import {
   getProjectDetails,
   createSubtask,
   getCreateMeta,
+  createIssueLink,
 } from '../../../src/utils/api-helpers.js';
 import {
   mockJiraProject,
@@ -937,6 +938,248 @@ describe('api-helpers', () => {
         params: {
           projectKeys: 'TEST',
           issuetypeNames: 'Bug,Task',
+        },
+      });
+    });
+  });
+
+  describe('createIssueLink', () => {
+    it('should create a "blocks" link with outward/inward direction', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('TEST-123', 'TEST-456', 'blocks');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Blocks' },
+          outwardIssue: { key: 'TEST-123' },
+          inwardIssue: { key: 'TEST-456' },
+        },
+      });
+    });
+
+    it('should create an "is blocked by" link with reversed direction', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('TEST-123', 'TEST-456', 'is blocked by');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Blocks' },
+          inwardIssue: { key: 'TEST-123' },
+          outwardIssue: { key: 'TEST-456' },
+        },
+      });
+    });
+
+    it('should create a "relates" link', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('MDE-799', 'MDE-883', 'relates');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Relates' },
+          outwardIssue: { key: 'MDE-799' },
+          inwardIssue: { key: 'MDE-883' },
+        },
+      });
+    });
+
+    it('should create a "relates to" link (alias)', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('TEST-1', 'TEST-2', 'relates to');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Relates' },
+          outwardIssue: { key: 'TEST-1' },
+          inwardIssue: { key: 'TEST-2' },
+        },
+      });
+    });
+
+    it('should create a "duplicates" link', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('BUG-111', 'BUG-222', 'duplicates');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Duplicate' },
+          outwardIssue: { key: 'BUG-111' },
+          inwardIssue: { key: 'BUG-222' },
+        },
+      });
+    });
+
+    it('should create a "duplicate" link (singular)', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('BUG-111', 'BUG-222', 'duplicate');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Duplicate' },
+          outwardIssue: { key: 'BUG-111' },
+          inwardIssue: { key: 'BUG-222' },
+        },
+      });
+    });
+
+    it('should create an "is duplicated by" link with reversed direction', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('BUG-111', 'BUG-222', 'is duplicated by');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Duplicate' },
+          inwardIssue: { key: 'BUG-111' },
+          outwardIssue: { key: 'BUG-222' },
+        },
+      });
+    });
+
+    it('should create a "clones" link', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('STORY-10', 'STORY-20', 'clones');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Cloners' },
+          outwardIssue: { key: 'STORY-10' },
+          inwardIssue: { key: 'STORY-20' },
+        },
+      });
+    });
+
+    it('should create an "is cloned by" link with reversed direction', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('STORY-10', 'STORY-20', 'is cloned by');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Cloners' },
+          inwardIssue: { key: 'STORY-10' },
+          outwardIssue: { key: 'STORY-20' },
+        },
+      });
+    });
+
+    it('should handle custom link type names without mapping', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('CUSTOM-1', 'CUSTOM-2', 'CustomLinkType');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'CustomLinkType' },
+          outwardIssue: { key: 'CUSTOM-1' },
+          inwardIssue: { key: 'CUSTOM-2' },
+        },
+      });
+    });
+
+    it('should handle link types with different casing (lowercase)', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('TEST-1', 'TEST-2', 'BLOCKS');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Blocks' },
+          outwardIssue: { key: 'TEST-1' },
+          inwardIssue: { key: 'TEST-2' },
+        },
+      });
+    });
+
+    it('should handle mixed case link types', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('TEST-1', 'TEST-2', 'ReLaTeS');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Relates' },
+          outwardIssue: { key: 'TEST-1' },
+          inwardIssue: { key: 'TEST-2' },
+        },
+      });
+    });
+
+    it('should handle same issue being linked to itself', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('TEST-123', 'TEST-123', 'relates');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Relates' },
+          outwardIssue: { key: 'TEST-123' },
+          inwardIssue: { key: 'TEST-123' },
+        },
+      });
+    });
+
+    it('should handle issues from different projects', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('PROJECT-1', 'ANOTHERPROJECT-2', 'blocks');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Blocks' },
+          outwardIssue: { key: 'PROJECT-1' },
+          inwardIssue: { key: 'ANOTHERPROJECT-2' },
+        },
+      });
+    });
+
+    it('should handle long issue keys', async () => {
+      mockedMakeJiraRequest.mockResolvedValueOnce(undefined);
+
+      await createIssueLink('VERYLONGPROJECTNAME-12345', 'ANOTHERVERYLONGPROJECT-67890', 'blocks');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/issueLink',
+        data: {
+          type: { name: 'Blocks' },
+          outwardIssue: { key: 'VERYLONGPROJECTNAME-12345' },
+          inwardIssue: { key: 'ANOTHERVERYLONGPROJECT-67890' },
         },
       });
     });
