@@ -13,7 +13,7 @@ const log = createLogger('tool:add-comment');
 export const addCommentTool: Tool = {
   name: TOOL_NAMES.ADD_COMMENT,
   description:
-    'Adds a comment to an issue. Supports visibility restrictions for groups or roles. Returns the created comment with author details and timestamp.',
+    'Adds a comment to an issue. Supports visibility restrictions for groups or roles. Comment format is controlled by the "format" parameter (default: markdown). Returns the created comment with author details and timestamp.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -23,7 +23,7 @@ export const addCommentTool: Tool = {
       },
       body: {
         type: 'string',
-        description: 'Comment body text',
+        description: 'Comment body text. Format depends on the "format" parameter.',
         minLength: 1,
       },
       visibility: {
@@ -42,6 +42,13 @@ export const addCommentTool: Tool = {
         },
         required: ['type', 'value'],
       },
+      format: {
+        type: 'string',
+        enum: ['markdown', 'adf', 'plain'],
+        description:
+          'Comment format: "markdown" (converts Markdown to ADF, default), "adf" (use as-is ADF object), "plain" (converts plain text to ADF with basic formatting)',
+        default: 'markdown',
+      },
     },
     required: ['issueKey', 'body'],
   },
@@ -53,7 +60,12 @@ export async function handleAddComment(input: unknown): Promise<McpToolResponse>
 
     log.info(`Adding comment to issue ${validated.issueKey}...`);
 
-    const comment = await addComment(validated.issueKey, validated.body, validated.visibility);
+    const comment = await addComment(
+      validated.issueKey,
+      validated.body,
+      validated.visibility,
+      validated.format
+    );
 
     log.info(`Added comment to ${validated.issueKey}`);
 

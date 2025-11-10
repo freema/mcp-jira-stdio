@@ -14,7 +14,7 @@ const log = createLogger('tool:update-issue');
 export const updateIssueTool: Tool = {
   name: TOOL_NAMES.UPDATE_ISSUE,
   description:
-    'Updates an existing Jira issue by its key. Supports updating summary, description, priority, assignee, labels, and components. Description accepts plain text and is auto-formatted to ADF: headings (lines ending with ":"), numbered/bullet lists, and links. Only specified fields will be updated.',
+    'Updates an existing Jira issue by its key. Supports updating summary, description, priority, assignee, labels, and components. Description format is controlled by the "format" parameter (default: markdown). Only specified fields will be updated.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -28,8 +28,7 @@ export const updateIssueTool: Tool = {
       },
       description: {
         anyOf: [{ type: 'string' }, { type: 'object' }],
-        description:
-          'New issue description (optional). Accepts plain text (auto-formatted to ADF) or an ADF document.',
+        description: 'New issue description (optional). Format depends on the "format" parameter.',
       },
       priority: {
         type: 'string',
@@ -54,6 +53,13 @@ export const updateIssueTool: Tool = {
         description: 'If false, returns a success message without fetching the updated issue',
         default: true,
       },
+      format: {
+        type: 'string',
+        enum: ['markdown', 'adf', 'plain'],
+        description:
+          'Description format: "markdown" (converts Markdown to ADF, default), "adf" (use as-is ADF object), "plain" (converts plain text to ADF with basic formatting)',
+        default: 'markdown',
+      },
     },
     required: ['issueKey'],
   },
@@ -73,6 +79,7 @@ export async function handleUpdateIssue(input: unknown): Promise<McpToolResponse
     if (validated.assignee !== undefined) updateParams.assignee = validated.assignee;
     if (validated.labels !== undefined) updateParams.labels = validated.labels;
     if (validated.components !== undefined) updateParams.components = validated.components;
+    if (validated.format !== undefined) updateParams.format = validated.format;
 
     await updateIssue(validated.issueKey, updateParams);
 
