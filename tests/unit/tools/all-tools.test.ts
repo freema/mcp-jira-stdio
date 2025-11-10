@@ -210,7 +210,12 @@ describe('All Jira Tools', () => {
 
       const result = await handleAddComment(input);
 
-      expect(mockedAddComment).toHaveBeenCalledWith('TEST-123', 'This is a comment', undefined);
+      expect(mockedAddComment).toHaveBeenCalledWith(
+        'TEST-123',
+        'This is a comment',
+        undefined,
+        undefined
+      );
       expect(mockedFormatCommentResponse).toHaveBeenCalledWith(mockJiraComment);
       expect(result).toEqual(mockResponse);
     });
@@ -228,10 +233,15 @@ describe('All Jira Tools', () => {
 
       await handleAddComment(input);
 
-      expect(mockedAddComment).toHaveBeenCalledWith('TEST-123', 'Private comment', {
-        type: 'group',
-        value: 'jira-developers',
-      });
+      expect(mockedAddComment).toHaveBeenCalledWith(
+        'TEST-123',
+        'Private comment',
+        {
+          type: 'group',
+          value: 'jira-developers',
+        },
+        undefined
+      );
     });
   });
 

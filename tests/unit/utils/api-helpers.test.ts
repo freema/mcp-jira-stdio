@@ -308,6 +308,7 @@ describe('api-helpers', () => {
         assignee: 'user-id-123',
         labels: ['bug', 'urgent'],
         components: ['Frontend', 'Backend'],
+        format: 'plain' as const,
       };
 
       await createIssue(issueData);
@@ -384,6 +385,7 @@ describe('api-helpers', () => {
         summary: 'Updated summary',
         description: 'Updated description',
         priority: 'Low',
+        format: 'plain' as const,
       };
 
       await updateIssue('TEST-123', updates);
@@ -657,7 +659,7 @@ describe('api-helpers', () => {
     it('should add comment without visibility', async () => {
       mockedMakeJiraRequest.mockResolvedValue(mockJiraComment);
 
-      const result = await addComment('TEST-123', 'This is a comment');
+      const result = await addComment('TEST-123', 'This is a comment', undefined, 'plain');
 
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'POST',
@@ -682,7 +684,7 @@ describe('api-helpers', () => {
       mockedMakeJiraRequest.mockResolvedValue(mockJiraComment);
 
       const visibility = { type: 'group', value: 'jira-developers' };
-      await addComment('TEST-123', 'Private comment', visibility);
+      await addComment('TEST-123', 'Private comment', visibility, 'plain');
 
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
         method: 'POST',
@@ -783,6 +785,7 @@ describe('api-helpers', () => {
         assignee: 'user-123',
         labels: ['subtask'],
         components: ['Frontend'],
+        format: 'plain' as const,
       };
 
       await createSubtask('TEST-123', subtaskData);
