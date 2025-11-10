@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2025-01-10
+
+### Added
+
+- **Markdown support**: Added optional `format` parameter to `jira_create_issue`, `jira_update_issue`, `jira_create_subtask`, and `jira_add_comment` tools
+  - Three format options:
+    - `markdown` (default): Automatically converts Markdown syntax to Atlassian Document Format (ADF)
+    - `adf`: Uses description/comment as-is (assumes it's already in ADF format)
+    - `plain`: Converts plain text to ADF with basic formatting heuristics
+  - Backward compatible: defaults to `markdown` format
+  - Automatic fallback to plain text if markdown conversion fails
+- Added `md-to-adf` package (v0.6.4) for Markdown → ADF conversion
+- Comprehensive test coverage for format parameter functionality (230 tests passing)
+- Type declarations for `md-to-adf` module
+
+### Changed
+
+- Updated tool descriptions to reflect new format parameter
+- Enhanced `ensureAdfDescription` function to handle all three formats
+- Updated all tool schemas (Zod) to include format parameter with default value
+
+### Technical Details
+
+- All changes maintain backward compatibility
+- Error handling includes fallback to plain text conversion if markdown parsing fails
+- Full type safety with TypeScript type definitions
+
 ## [1.5.3] - 2025-01-06
 
 ### Fixed
