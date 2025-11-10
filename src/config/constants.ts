@@ -25,6 +25,7 @@ export const TOOL_NAMES = {
   GET_VISIBLE_PROJECTS: 'jira_get_visible_projects',
   GET_ISSUE: 'jira_get_issue',
   SEARCH_ISSUES: 'jira_search_issues',
+  SEARCH_BY_EPIC: 'jira_search_by_epic',
   GET_MY_ISSUES: 'jira_get_my_issues',
   GET_ISSUE_TYPES: 'jira_get_issue_types',
   GET_USERS: 'jira_get_users',

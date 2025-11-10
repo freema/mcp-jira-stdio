@@ -33,6 +33,7 @@ const toolHandlers = new Map<string, (input: unknown) => Promise<any>>([
   [TOOL_NAMES.GET_VISIBLE_PROJECTS, tools.handleGetVisibleProjects],
   [TOOL_NAMES.GET_ISSUE, tools.handleGetIssue],
   [TOOL_NAMES.SEARCH_ISSUES, tools.handleSearchIssues],
+  [TOOL_NAMES.SEARCH_BY_EPIC, tools.handleSearchByEpic],
   [TOOL_NAMES.GET_MY_ISSUES, tools.handleGetMyIssues],
   [TOOL_NAMES.GET_ISSUE_TYPES, tools.handleGetIssueTypes],
   [TOOL_NAMES.GET_USERS, tools.handleGetUsers],
@@ -52,6 +53,7 @@ const allTools = [
   tools.getVisibleProjectsTool,
   tools.getIssueTool,
   tools.searchIssuesTool,
+  tools.searchByEpicTool,
   tools.getMyIssuesTool,
   tools.getIssueTypesTool,
   tools.getUsersTool,
@@ -141,14 +143,60 @@ async function main() {
     }
   });
 
-  // List resources (not implemented for this server)
+  // List resources (returns available resource types)
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
-    return { resources: [] };
+    return {
+      resources: [
+        {
+          uri: 'jira://attachment/{attachmentId}',
+          name: 'Jira Attachment',
+          description:
+            'Download a Jira attachment by ID. Use the URI format: jira://attachment/{attachmentId}',
+          mimeType: 'application/octet-stream',
+        },
+      ],
+    };
   });
 
-  // Read resource (not implemented for this server)
-  server.setRequestHandler(ReadResourceRequestSchema, async () => {
-    throw new Error('Resource reading not implemented');
+  // Read resource (handles attachment downloads)
+  server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    const uri = request.params.uri;
+
+    // Parse jira://attachment/{attachmentId} URI
+    const attachmentMatch = uri.match(/^jira:\/\/attachment\/(.+)$/);
+    if (!attachmentMatch) {
+      throw new Error(
+        `Invalid resource URI: ${uri}. Expected format: jira://attachment/{attachmentId}`
+      );
+    }
+
+    const attachmentId = attachmentMatch[1];
+    if (!attachmentId) {
+      throw new Error('Attachment ID is required');
+    }
+
+    console.error(`📎 Downloading attachment: ${attachmentId}`);
+
+    try {
+      // Import downloadAttachment dynamically to avoid circular dependency
+      const { downloadAttachment } = await import('./utils/api-helpers.js');
+      const attachment = await downloadAttachment(attachmentId);
+
+      console.error(`✅ Downloaded attachment: ${attachment.filename} (${attachment.mimeType})`);
+
+      return {
+        contents: [
+          {
+            uri,
+            mimeType: attachment.mimeType,
+            blob: attachment.data, // base64 encoded data
+          },
+        ],
+      };
+    } catch (error: any) {
+      console.error(`❌ Error downloading attachment ${attachmentId}:`, error.message);
+      throw error;
+    }
   });
 
   const transport = new StdioServerTransport();

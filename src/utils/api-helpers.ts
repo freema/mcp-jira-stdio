@@ -650,3 +650,39 @@ export async function getFields(): Promise<JiraField[]> {
 
   return await makeJiraRequest<JiraField[]>(config);
 }
+
+export async function downloadAttachment(
+  attachmentId: string
+): Promise<{ data: string; mimeType: string; filename: string }> {
+  // First get attachment metadata to get the content URL and filename
+  const metadataConfig: AxiosRequestConfig = {
+    method: 'GET',
+    url: `/attachment/${attachmentId}`,
+  };
+
+  const metadata = await makeJiraRequest<{
+    id: string;
+    filename: string;
+    mimeType: string;
+    content: string;
+    size: number;
+  }>(metadataConfig);
+
+  // Download the actual file content
+  const downloadConfig: AxiosRequestConfig = {
+    method: 'GET',
+    url: `/attachment/content/${attachmentId}`,
+    responseType: 'arraybuffer',
+  };
+
+  const fileData = await makeJiraRequest<ArrayBuffer>(downloadConfig);
+
+  // Convert to base64
+  const base64Data = Buffer.from(fileData).toString('base64');
+
+  return {
+    data: base64Data,
+    mimeType: metadata.mimeType,
+    filename: metadata.filename,
+  };
+}

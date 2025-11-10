@@ -47,6 +47,7 @@ export interface JiraIssueFields {
   components: JiraComponent[];
   fixVersions: JiraVersion[];
   versions: JiraVersion[];
+  attachment?: JiraAttachment[];
 }
 
 export interface JiraStatus {
@@ -144,6 +145,18 @@ export interface JiraComment {
     type: string;
     value: string;
   };
+}
+
+export interface JiraAttachment {
+  id: string;
+  self: string;
+  filename: string;
+  author: JiraUser;
+  created: string;
+  size: number;
+  mimeType: string;
+  content: string;
+  thumbnail?: string;
 }
 
 export interface JiraProjectDetails extends JiraProject {

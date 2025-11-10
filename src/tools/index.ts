@@ -2,6 +2,7 @@
 export * from './get-visible-projects.js';
 export * from './get-issue.js';
 export * from './search-issues.js';
+export * from './search-by-epic.js';
 export * from './get-my-issues.js';
 export * from './get-issue-types.js';
 export * from './get-users.js';

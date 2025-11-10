@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2025-11-10
+
+### Added
+
+- **New tool: `jira_search_by_epic`** - Search for all issues linked to an Epic
+  - Automatically finds the correct Epic Link custom field (no need to know field IDs)
+  - Eliminates complex JQL syntax like `cf[10014] = EPIC-KEY`
+  - Supports subtask inclusion, pagination, and custom ordering
+  - Caches Epic Link field ID for performance
+  - Works across different Jira instances with different custom field configurations
+
+- **Attachment support** via MCP Resources
+  - TypeScript types for `JiraAttachment` interface
+  - Attachment metadata displayed when using `expand: ["attachments"]`
+  - Attachment download via `jira://attachment/{attachmentId}` URI scheme
+  - Automatic base64 encoding for file transport
+  - Support for all attachment types (images, PDFs, documents, etc.)
+  - Enhanced issue formatter displays attachment details (filename, size, author, download URI)
+
+### Changed
+
+- Updated `JiraIssueFields` interface to include `attachment?: JiraAttachment[]`
+- Enhanced `formatIssueResponse` to display attachment metadata with download links
+- Implemented MCP `ListResourcesRequestSchema` and `ReadResourceRequestSchema` handlers
+- Added `downloadAttachment` helper function in `api-helpers.ts`
+
+### Improved
+
+- Better UX for Epic-based searches - no custom field knowledge required
+- Complete attachment workflow from metadata to download
+- Clearer documentation with examples for new features
+
 ## [1.5.3] - 2025-01-06
 
 ### Fixed

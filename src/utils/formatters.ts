@@ -99,11 +99,24 @@ export function formatIssueResponse(issue: JiraIssue): McpToolResponse {
   const createdText = fields?.created ? new Date(fields.created).toISOString() : 'N/A';
   const updatedText = fields?.updated ? new Date(fields.updated).toISOString() : 'N/A';
 
+  // Format attachments
+  let attachmentsText = '';
+  if (fields?.attachment && Array.isArray(fields.attachment) && fields.attachment.length > 0) {
+    const attachmentsList = fields.attachment
+      .map((att) => {
+        const sizeKB = (att.size / 1024).toFixed(2);
+        const sizeMB = att.size > 1024 * 1024 ? ` (${(att.size / 1024 / 1024).toFixed(2)} MB)` : '';
+        return `  • ${att.filename} - ${sizeKB} KB${sizeMB}\n    Type: ${att.mimeType}\n    Author: ${att.author.displayName}\n    Created: ${new Date(att.created).toISOString()}\n    Download: jira://attachment/${att.id}`;
+      })
+      .join('\n\n');
+    attachmentsText = `\n\n**Attachments (${fields.attachment.length}):**\n${attachmentsList}`;
+  }
+
   return {
     content: [
       {
         type: 'text',
-        text: `**${key}: ${summary}**\n\n**Status:** ${fields?.status?.name || 'Unknown'}\n**Priority:** ${fields?.priority?.name || 'None'}\n**Assignee:** ${assigneeText}\n**Reporter:** ${reporterText}\n**Project:** ${fields?.project?.name || 'Unknown'} (${fields?.project?.key || 'N/A'})\n**Issue Type:** ${fields?.issuetype?.name || 'Unknown'}\n**Labels:** ${labelsText}\n**Components:** ${componentsText}\n**Created:** ${createdText}\n**Updated:** ${updatedText}\n\n**Description:**\n${description}`,
+        text: `**${key}: ${summary}**\n\n**Status:** ${fields?.status?.name || 'Unknown'}\n**Priority:** ${fields?.priority?.name || 'None'}\n**Assignee:** ${assigneeText}\n**Reporter:** ${reporterText}\n**Project:** ${fields?.project?.name || 'Unknown'} (${fields?.project?.key || 'N/A'})\n**Issue Type:** ${fields?.issuetype?.name || 'Unknown'}\n**Labels:** ${labelsText}\n**Components:** ${componentsText}\n**Created:** ${createdText}\n**Updated:** ${updatedText}${attachmentsText}\n\n**Description:**\n${description}`,
       },
     ],
   };

@@ -44,6 +44,37 @@ export const SearchIssuesInputSchema = z.object({
 
 export type SearchIssuesInput = z.infer<typeof SearchIssuesInputSchema>;
 
+// Search by epic
+export const SearchByEpicInputSchema = z.object({
+  epicKey: z
+    .string()
+    .min(1)
+    .describe('Epic key to search for (e.g., MDE-799)')
+    .refine((v) => isValidIssueKey(v), 'Invalid epic key format'),
+  includeSubtasks: z.boolean().optional().default(false).describe('Include subtasks in results'),
+  nextPageToken: z
+    .string()
+    .optional()
+    .describe(
+      'Token for pagination. Omit for first page, use value from previous response for next page.'
+    ),
+  maxResults: z
+    .number()
+    .min(1)
+    .max(100)
+    .default(50)
+    .describe('Maximum number of results to return per page'),
+  fields: z.array(z.string()).optional().describe('Specific fields to retrieve'),
+  expand: z.array(z.string()).optional().describe('Additional details to include'),
+  orderBy: z
+    .enum(['created', 'updated', 'priority', 'status', 'key'])
+    .optional()
+    .default('created')
+    .describe('Sort order for results'),
+});
+
+export type SearchByEpicInput = z.infer<typeof SearchByEpicInputSchema>;
+
 // Create issue
 export const CreateIssueInputSchema = z.object({
   projectKey: z

@@ -180,8 +180,9 @@ Restart Claude Desktop after adding the configuration.
 
 ### Issues
 
-- `jira_get_issue`: Retrieve issue details by key (supports optional fields/expand).
+- `jira_get_issue`: Retrieve issue details by key (supports optional fields/expand, including attachments).
 - `jira_search_issues`: Search for Jira issues using JQL with pagination and fields.
+- `jira_search_by_epic`: Search for all issues linked to an Epic (automatically handles Epic Link custom field).
 - `jira_create_issue`: Create a new issue in a project (type, priority, assignee, labels, components).
 - `jira_update_issue`: Update an existing issue (summary, description, priority, assignee, labels, components).
 - `jira_create_subtask`: Create a subtask under a parent issue (auto-detects subtask type).
@@ -202,6 +203,27 @@ Restart Claude Desktop after adding the configuration.
 ### My Work
 
 - `jira_get_my_issues`: Retrieve issues assigned to the current user (sorted by updated).
+
+### Attachments
+
+This server supports downloading Jira attachments via **MCP Resources**:
+
+- When retrieving issues with `expand: ["attachments"]`, attachment metadata is displayed
+- Attachments can be downloaded using the MCP Resource URI: `jira://attachment/{attachmentId}`
+- The server automatically converts attachments to base64 for transport
+- Supported attachment types include images, PDFs, documents, and any file type stored in Jira
+
+**Example usage:**
+```javascript
+// Get issue with attachments
+jira_get_issue({
+  issueKey: "PROJECT-123",
+  expand: ["attachments"]
+});
+
+// Response includes attachment URIs like:
+// Download: jira://attachment/10000
+```
 
 ## 🛠️ Development
 
@@ -307,6 +329,42 @@ jira_get_visible_projects({
 jira_get_visible_projects({
   recent: 10,
 });
+```
+
+### Search Issues by Epic
+
+```javascript
+// Search for all issues linked to an Epic
+jira_search_by_epic({
+  epicKey: 'PROJECT-123',
+});
+
+// Include subtasks and order by priority
+jira_search_by_epic({
+  epicKey: 'PROJECT-123',
+  includeSubtasks: true,
+  orderBy: 'priority',
+});
+
+// With pagination
+jira_search_by_epic({
+  epicKey: 'PROJECT-123',
+  maxResults: 20,
+  nextPageToken: 'token-from-previous-response',
+});
+```
+
+### Get Issue with Attachments
+
+```javascript
+// Retrieve issue with attachment metadata
+jira_get_issue({
+  issueKey: 'PROJECT-123',
+  expand: ['attachments'],
+});
+
+// The response will include attachment details with download URIs:
+// Download: jira://attachment/10000
 ```
 
 ## ❗ Troubleshooting
