@@ -12,7 +12,9 @@ import {
   JiraProjectDetails,
   JiraCreateMetaResponse,
   JiraField,
+  JiraAttachment,
 } from '../types/jira.js';
+import { formatFileSize } from './attachment-helpers.js';
 
 export function formatProjectsResponse(projects: JiraProject[]): McpToolResponse {
   const projectsList = projects
@@ -99,11 +101,15 @@ export function formatIssueResponse(issue: JiraIssue): McpToolResponse {
   const createdText = fields?.created ? new Date(fields.created).toISOString() : 'N/A';
   const updatedText = fields?.updated ? new Date(fields.updated).toISOString() : 'N/A';
 
+  // Add attachments section if present
+  const attachmentsText =
+    fields?.attachment && fields.attachment.length > 0 ? formatAttachments(fields.attachment) : '';
+
   return {
     content: [
       {
         type: 'text',
-        text: `**${key}: ${summary}**\n\n**Status:** ${fields?.status?.name || 'Unknown'}\n**Priority:** ${fields?.priority?.name || 'None'}\n**Assignee:** ${assigneeText}\n**Reporter:** ${reporterText}\n**Project:** ${fields?.project?.name || 'Unknown'} (${fields?.project?.key || 'N/A'})\n**Issue Type:** ${fields?.issuetype?.name || 'Unknown'}\n**Labels:** ${labelsText}\n**Components:** ${componentsText}\n**Created:** ${createdText}\n**Updated:** ${updatedText}\n\n**Description:**\n${description}`,
+        text: `**${key}: ${summary}**\n\n**Status:** ${fields?.status?.name || 'Unknown'}\n**Priority:** ${fields?.priority?.name || 'None'}\n**Assignee:** ${assigneeText}\n**Reporter:** ${reporterText}\n**Project:** ${fields?.project?.name || 'Unknown'} (${fields?.project?.key || 'N/A'})\n**Issue Type:** ${fields?.issuetype?.name || 'Unknown'}\n**Labels:** ${labelsText}\n**Components:** ${componentsText}\n**Created:** ${createdText}\n**Updated:** ${updatedText}\n\n**Description:**\n${description}${attachmentsText}`,
       },
     ],
   };
@@ -491,6 +497,60 @@ export function formatCustomFieldsResponse(
       {
         type: 'text',
         text: `${header}\n\n${fieldsList}`,
+      },
+    ],
+  };
+}
+
+/**
+ * Format attachment list for display
+ */
+export function formatAttachments(attachments: JiraAttachment[]): string {
+  if (!attachments || attachments.length === 0) {
+    return '';
+  }
+
+  let output = '\n**Attachments:**\n';
+
+  attachments.forEach((att, index) => {
+    const sizeFormatted = formatFileSize(att.size);
+    const createdDate = new Date(att.created).toLocaleString();
+    output += `${index + 1}. **${att.filename}** (${sizeFormatted})\n`;
+    output += `   - Type: ${att.mimeType}\n`;
+    output += `   - Created: ${createdDate}\n`;
+    output += `   - Author: ${att.author.displayName}\n`;
+    output += `   - URI: jira://attachment/${att.id}\n`;
+    if (att.thumbnail) {
+      output += `   - Thumbnail URI: jira://attachment/${att.id}/thumbnail\n`;
+    }
+    output += '\n';
+  });
+
+  return output;
+}
+
+export function formatAttachmentsResponse(
+  attachments: JiraAttachment[],
+  issueKey: string
+): McpToolResponse {
+  if (attachments.length === 0) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Issue ${issueKey} has no attachments.`,
+        },
+      ],
+    };
+  }
+
+  const formatted = formatAttachments(attachments);
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: `Found ${attachments.length} attachment(s) for ${issueKey}:\n${formatted}`,
       },
     ],
   };

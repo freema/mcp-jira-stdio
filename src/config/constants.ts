@@ -8,6 +8,10 @@ export const JIRA_CONFIG = {
     MAX_REQUESTS: 100,
     WINDOW_MS: 60000, // 1 minute
   },
+  ATTACHMENTS: {
+    MAX_SIZE_MB: parseInt(process.env.JIRA_MAX_ATTACHMENT_SIZE_MB || '10'),
+    ENABLE_THUMBNAILS: process.env.JIRA_ENABLE_THUMBNAILS !== 'false',
+  },
 } as const;
 
 export const ERROR_MESSAGES = {
@@ -37,4 +41,5 @@ export const TOOL_NAMES = {
   CREATE_SUBTASK: 'jira_create_subtask',
   GET_CREATE_META: 'jira_get_create_meta',
   GET_CUSTOM_FIELDS: 'jira_get_custom_fields',
+  LIST_ISSUE_ATTACHMENTS: 'jira_list_issue_attachments',
 } as const;

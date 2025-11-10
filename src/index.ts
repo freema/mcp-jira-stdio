@@ -45,6 +45,7 @@ const toolHandlers = new Map<string, (input: unknown) => Promise<any>>([
   [TOOL_NAMES.CREATE_SUBTASK, tools.handleCreateSubtask],
   [TOOL_NAMES.GET_CREATE_META, tools.handleGetCreateMeta],
   [TOOL_NAMES.GET_CUSTOM_FIELDS, tools.handleGetCustomFields],
+  [TOOL_NAMES.LIST_ISSUE_ATTACHMENTS, tools.handleListAttachments],
 ]);
 
 // All available tools
@@ -64,6 +65,7 @@ const allTools = [
   tools.createSubtaskTool,
   tools.getCreateMetaTool,
   tools.getCustomFieldsTool,
+  tools.listAttachmentsTool,
 ];
 
 async function main() {
@@ -141,14 +143,66 @@ async function main() {
     }
   });
 
-  // List resources (not implemented for this server)
+  // List resources (attachments discovered via tools)
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
+    console.error('📋 Listing resources (attachments available via tools)');
+    // Starting simple - return empty
+    // Users will discover attachments via jira_get_issue or jira_list_issue_attachments tools
+    // Future enhancement: List all attachments from recent issues
     return { resources: [] };
   });
 
-  // Read resource (not implemented for this server)
-  server.setRequestHandler(ReadResourceRequestSchema, async () => {
-    throw new Error('Resource reading not implemented');
+  // Read resource (download attachment content)
+  server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    const uri = request.params.uri;
+    console.error(`📥 Reading resource: ${uri}`);
+
+    try {
+      const { parseAttachmentUri, getAttachmentContent, getAttachmentMetadata, bufferToBase64 } =
+        await import('./utils/attachment-helpers.js');
+
+      // Parse URI
+      const parsed = parseAttachmentUri(uri);
+      if (!parsed) {
+        throw new Error(`Invalid attachment URI: ${uri}`);
+      }
+
+      const { attachmentId, isThumbnail } = parsed;
+
+      // Get metadata first (to know mimeType)
+      const metadata = await getAttachmentMetadata(attachmentId);
+
+      // Download content
+      const buffer = await getAttachmentContent(attachmentId, isThumbnail);
+
+      // Validate size (max 10MB for now)
+      const maxSizeMB = parseInt(process.env.JIRA_MAX_ATTACHMENT_SIZE_MB || '10');
+      const sizeMB = buffer.length / 1024 / 1024;
+      if (sizeMB > maxSizeMB) {
+        throw new Error(
+          `Attachment too large: ${sizeMB.toFixed(2)}MB (max ${maxSizeMB}MB). Configure JIRA_MAX_ATTACHMENT_SIZE_MB to increase.`
+        );
+      }
+
+      // Convert to base64
+      const base64 = bufferToBase64(buffer);
+
+      console.error(`✅ Resource ${uri} read successfully (${sizeMB.toFixed(2)}MB)`);
+
+      return {
+        contents: [
+          {
+            uri,
+            mimeType: metadata.mimeType,
+            blob: base64,
+          },
+        ],
+      };
+    } catch (error: any) {
+      console.error(`❌ Error reading resource ${uri}:`, error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to read attachment: ${errorMessage}`);
+    }
   });
 
   const transport = new StdioServerTransport();

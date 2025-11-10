@@ -31,6 +31,18 @@ export interface JiraIssue {
   fields: JiraIssueFields;
 }
 
+export interface JiraAttachment {
+  id: string;
+  self: string;
+  filename: string;
+  author: JiraUser;
+  created: string;
+  size: number;
+  mimeType: string;
+  content: string; // URL for download
+  thumbnail?: string; // URL for thumbnail (images only)
+}
+
 export interface JiraIssueFields {
   summary: string;
   description?: string;
@@ -47,6 +59,7 @@ export interface JiraIssueFields {
   components: JiraComponent[];
   fixVersions: JiraVersion[];
   versions: JiraVersion[];
+  attachment?: JiraAttachment[];
 }
 
 export interface JiraStatus {
