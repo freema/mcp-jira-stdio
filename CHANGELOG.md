@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2025-01-18
+
+### Breaking Changes
+
+- **Node.js requirement**: Minimum Node.js version increased from 18.0.0 to 20.0.0
+  - Required for compatibility with `node:inspector/promises` module used by Vitest
+  - GitHub Actions CI now tests against Node.js 20.x and 22.x only
+
+### Security
+
+- Fixed high severity vulnerabilities in `marked` package (transitive dependency via `md-to-adf`)
+  - Added npm override to force `marked >= 4.0.10` (fixes CVE-2024-XXXXX for ReDoS vulnerabilities)
+  - Resolves GHSA-rrrm-qjm4-v8hf and GHSA-5v2h-r2cx-5xgj
+
+## [1.6.2] - 2025-01-18
+
+### Added
+
+- **Issue linking tool**: Added `jira_create_issue_link` tool for creating links between Jira issues
+  - Supports common link types: "blocks", "relates", "duplicates", "clones"
+  - Smart link type mapping and direction handling (inward/outward)
+  - Intuitive parameters: `fromIssue`, `toIssue`, `linkType`
+  - Full test coverage with 25 comprehensive tests
+
+### Changed
+
+- Merged Markdown support features from main branch (version 1.6.0)
+- Updated dependencies and regenerated package-lock.json
+
 ## [1.6.0] - 2025-01-10
 
 ### Added
