@@ -88,6 +88,7 @@
     "access": "public"
   },
   "overrides": {
-    "glob": ">=11.0.4"
+    "glob": ">=11.0.4",
+    "marked": ">=4.0.10"
   }
 }
