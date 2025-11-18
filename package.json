@@ -74,7 +74,9 @@
     "dist",
     "README.md",
     "LICENSE",
-    "scripts"
+    "scripts",
+    "server.json",
+    ".mcp.json.example"
   ],
   "repository": {
     "type": "git",

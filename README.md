@@ -20,12 +20,40 @@ A Model Context Protocol (MCP) server for Jira API integration. Enables reading,
 
 The fastest way to add this MCP server to Claude Code:
 
+### Method 1: User-Scoped Installation (Recommended)
+
+Available across all your Claude Code projects:
+
 ```bash
 claude mcp add jira npx mcp-jira-stdio@latest \
   --env JIRA_BASE_URL=https://yourcompany.atlassian.net \
   --env JIRA_EMAIL=your-email@example.com \
   --env JIRA_API_TOKEN=your-api-token
 ```
+
+### Method 2: Project-Scoped Installation
+
+Share configuration with your team via version control:
+
+```bash
+claude mcp add jira npx mcp-jira-stdio@latest \
+  --scope project \
+  --env JIRA_BASE_URL='${JIRA_BASE_URL}' \
+  --env JIRA_EMAIL='${JIRA_EMAIL}' \
+  --env JIRA_API_TOKEN='${JIRA_API_TOKEN}'
+```
+
+This creates a `.mcp.json` file in your project root. Team members need to set the environment variables locally. See [.mcp.json.example](.mcp.json.example) for the configuration format.
+
+### Method 3: Install from GitHub MCP Registry
+
+```bash
+claude mcp install io.github.freema/mcp-jira-stdio
+```
+
+Then configure your Jira credentials in Claude Code settings.
+
+---
 
 Replace the values with your actual Jira credentials:
 - **JIRA_BASE_URL**: Your Jira instance URL (e.g., `https://yourcompany.atlassian.net`)

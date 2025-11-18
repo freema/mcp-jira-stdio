@@ -1,0 +1,48 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "io.github.freema/mcp-jira-stdio",
+  "title": "Jira MCP Server",
+  "description": "Model Context Protocol (MCP) server for Jira API integration. Enables reading, writing, and managing Jira issues and projects directly from your MCP client.",
+  "version": "1.6.1",
+  "homepage": "https://github.com/freema/mcp-jira-stdio",
+  "license": "MIT",
+  "keywords": [
+    "jira",
+    "atlassian",
+    "mcp",
+    "model-context-protocol",
+    "issue-tracking",
+    "project-management"
+  ],
+  "author": {
+    "name": "graslt"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "mcp-jira-stdio",
+      "version": "1.6.1",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ],
+  "capabilities": {
+    "tools": true,
+    "resources": true
+  },
+  "environmentVariables": {
+    "JIRA_BASE_URL": {
+      "description": "Your Jira instance URL (e.g., https://yourcompany.atlassian.net)",
+      "required": true
+    },
+    "JIRA_EMAIL": {
+      "description": "Your Jira account email address",
+      "required": true
+    },
+    "JIRA_API_TOKEN": {
+      "description": "Your Jira API token (generate at https://id.atlassian.com/manage-profile/security/api-tokens)",
+      "required": true
+    }
+  }
+}
