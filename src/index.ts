@@ -45,6 +45,7 @@ const toolHandlers = new Map<string, (input: unknown) => Promise<any>>([
   [TOOL_NAMES.CREATE_SUBTASK, tools.handleCreateSubtask],
   [TOOL_NAMES.GET_CREATE_META, tools.handleGetCreateMeta],
   [TOOL_NAMES.GET_CUSTOM_FIELDS, tools.handleGetCustomFields],
+  [TOOL_NAMES.LINK_ISSUES, tools.handleLinkIssues],
 ]);
 
 // All available tools
@@ -64,6 +65,7 @@ const allTools = [
   tools.createSubtaskTool,
   tools.getCreateMetaTool,
   tools.getCustomFieldsTool,
+  tools.linkIssuesTool,
 ];
 
 async function main() {

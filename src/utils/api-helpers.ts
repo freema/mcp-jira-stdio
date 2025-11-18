@@ -650,3 +650,30 @@ export async function getFields(): Promise<JiraField[]> {
 
   return await makeJiraRequest<JiraField[]>(config);
 }
+
+export async function linkIssues(
+  inwardIssueKey: string,
+  outwardIssueKey: string,
+  linkType: string,
+  comment?: string
+): Promise<void> {
+  const data: any = {
+    type: { name: linkType },
+    inwardIssue: { key: inwardIssueKey },
+    outwardIssue: { key: outwardIssueKey },
+  };
+
+  if (comment) {
+    data.comment = {
+      body: ensureAdfDescription(comment),
+    };
+  }
+
+  const config: AxiosRequestConfig = {
+    method: 'POST',
+    url: '/issueLink',
+    data,
+  };
+
+  await makeJiraRequest(config);
+}

@@ -225,3 +225,19 @@ export const GetCustomFieldsInputSchema = z.object({
 });
 
 export type GetCustomFieldsInput = z.infer<typeof GetCustomFieldsInputSchema>;
+
+// Link issues
+export const LinkIssuesInputSchema = z.object({
+  inwardIssueKey: z
+    .string()
+    .describe('Issue key to link from (e.g., PROJECT-123)')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+  outwardIssueKey: z
+    .string()
+    .describe('Issue key to link to (e.g., PROJECT-456)')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+  linkType: z.string().min(1).describe('Type of link (e.g., "Blocks", "Relates", "Duplicates")'),
+  comment: z.string().optional().describe('Optional comment for the link'),
+});
+
+export type LinkIssuesInput = z.infer<typeof LinkIssuesInputSchema>;
