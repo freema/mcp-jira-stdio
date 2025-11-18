@@ -70,6 +70,13 @@ export const CreateIssueInputSchema = z.object({
     .boolean()
     .optional()
     .describe('When false, skip fetching full issue after creation'),
+  format: z
+    .enum(['markdown', 'adf', 'plain'])
+    .optional()
+    .default('markdown')
+    .describe(
+      'Description format: "markdown" (converts Markdown to ADF), "adf" (use as-is ADF object), "plain" (converts plain text to ADF with basic formatting). Default: "markdown"'
+    ),
 });
 
 export type CreateIssueInput = z.infer<typeof CreateIssueInputSchema>;
@@ -90,6 +97,13 @@ export const UpdateIssueInputSchema = z.object({
   labels: z.array(z.string()).optional().describe('New labels (replaces existing)'),
   components: z.array(z.string()).optional().describe('New components (replaces existing)'),
   returnIssue: z.boolean().optional().describe('When false, skip fetching full issue after update'),
+  format: z
+    .enum(['markdown', 'adf', 'plain'])
+    .optional()
+    .default('markdown')
+    .describe(
+      'Description format: "markdown" (converts Markdown to ADF), "adf" (use as-is ADF object), "plain" (converts plain text to ADF with basic formatting). Default: "markdown"'
+    ),
 });
 
 export type UpdateIssueInput = z.infer<typeof UpdateIssueInputSchema>;
@@ -170,6 +184,13 @@ export const AddCommentInputSchema = z.object({
     })
     .optional()
     .describe('Comment visibility restrictions'),
+  format: z
+    .enum(['markdown', 'adf', 'plain'])
+    .optional()
+    .default('markdown')
+    .describe(
+      'Comment format: "markdown" (converts Markdown to ADF), "adf" (use as-is ADF object), "plain" (converts plain text to ADF with basic formatting). Default: "markdown"'
+    ),
 });
 
 export type AddCommentInput = z.infer<typeof AddCommentInputSchema>;
@@ -197,6 +218,13 @@ export const CreateSubtaskInputSchema = z.object({
   assignee: z.string().optional().describe('Assignee account ID'),
   labels: z.array(z.string()).optional().describe('Subtask labels'),
   components: z.array(z.string()).optional().describe('Component names'),
+  format: z
+    .enum(['markdown', 'adf', 'plain'])
+    .optional()
+    .default('markdown')
+    .describe(
+      'Description format: "markdown" (converts Markdown to ADF), "adf" (use as-is ADF object), "plain" (converts plain text to ADF with basic formatting). Default: "markdown"'
+    ),
 });
 
 export type CreateSubtaskInput = z.infer<typeof CreateSubtaskInputSchema>;
@@ -226,18 +254,21 @@ export const GetCustomFieldsInputSchema = z.object({
 
 export type GetCustomFieldsInput = z.infer<typeof GetCustomFieldsInputSchema>;
 
-// Link issues
-export const LinkIssuesInputSchema = z.object({
-  inwardIssueKey: z
+// Create issue link
+export const CreateIssueLinkInputSchema = z.object({
+  fromIssue: z
     .string()
-    .describe('Issue key to link from (e.g., PROJECT-123)')
+    .describe('Source issue key')
     .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
-  outwardIssueKey: z
+  toIssue: z
     .string()
-    .describe('Issue key to link to (e.g., PROJECT-456)')
+    .describe('Target issue key')
     .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
-  linkType: z.string().min(1).describe('Type of link (e.g., "Blocks", "Relates", "Duplicates")'),
-  comment: z.string().optional().describe('Optional comment for the link'),
+  linkType: z
+    .string()
+    .describe(
+      'Link type: "blocks", "is blocked by", "relates", "duplicates", "clones", or custom link type name'
+    ),
 });
 
-export type LinkIssuesInput = z.infer<typeof LinkIssuesInputSchema>;
+export type CreateIssueLinkInput = z.infer<typeof CreateIssueLinkInputSchema>;

@@ -16,17 +16,36 @@ import {
 } from '../types/jira.js';
 import { PaginatedResponse } from '../types/common.js';
 import { sanitizeJQL } from './validators.js';
+import mdToAdf from 'md-to-adf';
 
-// Convert a plain string into a nicely structured Atlassian Document Format (ADF) document.
-// Heuristics:
-// - Lines like "Heading:" become heading level 3 without the colon
-// - Consecutive lines starting with "1. ", "2. ", ... form an orderedList
-// - Lines starting with "- ", "• " form a bulletList
-// - URLs are linkified
-function ensureAdfDescription(desc: any): any {
+// Convert a description into Atlassian Document Format (ADF) based on the specified format.
+// Supports three formats:
+// - 'markdown': Converts Markdown syntax to ADF using md-to-adf
+// - 'adf': Returns the description as-is (assumes it's already an ADF object)
+// - 'plain': Converts plain text to ADF with basic formatting heuristics
+function ensureAdfDescription(desc: any, format: 'markdown' | 'adf' | 'plain' = 'markdown'): any {
   if (!desc) return desc;
   if (typeof desc === 'object') return desc; // assume already ADF
   if (typeof desc !== 'string') return desc;
+
+  // Handle markdown format
+  if (format === 'markdown') {
+    try {
+      return mdToAdf(desc);
+    } catch (error) {
+      // If markdown conversion fails, fall back to plain text conversion
+      console.warn('Markdown to ADF conversion failed, falling back to plain text:', error);
+      format = 'plain';
+    }
+  }
+
+  // Handle ADF format (already handled above with typeof === 'object')
+  if (format === 'adf') {
+    return desc;
+  }
+
+  // Handle plain text format with basic heuristics
+  // (original ensureAdfDescription logic below)
 
   const urlRegex = /https?:\/\/[^\s)]+/g;
 
@@ -248,8 +267,9 @@ export async function searchIssues(options: {
     data.fields = options.fields;
   }
 
-  if (options.expand) {
-    data.expand = options.expand;
+  if (options.expand && options.expand.length > 0) {
+    // Jira API expects expand as comma-separated string for POST /search/jql
+    data.expand = options.expand.join(',');
   }
 
   const config: AxiosRequestConfig = {
@@ -272,6 +292,7 @@ export async function createIssue(
     labels?: string[];
     components?: string[];
     customFields?: Record<string, any>;
+    format?: 'markdown' | 'adf' | 'plain';
   },
   options: { returnIssue?: boolean } = { returnIssue: true }
 ): Promise<JiraIssue | string> {
@@ -282,7 +303,10 @@ export async function createIssue(
   };
 
   if (issueData.description !== undefined) {
-    fields.description = ensureAdfDescription(issueData.description);
+    fields.description = ensureAdfDescription(
+      issueData.description,
+      issueData.format || 'markdown'
+    );
   }
 
   if (issueData.priority) {
@@ -336,6 +360,7 @@ export async function updateIssue(
     assignee?: string;
     labels?: string[];
     components?: string[];
+    format?: 'markdown' | 'adf' | 'plain';
   }
 ): Promise<void> {
   const fields: Record<string, any> = {};
@@ -345,7 +370,7 @@ export async function updateIssue(
   }
 
   if (updates.description !== undefined) {
-    fields.description = ensureAdfDescription(updates.description);
+    fields.description = ensureAdfDescription(updates.description, updates.format || 'markdown');
   }
 
   if (updates.priority !== undefined) {
@@ -506,10 +531,11 @@ export async function getStatuses(
 export async function addComment(
   issueKey: string,
   body: string,
-  visibility?: { type: string; value: string }
+  visibility?: { type: string; value: string },
+  format?: 'markdown' | 'adf' | 'plain'
 ): Promise<JiraComment> {
   // Convert body to ADF format (Jira expects ADF for comments)
-  const adfBody = ensureAdfDescription(body);
+  const adfBody = ensureAdfDescription(body, format || 'markdown');
 
   const data: any = {
     body: adfBody,
@@ -556,6 +582,7 @@ export async function createSubtask(
     assignee?: string;
     labels?: string[];
     components?: string[];
+    format?: 'markdown' | 'adf' | 'plain';
   }
 ): Promise<JiraIssue> {
   // First get parent issue to determine project and subtask issue type
@@ -578,7 +605,10 @@ export async function createSubtask(
   };
 
   if (subtaskData.description !== undefined) {
-    fields.description = ensureAdfDescription(subtaskData.description);
+    fields.description = ensureAdfDescription(
+      subtaskData.description,
+      subtaskData.format || 'markdown'
+    );
   }
 
   if (subtaskData.priority) {
@@ -651,22 +681,48 @@ export async function getFields(): Promise<JiraField[]> {
   return await makeJiraRequest<JiraField[]>(config);
 }
 
-export async function linkIssues(
-  inwardIssueKey: string,
-  outwardIssueKey: string,
-  linkType: string,
-  comment?: string
+export async function createIssueLink(
+  fromIssue: string,
+  toIssue: string,
+  linkType: string
 ): Promise<void> {
-  const data: any = {
-    type: { name: linkType },
-    inwardIssue: { key: inwardIssueKey },
-    outwardIssue: { key: outwardIssueKey },
+  // Map common link type names to Jira link type format
+  // Jira link types are case-sensitive
+  const linkTypeMap: Record<string, string> = {
+    blocks: 'Blocks',
+    'is blocked by': 'Blocks',
+    relates: 'Relates',
+    'relates to': 'Relates',
+    duplicates: 'Duplicate',
+    duplicate: 'Duplicate',
+    'is duplicated by': 'Duplicate',
+    clones: 'Cloners',
+    'is cloned by': 'Cloners',
   };
 
-  if (comment) {
-    data.comment = {
-      body: ensureAdfDescription(comment),
-    };
+  const normalizedLinkType = linkType.toLowerCase();
+  const jiraLinkType = linkTypeMap[normalizedLinkType] || linkType;
+
+  // Determine issue direction based on link type
+  // For "blocks": fromIssue blocks toIssue (fromIssue = outward, toIssue = inward)
+  // For "is blocked by": fromIssue is blocked by toIssue (fromIssue = inward, toIssue = outward)
+  const isInward =
+    normalizedLinkType === 'is blocked by' ||
+    normalizedLinkType === 'is duplicated by' ||
+    normalizedLinkType === 'is cloned by';
+
+  const data: any = {
+    type: {
+      name: jiraLinkType,
+    },
+  };
+
+  if (isInward) {
+    data.inwardIssue = { key: fromIssue };
+    data.outwardIssue = { key: toIssue };
+  } else {
+    data.outwardIssue = { key: fromIssue };
+    data.inwardIssue = { key: toIssue };
   }
 
   const config: AxiosRequestConfig = {

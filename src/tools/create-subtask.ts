@@ -13,7 +13,7 @@ const log = createLogger('tool:create-subtask');
 export const createSubtaskTool: Tool = {
   name: TOOL_NAMES.CREATE_SUBTASK,
   description:
-    'Creates a subtask under an existing parent issue. Automatically determines the correct project and subtask issue type. Supports setting priority, assignee, labels, and components.',
+    'Creates a subtask under an existing parent issue. Automatically determines the correct project and subtask issue type. Supports setting priority, assignee, labels, and components. Description format is controlled by the "format" parameter (default: markdown).',
   inputSchema: {
     type: 'object',
     properties: {
@@ -28,7 +28,8 @@ export const createSubtaskTool: Tool = {
       },
       description: {
         type: 'string',
-        description: 'Detailed subtask description (optional)',
+        description:
+          'Detailed subtask description (optional). Format depends on the "format" parameter.',
       },
       priority: {
         type: 'string',
@@ -50,6 +51,13 @@ export const createSubtaskTool: Tool = {
         description: 'Component names (optional)',
         default: [],
       },
+      format: {
+        type: 'string',
+        enum: ['markdown', 'adf', 'plain'],
+        description:
+          'Description format: "markdown" (converts Markdown to ADF, default), "adf" (use as-is ADF object), "plain" (converts plain text to ADF with basic formatting)',
+        default: 'markdown',
+      },
     },
     required: ['parentIssueKey', 'summary'],
   },
@@ -70,6 +78,7 @@ export async function handleCreateSubtask(input: unknown): Promise<McpToolRespon
     if (validated.assignee !== undefined) subtaskParams.assignee = validated.assignee;
     if (validated.labels !== undefined) subtaskParams.labels = validated.labels;
     if (validated.components !== undefined) subtaskParams.components = validated.components;
+    if (validated.format !== undefined) subtaskParams.format = validated.format;
 
     const subtask = await createSubtask(validated.parentIssueKey, subtaskParams);
 

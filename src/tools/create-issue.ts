@@ -14,7 +14,7 @@ const log = createLogger('tool:create-issue');
 export const createIssueTool: Tool = {
   name: TOOL_NAMES.CREATE_ISSUE,
   description:
-    'Creates a new Jira issue in the specified project. Supports setting issue type, priority, assignee, labels, components, and custom fields. Description accepts plain text and is auto-formatted to ADF: lines ending with ":" become headings, numbered lines create ordered lists, and URLs are linkified. For required custom fields, supply them via customFields (e.g., { "customfield_12345": { id: "..." } }). Returns the created issue with all details.',
+    'Creates a new Jira issue in the specified project. Supports setting issue type, priority, assignee, labels, components, and custom fields. Description format is controlled by the "format" parameter (default: markdown). For required custom fields, supply them via customFields (e.g., { "customfield_12345": { id: "..." } }). Returns the created issue with all details.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -30,7 +30,7 @@ export const createIssueTool: Tool = {
       description: {
         anyOf: [{ type: 'string' }, { type: 'object' }],
         description:
-          'Detailed issue description (optional). Accepts plain text (auto-formatted to ADF) or an ADF document.',
+          'Detailed issue description (optional). Format depends on the "format" parameter.',
       },
       issueType: {
         type: 'string',
@@ -67,6 +67,13 @@ export const createIssueTool: Tool = {
         description: 'If false, returns only the issue key without fetching full details',
         default: true,
       },
+      format: {
+        type: 'string',
+        enum: ['markdown', 'adf', 'plain'],
+        description:
+          'Description format: "markdown" (converts Markdown to ADF, default), "adf" (use as-is ADF object), "plain" (converts plain text to ADF with basic formatting)',
+        default: 'markdown',
+      },
     },
     required: ['projectKey', 'summary', 'issueType'],
   },
@@ -90,6 +97,7 @@ export async function handleCreateIssue(input: unknown): Promise<McpToolResponse
     if (validated.labels !== undefined) createParams.labels = validated.labels;
     if (validated.components !== undefined) createParams.components = validated.components;
     if (validated.customFields !== undefined) createParams.customFields = validated.customFields;
+    if (validated.format !== undefined) createParams.format = validated.format;
 
     let issueOrKey;
     if (validated.returnIssue === false) {
