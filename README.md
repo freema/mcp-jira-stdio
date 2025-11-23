@@ -338,6 +338,18 @@ jira_get_visible_projects({
 - Look for errors in Claude Desktop logs
 - Use `task inspector` to debug
 
+**Timeout when running multiple instances with npx**
+
+If you're running multiple Claude Code sessions simultaneously and experience timeouts, this is caused by `npx` cache/registry locking — not the MCP server itself. Each instance tries to verify the package, causing conflicts. To fix this, install the package globally instead:
+
+```bash
+npm install -g mcp-jira-stdio
+claude mcp add jira mcp-jira-stdio \
+  --env JIRA_BASE_URL=... \
+  --env JIRA_EMAIL=... \
+  --env JIRA_API_TOKEN=...
+```
+
 ### Debug Commands
 
 ```bash
