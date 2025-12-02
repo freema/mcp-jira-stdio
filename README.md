@@ -393,6 +393,10 @@ npm run inspector
 5. Push to the branch (`git push origin feature/amazing-feature`)
 6. Open a Pull Request
 
+## 👤 Author
+
+**Tomáš Grasl** - [tomasgrasl.cz](https://www.tomasgrasl.cz/)
+
 ## 📄 License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
