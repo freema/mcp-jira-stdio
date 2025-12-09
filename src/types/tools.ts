@@ -272,3 +272,24 @@ export const CreateIssueLinkInputSchema = z.object({
 });
 
 export type CreateIssueLinkInput = z.infer<typeof CreateIssueLinkInputSchema>;
+
+// Get comments
+export const GetCommentsInputSchema = z.object({
+  issueKey: z
+    .string()
+    .describe('Issue key to get comments for (e.g., PROJECT-123)')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+  maxResults: z
+    .number()
+    .min(1)
+    .max(100)
+    .optional()
+    .describe('Maximum number of comments to return (default: 50)'),
+  orderBy: z
+    .enum(['created', '-created', '+created'])
+    .optional()
+    .describe('Sort order for comments: "created" (oldest first), "-created" (newest first)'),
+  startAt: z.number().min(0).optional().describe('Index of first comment to return (for pagination)'),
+});
+
+export type GetCommentsInput = z.infer<typeof GetCommentsInputSchema>;

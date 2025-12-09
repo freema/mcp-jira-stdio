@@ -9,6 +9,7 @@ import {
   JiraPriority,
   JiraStatus,
   JiraComment,
+  JiraCommentsResponse,
   JiraProjectDetails,
   JiraCreateIssueResponse,
   JiraCreateMetaResponse,
@@ -552,6 +553,37 @@ export async function addComment(
   };
 
   return await makeJiraRequest<JiraComment>(config);
+}
+
+export async function getComments(
+  issueKey: string,
+  options: {
+    maxResults?: number;
+    orderBy?: string;
+    startAt?: number;
+  } = {}
+): Promise<JiraCommentsResponse> {
+  const params: Record<string, any> = {};
+
+  if (options.maxResults !== undefined) {
+    params.maxResults = options.maxResults;
+  }
+
+  if (options.orderBy !== undefined) {
+    params.orderBy = options.orderBy;
+  }
+
+  if (options.startAt !== undefined) {
+    params.startAt = options.startAt;
+  }
+
+  const config: AxiosRequestConfig = {
+    method: 'GET',
+    url: `/issue/${issueKey}/comment`,
+    params,
+  };
+
+  return await makeJiraRequest<JiraCommentsResponse>(config);
 }
 
 export async function getProjectDetails(
