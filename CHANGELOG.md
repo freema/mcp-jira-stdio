@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2025-12-09
+
+### Fixed
+
+- Fixed Prettier formatting issues in `src/types/tools.ts` and `src/utils/formatters.ts`
+  - Corrected multi-line formatting for Zod schema chains
+  - Corrected ternary operator formatting in pagination logic
+
 ## [1.7.0] - 2025-01-18
 
 ### Breaking Changes
