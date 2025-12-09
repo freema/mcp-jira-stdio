@@ -9,6 +9,7 @@ import {
   JiraPriority,
   JiraStatus,
   JiraComment,
+  JiraCommentsResponse,
   JiraProjectDetails,
   JiraCreateMetaResponse,
   JiraField,
@@ -338,6 +339,55 @@ export function formatCommentResponse(comment: JiraComment): McpToolResponse {
 
 **Content:**
 ${comment.body}`,
+      },
+    ],
+  };
+}
+
+export function formatCommentsResponse(
+  response: JiraCommentsResponse,
+  issueKey: string
+): McpToolResponse {
+  if (!response.comments || response.comments.length === 0) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `No comments found for issue ${issueKey}.`,
+        },
+      ],
+    };
+  }
+
+  const commentsList = response.comments
+    .map((comment) => {
+      const bodyText =
+        typeof comment.body === 'string' ? comment.body : adfToPlainText(comment.body);
+
+      const visibilityText = comment.visibility
+        ? ` [${comment.visibility.type}: ${comment.visibility.value}]`
+        : '';
+
+      const authorName = comment.author?.displayName || 'Unknown';
+      const createdDate = comment.created ? new Date(comment.created).toISOString() : 'N/A';
+      const updatedDate = comment.updated ? new Date(comment.updated).toISOString() : 'N/A';
+      const wasEdited = comment.created !== comment.updated;
+
+      return `**${authorName}** - ${createdDate}${wasEdited ? ` (edited: ${updatedDate})` : ''}${visibilityText}\n${bodyText}`;
+    })
+    .join('\n\n---\n\n');
+
+  const total = response.total;
+  const showingStart = response.startAt + 1;
+  const showingEnd = Math.min(response.startAt + response.comments.length, total);
+  const paginationInfo =
+    total > response.comments.length ? `\n\n*Showing ${showingStart}-${showingEnd} of ${total} comments*` : '';
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: `**Comments for ${issueKey}** (${response.comments.length} comment${response.comments.length !== 1 ? 's' : ''}):\n\n${commentsList}${paginationInfo}`,
       },
     ],
   };

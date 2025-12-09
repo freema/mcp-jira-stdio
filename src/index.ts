@@ -46,6 +46,7 @@ const toolHandlers = new Map<string, (input: unknown) => Promise<any>>([
   [TOOL_NAMES.GET_CREATE_META, tools.handleGetCreateMeta],
   [TOOL_NAMES.GET_CUSTOM_FIELDS, tools.handleGetCustomFields],
   [TOOL_NAMES.CREATE_ISSUE_LINK, tools.handleCreateIssueLink],
+  [TOOL_NAMES.GET_COMMENTS, tools.handleGetComments],
 ]);
 
 // All available tools
@@ -66,6 +67,7 @@ const allTools = [
   tools.getCreateMetaTool,
   tools.getCustomFieldsTool,
   tools.createIssueLinkTool,
+  tools.getCommentsTool,
 ];
 
 async function main() {

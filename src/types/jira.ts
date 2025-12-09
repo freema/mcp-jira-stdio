@@ -146,6 +146,13 @@ export interface JiraComment {
   };
 }
 
+export interface JiraCommentsResponse {
+  startAt: number;
+  maxResults: number;
+  total: number;
+  comments: JiraComment[];
+}
+
 export interface JiraProjectDetails extends JiraProject {
   lead?: JiraUser;
   components: JiraComponent[];

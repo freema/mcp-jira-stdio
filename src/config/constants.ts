@@ -38,4 +38,5 @@ export const TOOL_NAMES = {
   GET_CREATE_META: 'jira_get_create_meta',
   GET_CUSTOM_FIELDS: 'jira_get_custom_fields',
   CREATE_ISSUE_LINK: 'jira_create_issue_link',
+  GET_COMMENTS: 'jira_get_comments',
 } as const;
