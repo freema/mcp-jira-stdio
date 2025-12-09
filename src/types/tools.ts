@@ -289,7 +289,11 @@ export const GetCommentsInputSchema = z.object({
     .enum(['created', '-created', '+created'])
     .optional()
     .describe('Sort order for comments: "created" (oldest first), "-created" (newest first)'),
-  startAt: z.number().min(0).optional().describe('Index of first comment to return (for pagination)'),
+  startAt: z
+    .number()
+    .min(0)
+    .optional()
+    .describe('Index of first comment to return (for pagination)'),
 });
 
 export type GetCommentsInput = z.infer<typeof GetCommentsInputSchema>;

@@ -381,7 +381,9 @@ export function formatCommentsResponse(
   const showingStart = response.startAt + 1;
   const showingEnd = Math.min(response.startAt + response.comments.length, total);
   const paginationInfo =
-    total > response.comments.length ? `\n\n*Showing ${showingStart}-${showingEnd} of ${total} comments*` : '';
+    total > response.comments.length
+      ? `\n\n*Showing ${showingStart}-${showingEnd} of ${total} comments*`
+      : '';
 
   return {
     content: [
