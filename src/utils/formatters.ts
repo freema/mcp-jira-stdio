@@ -13,6 +13,7 @@ import {
   JiraProjectDetails,
   JiraCreateMetaResponse,
   JiraField,
+  JiraAttachment,
 } from '../types/jira.js';
 
 export function formatProjectsResponse(projects: JiraProject[]): McpToolResponse {
@@ -544,6 +545,78 @@ export function formatCustomFieldsResponse(
       {
         type: 'text',
         text: `${header}\n\n${fieldsList}`,
+      },
+    ],
+  };
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function formatAttachmentResponse(
+  attachment: JiraAttachment,
+  issueKey: string
+): McpToolResponse {
+  const authorName = attachment.author?.displayName || 'Unknown';
+  const createdDate = attachment.created ? new Date(attachment.created).toISOString() : 'N/A';
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: `**Attachment uploaded successfully to ${issueKey}**
+
+**Filename:** ${attachment.filename}
+**ID:** ${attachment.id}
+**Size:** ${formatFileSize(attachment.size)}
+**MIME Type:** ${attachment.mimeType}
+**Author:** ${authorName}
+**Created:** ${createdDate}
+**Download URL:** ${attachment.content}
+${attachment.thumbnail ? `**Thumbnail:** ${attachment.thumbnail}` : ''}
+
+💡 **Tip:** To embed this image in a comment or description, use: \`!${attachment.filename}!\` or \`!${attachment.filename}|thumbnail!\``,
+      },
+    ],
+  };
+}
+
+export function formatAttachmentsListResponse(
+  attachments: JiraAttachment[],
+  issueKey: string
+): McpToolResponse {
+  if (!attachments || attachments.length === 0) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `No attachments found for issue ${issueKey}.`,
+        },
+      ],
+    };
+  }
+
+  const attachmentsList = attachments
+    .map((attachment) => {
+      const authorName = attachment.author?.displayName || 'Unknown';
+      const createdDate = attachment.created ? new Date(attachment.created).toISOString() : 'N/A';
+      const thumbnailInfo = attachment.thumbnail ? ' (has thumbnail)' : '';
+
+      return `• **${attachment.filename}** (ID: ${attachment.id})
+  Size: ${formatFileSize(attachment.size)} | Type: ${attachment.mimeType}${thumbnailInfo}
+  Author: ${authorName} | Created: ${createdDate}
+  URL: ${attachment.content}`;
+    })
+    .join('\n\n');
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: `**Attachments for ${issueKey}** (${attachments.length} attachment${attachments.length !== 1 ? 's' : ''}):\n\n${attachmentsList}\n\n💡 **Tip:** To embed an image in a comment or description, use: \`!filename.png!\` or \`!filename.png|thumbnail!\``,
       },
     ],
   };

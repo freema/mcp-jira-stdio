@@ -297,3 +297,39 @@ export const GetCommentsInputSchema = z.object({
 });
 
 export type GetCommentsInput = z.infer<typeof GetCommentsInputSchema>;
+
+// Add attachment
+export const AddAttachmentInputSchema = z.object({
+  issueKey: z
+    .string()
+    .describe('Issue key to add attachment to (e.g., PROJECT-123)')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+  filename: z.string().min(1).describe('Name of the file to attach'),
+  content: z.string().min(1).describe('Base64-encoded file content or plain text content'),
+  isBase64: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe(
+      'Whether content is base64-encoded (default: true). Set to false for plain text files.'
+    ),
+});
+
+export type AddAttachmentInput = z.infer<typeof AddAttachmentInputSchema>;
+
+// Get attachments
+export const GetAttachmentsInputSchema = z.object({
+  issueKey: z
+    .string()
+    .describe('Issue key to get attachments for (e.g., PROJECT-123)')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+});
+
+export type GetAttachmentsInput = z.infer<typeof GetAttachmentsInputSchema>;
+
+// Delete attachment
+export const DeleteAttachmentInputSchema = z.object({
+  attachmentId: z.string().min(1).describe('ID of the attachment to delete'),
+});
+
+export type DeleteAttachmentInput = z.infer<typeof DeleteAttachmentInputSchema>;

@@ -39,4 +39,7 @@ export const TOOL_NAMES = {
   GET_CUSTOM_FIELDS: 'jira_get_custom_fields',
   CREATE_ISSUE_LINK: 'jira_create_issue_link',
   GET_COMMENTS: 'jira_get_comments',
+  ADD_ATTACHMENT: 'jira_add_attachment',
+  GET_ATTACHMENTS: 'jira_get_attachments',
+  DELETE_ATTACHMENT: 'jira_delete_attachment',
 } as const;

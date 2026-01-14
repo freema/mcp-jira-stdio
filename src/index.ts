@@ -47,6 +47,9 @@ const toolHandlers = new Map<string, (input: unknown) => Promise<any>>([
   [TOOL_NAMES.GET_CUSTOM_FIELDS, tools.handleGetCustomFields],
   [TOOL_NAMES.CREATE_ISSUE_LINK, tools.handleCreateIssueLink],
   [TOOL_NAMES.GET_COMMENTS, tools.handleGetComments],
+  [TOOL_NAMES.ADD_ATTACHMENT, tools.handleAddAttachment],
+  [TOOL_NAMES.GET_ATTACHMENTS, tools.handleGetAttachments],
+  [TOOL_NAMES.DELETE_ATTACHMENT, tools.handleDeleteAttachment],
 ]);
 
 // All available tools
@@ -68,6 +71,9 @@ const allTools = [
   tools.getCustomFieldsTool,
   tools.createIssueLinkTool,
   tools.getCommentsTool,
+  tools.addAttachmentTool,
+  tools.getAttachmentsTool,
+  tools.deleteAttachmentTool,
 ];
 
 async function main() {

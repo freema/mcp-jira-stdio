@@ -1,5 +1,6 @@
 import { AxiosRequestConfig } from 'axios';
-import { makeJiraRequest } from './jira-auth.js';
+import FormData from 'form-data';
+import { makeJiraRequest, makeMultipartRequest } from './jira-auth.js';
 import {
   JiraProject,
   JiraIssue,
@@ -14,6 +15,7 @@ import {
   JiraCreateIssueResponse,
   JiraCreateMetaResponse,
   JiraField,
+  JiraAttachment,
 } from '../types/jira.js';
 import { PaginatedResponse } from '../types/common.js';
 import { sanitizeJQL } from './validators.js';
@@ -761,6 +763,48 @@ export async function createIssueLink(
     method: 'POST',
     url: '/issueLink',
     data,
+  };
+
+  await makeJiraRequest(config);
+}
+
+export async function addAttachment(
+  issueKey: string,
+  filename: string,
+  content: string,
+  isBase64: boolean = true
+): Promise<JiraAttachment[]> {
+  const formData = new FormData();
+
+  // Convert content to buffer
+  let fileBuffer: Buffer;
+  if (isBase64) {
+    fileBuffer = Buffer.from(content, 'base64');
+  } else {
+    fileBuffer = Buffer.from(content, 'utf-8');
+  }
+
+  formData.append('file', fileBuffer, {
+    filename: filename,
+    contentType: 'application/octet-stream',
+  });
+
+  return await makeMultipartRequest<JiraAttachment[]>(`/issue/${issueKey}/attachments`, formData);
+}
+
+export async function getAttachments(issueKey: string): Promise<JiraAttachment[]> {
+  // Get the issue with attachments expanded
+  const issue = await getIssue(issueKey, { fields: ['attachment'] });
+
+  // Attachments are in fields.attachment
+  const attachments = (issue.fields as any).attachment || [];
+  return attachments;
+}
+
+export async function deleteAttachment(attachmentId: string): Promise<void> {
+  const config: AxiosRequestConfig = {
+    method: 'DELETE',
+    url: `/attachment/${attachmentId}`,
   };
 
   await makeJiraRequest(config);
