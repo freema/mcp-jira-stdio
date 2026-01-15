@@ -21,6 +21,12 @@ export const ERROR_MESSAGES = {
   VALIDATION_ERROR: 'Input validation failed.',
 } as const;
 
+export const ATTACHMENT_CONFIG = {
+  MAX_FILE_SIZE: 50 * 1024 * 1024, // 50 MB - Jira attachment size limit
+  MAX_BASE64_SIZE: 10 * 1024 * 1024, // 10 MB for base64 content (token limit warning)
+  ALLOWED_PROTOCOLS: ['http:', 'https:'],
+} as const;
+
 export const TOOL_NAMES = {
   GET_VISIBLE_PROJECTS: 'jira_get_visible_projects',
   GET_ISSUE: 'jira_get_issue',
@@ -39,4 +45,7 @@ export const TOOL_NAMES = {
   GET_CUSTOM_FIELDS: 'jira_get_custom_fields',
   CREATE_ISSUE_LINK: 'jira_create_issue_link',
   GET_COMMENTS: 'jira_get_comments',
+  ADD_ATTACHMENT: 'jira_add_attachment',
+  GET_ATTACHMENTS: 'jira_get_attachments',
+  DELETE_ATTACHMENT: 'jira_delete_attachment',
 } as const;

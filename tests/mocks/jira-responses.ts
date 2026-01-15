@@ -244,3 +244,29 @@ export const mockJiraCreateMetaResponse = {
     },
   ],
 };
+
+// Attachment responses
+export const mockJiraAttachment = {
+  id: 'test-attachment-id-123',
+  self: 'https://test.atlassian.net/rest/api/3/attachment/test-attachment-id-123',
+  filename: 'screenshot.png',
+  author: mockJiraUser,
+  created: '2023-01-01T12:00:00.000+0000',
+  size: 12345,
+  mimeType: 'image/png',
+  content: 'https://test.atlassian.net/secure/attachment/test-attachment-id-123/screenshot.png',
+  thumbnail: 'https://test.atlassian.net/secure/thumbnail/test-attachment-id-123/screenshot.png',
+};
+
+export const mockJiraAttachmentList = [
+  mockJiraAttachment,
+  {
+    ...mockJiraAttachment,
+    id: 'test-attachment-id-456',
+    filename: 'document.pdf',
+    mimeType: 'application/pdf',
+    size: 54321,
+    thumbnail: undefined,
+    content: 'https://test.atlassian.net/secure/attachment/test-attachment-id-456/document.pdf',
+  },
+];

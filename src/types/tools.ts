@@ -297,3 +297,65 @@ export const GetCommentsInputSchema = z.object({
 });
 
 export type GetCommentsInput = z.infer<typeof GetCommentsInputSchema>;
+
+// Add attachment
+export const AddAttachmentInputSchema = z
+  .object({
+    issueKey: z
+      .string()
+      .describe('Issue key to add attachment to (e.g., PROJECT-123)')
+      .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+    filename: z.string().min(1).describe('Name of the file to attach'),
+
+    // Option 1: Remote URL (efficient - ~60 tokens)
+    fileUrl: z
+      .string()
+      .url()
+      .optional()
+      .describe(
+        'URL to download file from (efficient for remote files, ~60 tokens). Upload large files to Dropbox/S3/imgur first, then use URL.'
+      ),
+
+    // Option 2: Base64 content (for small files or backwards compatibility)
+    content: z
+      .string()
+      .optional()
+      .describe(
+        'Base64-encoded or plain text content. WARNING: HIGH token cost (~330k tokens for 1MB file). Use fileUrl for large files or upload to cloud storage first.'
+      ),
+
+    isBase64: z
+      .boolean()
+      .optional()
+      .default(true)
+      .describe(
+        'Whether content is base64-encoded (default: true). Set to false for plain text files.'
+      ),
+  })
+  .refine(
+    (data) => {
+      // Exactly ONE source must be provided
+      const sources = [data.fileUrl, data.content].filter(Boolean);
+      return sources.length === 1;
+    },
+    { message: 'Exactly one of fileUrl or content must be provided' }
+  );
+
+export type AddAttachmentInput = z.infer<typeof AddAttachmentInputSchema>;
+
+// Get attachments
+export const GetAttachmentsInputSchema = z.object({
+  issueKey: z
+    .string()
+    .describe('Issue key to get attachments for (e.g., PROJECT-123)')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+});
+
+export type GetAttachmentsInput = z.infer<typeof GetAttachmentsInputSchema>;
+
+// Delete attachment
+export const DeleteAttachmentInputSchema = z.object({
+  attachmentId: z.string().min(1).describe('ID of the attachment to delete'),
+});
+
+export type DeleteAttachmentInput = z.infer<typeof DeleteAttachmentInputSchema>;

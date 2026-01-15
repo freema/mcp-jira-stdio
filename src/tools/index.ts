@@ -16,3 +16,6 @@ export * from './get-create-meta.js';
 export * from './get-custom-fields.js';
 export * from './create-issue-link.js';
 export * from './get-comments.js';
+export * from './add-attachment.js';
+export * from './get-attachments.js';
+export * from './delete-attachment.js';

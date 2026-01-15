@@ -1,5 +1,6 @@
 import { AxiosRequestConfig } from 'axios';
-import { makeJiraRequest } from './jira-auth.js';
+import FormData from 'form-data';
+import { makeJiraRequest, makeMultipartRequest } from './jira-auth.js';
 import {
   JiraProject,
   JiraIssue,
@@ -14,6 +15,7 @@ import {
   JiraCreateIssueResponse,
   JiraCreateMetaResponse,
   JiraField,
+  JiraAttachment,
 } from '../types/jira.js';
 import { PaginatedResponse } from '../types/common.js';
 import { sanitizeJQL } from './validators.js';
@@ -761,6 +763,92 @@ export async function createIssueLink(
     method: 'POST',
     url: '/issueLink',
     data,
+  };
+
+  await makeJiraRequest(config);
+}
+
+export async function addAttachment(
+  issueKey: string,
+  filename: string,
+  content: string,
+  isBase64: boolean = true
+): Promise<JiraAttachment[]> {
+  const formData = new FormData();
+
+  // Convert content to buffer
+  let fileBuffer: Buffer;
+  if (isBase64) {
+    fileBuffer = Buffer.from(content, 'base64');
+  } else {
+    fileBuffer = Buffer.from(content, 'utf-8');
+  }
+
+  formData.append('file', fileBuffer, {
+    filename: filename,
+    contentType: 'application/octet-stream',
+  });
+
+  return await makeMultipartRequest<JiraAttachment[]>(`/issue/${issueKey}/attachments`, formData);
+}
+
+export async function addAttachmentFromUrl(
+  issueKey: string,
+  fileUrl: string,
+  filename: string
+): Promise<JiraAttachment[]> {
+  const axios = (await import('axios')).default;
+
+  // Parse and validate URL
+  const urlObj = new URL(fileUrl);
+
+  // Prevent SSRF attacks - block localhost and private IPs
+  if (urlObj.hostname === 'localhost' || urlObj.hostname.startsWith('127.')) {
+    throw new Error('Cannot download from localhost (SSRF protection)');
+  }
+  if (urlObj.hostname.startsWith('192.168.') || urlObj.hostname.startsWith('10.')) {
+    throw new Error('Cannot download from private network (SSRF protection)');
+  }
+  if (urlObj.hostname.startsWith('172.')) {
+    const parts = urlObj.hostname.split('.');
+    const secondOctet = parts[1] ? parseInt(parts[1]) : 0;
+    if (secondOctet >= 16 && secondOctet <= 31) {
+      throw new Error('Cannot download from private network (SSRF protection)');
+    }
+  }
+
+  // Download file
+  const response = await axios.get(fileUrl, {
+    responseType: 'arraybuffer',
+    maxContentLength: 50 * 1024 * 1024, // 50 MB limit
+    timeout: 30000, // 30 seconds
+  });
+
+  const fileBuffer = Buffer.from(response.data);
+
+  // Create FormData
+  const formData = new FormData();
+  formData.append('file', fileBuffer, {
+    filename: filename,
+    contentType: response.headers['content-type'] || 'application/octet-stream',
+  });
+
+  return await makeMultipartRequest<JiraAttachment[]>(`/issue/${issueKey}/attachments`, formData);
+}
+
+export async function getAttachments(issueKey: string): Promise<JiraAttachment[]> {
+  // Get the issue with attachments expanded
+  const issue = await getIssue(issueKey, { fields: ['attachment'] });
+
+  // Attachments are in fields.attachment
+  const attachments = (issue.fields as any).attachment || [];
+  return attachments;
+}
+
+export async function deleteAttachment(attachmentId: string): Promise<void> {
+  const config: AxiosRequestConfig = {
+    method: 'DELETE',
+    url: `/attachment/${attachmentId}`,
   };
 
   await makeJiraRequest(config);

@@ -243,3 +243,15 @@ export interface JiraField {
   searchable: boolean;
   schema: JiraFieldSchema;
 }
+
+export interface JiraAttachment {
+  id: string;
+  self: string;
+  filename: string;
+  author: JiraUser;
+  created: string;
+  size: number;
+  mimeType: string;
+  content: string;
+  thumbnail?: string;
+}
