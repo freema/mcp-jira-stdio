@@ -8,11 +8,7 @@ import {
   deleteAttachmentTool,
 } from '../../../src/tools/index.js';
 import { validateInput } from '../../../src/utils/validators.js';
-import {
-  addAttachment,
-  getAttachments,
-  deleteAttachment,
-} from '../../../src/utils/api-helpers.js';
+import { addAttachment, getAttachments, deleteAttachment } from '../../../src/utils/api-helpers.js';
 import {
   formatAttachmentResponse,
   formatAttachmentsListResponse,
@@ -49,7 +45,7 @@ describe('Attachment Tools', () => {
     it('should have correct configuration', () => {
       expect(addAttachmentTool.name).toBe(TOOL_NAMES.ADD_ATTACHMENT);
       expect(addAttachmentTool.description).toContain('Uploads an attachment');
-      expect(addAttachmentTool.inputSchema.required).toEqual(['issueKey', 'filename', 'content']);
+      expect(addAttachmentTool.inputSchema.required).toEqual(['issueKey', 'filename']);
     });
 
     it('should handle successful attachment upload', async () => {
@@ -240,7 +236,11 @@ describe('Attachment Tools', () => {
     const tools = [
       { handler: handleAddAttachment, name: 'Add Attachment', mockFn: mockedAddAttachment },
       { handler: handleGetAttachments, name: 'Get Attachments', mockFn: mockedGetAttachments },
-      { handler: handleDeleteAttachment, name: 'Delete Attachment', mockFn: mockedDeleteAttachment },
+      {
+        handler: handleDeleteAttachment,
+        name: 'Delete Attachment',
+        mockFn: mockedDeleteAttachment,
+      },
     ];
 
     tools.forEach(({ handler, name, mockFn }) => {

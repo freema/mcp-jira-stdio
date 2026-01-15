@@ -83,10 +83,28 @@ tasks:
     cmds:
       - npm run inspector:dev
 
+  setup:
+    desc: Complete setup - build project and configure Claude Desktop
+    deps: [build]
+    cmds:
+      - task: 'setup:mcp'
+
   'setup:mcp':
-    desc: Setup MCP configuration for Claude Desktop
+    desc: Interactive setup for Claude Desktop (credentials + config)
     cmds:
       - node scripts/setup-mcp-config.js
+
+  'setup:test':
+    desc: Test Jira connection (requires .env file)
+    cmds:
+      - node scripts/test-connection.cjs
+
+  'setup:quick':
+    desc: Quick setup workflow (build + configure + test)
+    deps: [build]
+    cmds:
+      - task: 'setup:mcp'
+      - echo "Run 'task setup:test' to verify connection after creating .env"
 
   version:
     desc: 'Bump version (usage: task version VERSION=1.4.0)'

@@ -267,7 +267,6 @@ export const mockJiraAttachmentList = [
     mimeType: 'application/pdf',
     size: 54321,
     thumbnail: undefined,
-    content:
-      'https://test.atlassian.net/secure/attachment/test-attachment-id-456/document.pdf',
+    content: 'https://test.atlassian.net/secure/attachment/test-attachment-id-456/document.pdf',
   },
 ];

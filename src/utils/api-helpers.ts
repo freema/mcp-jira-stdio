@@ -792,6 +792,90 @@ export async function addAttachment(
   return await makeMultipartRequest<JiraAttachment[]>(`/issue/${issueKey}/attachments`, formData);
 }
 
+export async function addAttachmentFromPath(
+  issueKey: string,
+  filePath: string,
+  filename?: string
+): Promise<JiraAttachment[]> {
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const { ATTACHMENT_CONFIG } = await import('../config/constants.js');
+
+  // Verify file exists and is readable
+  try {
+    await fs.access(filePath, fs.constants.R_OK);
+  } catch {
+    throw new Error(`File not found or not readable: ${filePath}`);
+  }
+
+  // Check file size
+  const stats = await fs.stat(filePath);
+  if (stats.size > ATTACHMENT_CONFIG.MAX_FILE_SIZE) {
+    throw new Error(
+      `File too large: ${stats.size} bytes (max ${ATTACHMENT_CONFIG.MAX_FILE_SIZE} bytes = 50 MB)`
+    );
+  }
+
+  // Auto-detect filename if not provided
+  const finalFilename = filename || path.basename(filePath);
+
+  // Read file as buffer
+  const fileBuffer = await fs.readFile(filePath);
+
+  // Create FormData
+  const formData = new FormData();
+  formData.append('file', fileBuffer, {
+    filename: finalFilename,
+    contentType: 'application/octet-stream',
+  });
+
+  return await makeMultipartRequest<JiraAttachment[]>(`/issue/${issueKey}/attachments`, formData);
+}
+
+export async function addAttachmentFromUrl(
+  issueKey: string,
+  fileUrl: string,
+  filename: string
+): Promise<JiraAttachment[]> {
+  const axios = (await import('axios')).default;
+
+  // Parse and validate URL
+  const urlObj = new URL(fileUrl);
+
+  // Prevent SSRF attacks - block localhost and private IPs
+  if (urlObj.hostname === 'localhost' || urlObj.hostname.startsWith('127.')) {
+    throw new Error('Cannot download from localhost (SSRF protection)');
+  }
+  if (urlObj.hostname.startsWith('192.168.') || urlObj.hostname.startsWith('10.')) {
+    throw new Error('Cannot download from private network (SSRF protection)');
+  }
+  if (urlObj.hostname.startsWith('172.')) {
+    const parts = urlObj.hostname.split('.');
+    const secondOctet = parts[1] ? parseInt(parts[1]) : 0;
+    if (secondOctet >= 16 && secondOctet <= 31) {
+      throw new Error('Cannot download from private network (SSRF protection)');
+    }
+  }
+
+  // Download file
+  const response = await axios.get(fileUrl, {
+    responseType: 'arraybuffer',
+    maxContentLength: 50 * 1024 * 1024, // 50 MB limit
+    timeout: 30000, // 30 seconds
+  });
+
+  const fileBuffer = Buffer.from(response.data);
+
+  // Create FormData
+  const formData = new FormData();
+  formData.append('file', fileBuffer, {
+    filename: filename,
+    contentType: response.headers['content-type'] || 'application/octet-stream',
+  });
+
+  return await makeMultipartRequest<JiraAttachment[]>(`/issue/${issueKey}/attachments`, formData);
+}
+
 export async function getAttachments(issueKey: string): Promise<JiraAttachment[]> {
   // Get the issue with attachments expanded
   const issue = await getIssue(issueKey, { fields: ['attachment'] });

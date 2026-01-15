@@ -299,21 +299,51 @@ export const GetCommentsInputSchema = z.object({
 export type GetCommentsInput = z.infer<typeof GetCommentsInputSchema>;
 
 // Add attachment
-export const AddAttachmentInputSchema = z.object({
-  issueKey: z
-    .string()
-    .describe('Issue key to add attachment to (e.g., PROJECT-123)')
-    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
-  filename: z.string().min(1).describe('Name of the file to attach'),
-  content: z.string().min(1).describe('Base64-encoded file content or plain text content'),
-  isBase64: z
-    .boolean()
-    .optional()
-    .default(true)
-    .describe(
-      'Whether content is base64-encoded (default: true). Set to false for plain text files.'
-    ),
-});
+export const AddAttachmentInputSchema = z
+  .object({
+    issueKey: z
+      .string()
+      .describe('Issue key to add attachment to (e.g., PROJECT-123)')
+      .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+    filename: z.string().min(1).describe('Name of the file to attach'),
+
+    // Option 1: Local file path (most efficient - minimal tokens)
+    filePath: z
+      .string()
+      .optional()
+      .describe('Absolute path to local file (most efficient, ~50 tokens vs 330k for base64)'),
+
+    // Option 2: Remote URL (efficient for remote files)
+    fileUrl: z
+      .string()
+      .url()
+      .optional()
+      .describe('URL to download file from (for remote files, ~60 tokens)'),
+
+    // Option 3: Base64 content (backwards compatible, high token cost)
+    content: z
+      .string()
+      .optional()
+      .describe(
+        'Base64-encoded or plain text content (fallback method, HIGH token cost ~330k for 1MB file)'
+      ),
+
+    isBase64: z
+      .boolean()
+      .optional()
+      .default(true)
+      .describe(
+        'Whether content is base64-encoded (default: true). Set to false for plain text files.'
+      ),
+  })
+  .refine(
+    (data) => {
+      // Exactly ONE source must be provided
+      const sources = [data.filePath, data.fileUrl, data.content].filter(Boolean);
+      return sources.length === 1;
+    },
+    { message: 'Exactly one of filePath, fileUrl, or content must be provided' }
+  );
 
 export type AddAttachmentInput = z.infer<typeof AddAttachmentInputSchema>;
 
