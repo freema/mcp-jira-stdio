@@ -307,25 +307,21 @@ export const AddAttachmentInputSchema = z
       .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
     filename: z.string().min(1).describe('Name of the file to attach'),
 
-    // Option 1: Local file path (most efficient - minimal tokens)
-    filePath: z
-      .string()
-      .optional()
-      .describe('Absolute path to local file (most efficient, ~50 tokens vs 330k for base64)'),
-
-    // Option 2: Remote URL (efficient for remote files)
+    // Option 1: Remote URL (efficient - ~60 tokens)
     fileUrl: z
       .string()
       .url()
       .optional()
-      .describe('URL to download file from (for remote files, ~60 tokens)'),
+      .describe(
+        'URL to download file from (efficient for remote files, ~60 tokens). Upload large files to Dropbox/S3/imgur first, then use URL.'
+      ),
 
-    // Option 3: Base64 content (backwards compatible, high token cost)
+    // Option 2: Base64 content (for small files or backwards compatibility)
     content: z
       .string()
       .optional()
       .describe(
-        'Base64-encoded or plain text content (fallback method, HIGH token cost ~330k for 1MB file)'
+        'Base64-encoded or plain text content. WARNING: HIGH token cost (~330k tokens for 1MB file). Use fileUrl for large files or upload to cloud storage first.'
       ),
 
     isBase64: z
@@ -339,10 +335,10 @@ export const AddAttachmentInputSchema = z
   .refine(
     (data) => {
       // Exactly ONE source must be provided
-      const sources = [data.filePath, data.fileUrl, data.content].filter(Boolean);
+      const sources = [data.fileUrl, data.content].filter(Boolean);
       return sources.length === 1;
     },
-    { message: 'Exactly one of filePath, fileUrl, or content must be provided' }
+    { message: 'Exactly one of fileUrl or content must be provided' }
   );
 
 export type AddAttachmentInput = z.infer<typeof AddAttachmentInputSchema>;

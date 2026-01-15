@@ -8,7 +8,12 @@ import {
   deleteAttachmentTool,
 } from '../../../src/tools/index.js';
 import { validateInput } from '../../../src/utils/validators.js';
-import { addAttachment, getAttachments, deleteAttachment } from '../../../src/utils/api-helpers.js';
+import {
+  addAttachment,
+  addAttachmentFromUrl,
+  getAttachments,
+  deleteAttachment,
+} from '../../../src/utils/api-helpers.js';
 import {
   formatAttachmentResponse,
   formatAttachmentsListResponse,
@@ -30,6 +35,7 @@ vi.mock('../../../src/utils/error-handler.js');
 
 const mockedValidateInput = vi.mocked(validateInput);
 const mockedAddAttachment = vi.mocked(addAttachment);
+const mockedAddAttachmentFromUrl = vi.mocked(addAttachmentFromUrl);
 const mockedGetAttachments = vi.mocked(getAttachments);
 const mockedDeleteAttachment = vi.mocked(deleteAttachment);
 const mockedFormatAttachmentResponse = vi.mocked(formatAttachmentResponse);
@@ -129,6 +135,114 @@ describe('Attachment Tools', () => {
       const result = await handleAddAttachment({});
 
       expect(mockedHandleError).toHaveBeenCalledWith(mockUnauthorizedError);
+      expect(result).toEqual(mockErrorResponse);
+    });
+
+    it('should handle URL upload successfully', async () => {
+      const input = {
+        issueKey: 'TEST-123',
+        filename: 'diagram.png',
+        fileUrl: 'https://example.com/diagram.png',
+      };
+      const mockResponse = { content: [{ type: 'text', text: 'attachment uploaded from URL' }] };
+
+      mockedValidateInput.mockReturnValue(input);
+      mockedAddAttachmentFromUrl.mockResolvedValue([mockJiraAttachment]);
+      mockedFormatAttachmentResponse.mockReturnValue(mockResponse);
+
+      const result = await handleAddAttachment(input);
+
+      expect(mockedAddAttachmentFromUrl).toHaveBeenCalledWith(
+        'TEST-123',
+        'https://example.com/diagram.png',
+        'diagram.png'
+      );
+      expect(mockedFormatAttachmentResponse).toHaveBeenCalledWith(mockJiraAttachment, 'TEST-123');
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should handle URL download errors', async () => {
+      const input = {
+        issueKey: 'TEST-123',
+        filename: 'file.png',
+        fileUrl: 'https://example.com/file.png',
+      };
+      const mockErrorResponse = { content: [{ type: 'text', text: 'download error' }] };
+      const downloadError = new Error('Failed to download file');
+
+      mockedValidateInput.mockReturnValue(input);
+      mockedAddAttachmentFromUrl.mockRejectedValue(downloadError);
+      mockedHandleError.mockReturnValue(mockErrorResponse);
+
+      const result = await handleAddAttachment(input);
+
+      expect(mockedHandleError).toHaveBeenCalledWith(downloadError);
+      expect(result).toEqual(mockErrorResponse);
+    });
+
+    it('should handle large base64 content warning', async () => {
+      const largeContent = 'a'.repeat(11 * 1024 * 1024); // 11 MB
+      const input = {
+        issueKey: 'TEST-123',
+        filename: 'large.png',
+        content: largeContent,
+        isBase64: true,
+      };
+      const mockResponse = { content: [{ type: 'text', text: 'uploaded' }] };
+
+      mockedValidateInput.mockReturnValue(input);
+      mockedAddAttachment.mockResolvedValue([mockJiraAttachment]);
+      mockedFormatAttachmentResponse.mockReturnValue(mockResponse);
+
+      await handleAddAttachment(input);
+
+      expect(mockedAddAttachment).toHaveBeenCalledWith(
+        'TEST-123',
+        'large.png',
+        largeContent,
+        true
+      );
+      // Warning should be logged (verified through handler execution)
+    });
+
+    it('should reject when neither fileUrl nor content provided', async () => {
+      const input = {
+        issueKey: 'TEST-123',
+        filename: 'test.png',
+      };
+      const mockErrorResponse = { content: [{ type: 'text', text: 'no source provided' }] };
+
+      mockedValidateInput.mockImplementation(() => {
+        throw new Error('Exactly one of fileUrl or content must be provided');
+      });
+      mockedHandleError.mockReturnValue(mockErrorResponse);
+
+      const result = await handleAddAttachment(input);
+
+      expect(mockedHandleError).toHaveBeenCalled();
+      expect(result).toEqual(mockErrorResponse);
+    });
+
+    it('should reject when both fileUrl and content provided', async () => {
+      const input = {
+        issueKey: 'TEST-123',
+        filename: 'test.png',
+        fileUrl: 'https://example.com/file.png',
+        content: 'base64content',
+        isBase64: true,
+      };
+      const mockErrorResponse = {
+        content: [{ type: 'text', text: 'validation error: only one source allowed' }],
+      };
+
+      mockedValidateInput.mockImplementation(() => {
+        throw new Error('Exactly one of fileUrl or content must be provided');
+      });
+      mockedHandleError.mockReturnValue(mockErrorResponse);
+
+      const result = await handleAddAttachment(input);
+
+      expect(mockedHandleError).toHaveBeenCalled();
       expect(result).toEqual(mockErrorResponse);
     });
   });

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { makeJiraRequest } from '../../../src/utils/jira-auth.js';
+import { makeJiraRequest, makeMultipartRequest } from '../../../src/utils/jira-auth.js';
 import {
   getVisibleProjects,
   getIssue,
@@ -17,6 +17,9 @@ import {
   createSubtask,
   getCreateMeta,
   createIssueLink,
+  addAttachment,
+  getAttachments,
+  deleteAttachment,
 } from '../../../src/utils/api-helpers.js';
 import {
   mockJiraProject,
@@ -33,11 +36,13 @@ import {
   mockJiraCreateIssueResponse,
   mockJiraCreateMetaResponse,
   mockJiraCreateMetaIssueTypeFields,
+  mockJiraAttachment,
 } from '../../mocks/jira-responses.js';
 
 // Mock the jira-auth module
 vi.mock('../../../src/utils/jira-auth.js');
 const mockedMakeJiraRequest = vi.mocked(makeJiraRequest);
+const mockedMakeMultipartRequest = vi.mocked(makeMultipartRequest);
 
 describe('api-helpers', () => {
   beforeEach(() => {
@@ -1181,6 +1186,108 @@ describe('api-helpers', () => {
           outwardIssue: { key: 'VERYLONGPROJECTNAME-12345' },
           inwardIssue: { key: 'ANOTHERVERYLONGPROJECT-67890' },
         },
+      });
+    });
+  });
+
+  describe('addAttachment', () => {
+    it('should upload base64 attachment', async () => {
+      const base64Content = Buffer.from('test file content').toString('base64');
+      mockedMakeMultipartRequest.mockResolvedValue([mockJiraAttachment]);
+
+      const result = await addAttachment('TEST-123', 'test.txt', base64Content, true);
+
+      expect(result).toEqual([mockJiraAttachment]);
+      expect(mockedMakeMultipartRequest).toHaveBeenCalledWith(
+        '/issue/TEST-123/attachments',
+        expect.any(Object)
+      );
+    });
+
+    it('should upload plain text attachment', async () => {
+      const plainContent = 'Plain text content';
+      mockedMakeMultipartRequest.mockResolvedValue([mockJiraAttachment]);
+
+      const result = await addAttachment('TEST-456', 'notes.txt', plainContent, false);
+
+      expect(result).toEqual([mockJiraAttachment]);
+      expect(mockedMakeMultipartRequest).toHaveBeenCalledWith(
+        '/issue/TEST-456/attachments',
+        expect.any(Object)
+      );
+    });
+
+    it('should default to base64 encoding', async () => {
+      const content = 'content';
+      mockedMakeMultipartRequest.mockResolvedValue([mockJiraAttachment]);
+
+      await addAttachment('TEST-789', 'file.bin', content);
+
+      expect(mockedMakeMultipartRequest).toHaveBeenCalledWith(
+        '/issue/TEST-789/attachments',
+        expect.any(Object)
+      );
+    });
+  });
+
+  describe('getAttachments', () => {
+    it('should retrieve attachments from issue', async () => {
+      const mockIssueWithAttachments = {
+        ...mockJiraIssue,
+        fields: {
+          ...mockJiraIssue.fields,
+          attachment: [mockJiraAttachment],
+        },
+      };
+      mockedMakeJiraRequest.mockResolvedValue(mockIssueWithAttachments);
+
+      const result = await getAttachments('TEST-123');
+
+      expect(result).toEqual([mockJiraAttachment]);
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'GET',
+        url: '/issue/TEST-123',
+        params: {
+          fields: 'attachment',
+        },
+      });
+    });
+
+    it('should return empty array when no attachments', async () => {
+      const mockIssueNoAttachments = {
+        ...mockJiraIssue,
+        fields: {
+          ...mockJiraIssue.fields,
+        },
+      };
+      mockedMakeJiraRequest.mockResolvedValue(mockIssueNoAttachments);
+
+      const result = await getAttachments('TEST-456');
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('deleteAttachment', () => {
+    it('should delete attachment by ID', async () => {
+      mockedMakeJiraRequest.mockResolvedValue(undefined);
+
+      await deleteAttachment('att-123');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'DELETE',
+        url: '/attachment/att-123',
+      });
+    });
+
+    it('should handle long attachment IDs', async () => {
+      mockedMakeJiraRequest.mockResolvedValue(undefined);
+
+      await deleteAttachment('very-long-attachment-id-12345678');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'DELETE',
+        url: '/attachment/very-long-attachment-id-12345678',
       });
     });
   });

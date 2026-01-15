@@ -792,46 +792,6 @@ export async function addAttachment(
   return await makeMultipartRequest<JiraAttachment[]>(`/issue/${issueKey}/attachments`, formData);
 }
 
-export async function addAttachmentFromPath(
-  issueKey: string,
-  filePath: string,
-  filename?: string
-): Promise<JiraAttachment[]> {
-  const fs = await import('fs/promises');
-  const path = await import('path');
-  const { ATTACHMENT_CONFIG } = await import('../config/constants.js');
-
-  // Verify file exists and is readable
-  try {
-    await fs.access(filePath, fs.constants.R_OK);
-  } catch {
-    throw new Error(`File not found or not readable: ${filePath}`);
-  }
-
-  // Check file size
-  const stats = await fs.stat(filePath);
-  if (stats.size > ATTACHMENT_CONFIG.MAX_FILE_SIZE) {
-    throw new Error(
-      `File too large: ${stats.size} bytes (max ${ATTACHMENT_CONFIG.MAX_FILE_SIZE} bytes = 50 MB)`
-    );
-  }
-
-  // Auto-detect filename if not provided
-  const finalFilename = filename || path.basename(filePath);
-
-  // Read file as buffer
-  const fileBuffer = await fs.readFile(filePath);
-
-  // Create FormData
-  const formData = new FormData();
-  formData.append('file', fileBuffer, {
-    filename: finalFilename,
-    contentType: 'application/octet-stream',
-  });
-
-  return await makeMultipartRequest<JiraAttachment[]>(`/issue/${issueKey}/attachments`, formData);
-}
-
 export async function addAttachmentFromUrl(
   issueKey: string,
   fileUrl: string,
