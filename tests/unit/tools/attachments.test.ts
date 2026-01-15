@@ -196,12 +196,7 @@ describe('Attachment Tools', () => {
 
       await handleAddAttachment(input);
 
-      expect(mockedAddAttachment).toHaveBeenCalledWith(
-        'TEST-123',
-        'large.png',
-        largeContent,
-        true
-      );
+      expect(mockedAddAttachment).toHaveBeenCalledWith('TEST-123', 'large.png', largeContent, true);
       // Warning should be logged (verified through handler execution)
     });
 

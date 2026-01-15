@@ -190,11 +190,7 @@ describe('addAttachmentFromUrl', () => {
       });
       makeMultipartRequest.mockResolvedValue([mockAttachment]);
 
-      await addAttachmentFromUrl(
-        'TEST-123',
-        'https://example.com/document.pdf',
-        'document.pdf'
-      );
+      await addAttachmentFromUrl('TEST-123', 'https://example.com/document.pdf', 'document.pdf');
 
       expect(makeMultipartRequest).toHaveBeenCalled();
       // FormData with correct content-type should be passed
@@ -267,11 +263,7 @@ describe('addAttachmentFromUrl', () => {
       });
       makeMultipartRequest.mockResolvedValue([mockAttachment]);
 
-      await addAttachmentFromUrl(
-        'TEST-123',
-        'https://secure.example.com/file.png',
-        'file.png'
-      );
+      await addAttachmentFromUrl('TEST-123', 'https://secure.example.com/file.png', 'file.png');
 
       expect(axios.get).toHaveBeenCalledWith(
         'https://secure.example.com/file.png',
