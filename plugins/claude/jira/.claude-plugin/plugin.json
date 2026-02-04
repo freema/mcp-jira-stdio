@@ -1,0 +1,11 @@
+{
+  "name": "jira",
+  "description": "Jira integration for issue tracking, project management, and workflow automation. Create, update, and search issues directly from Claude.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Tomáš Grasl",
+    "url": "https://www.tomasgrasl.cz/"
+  },
+  "repository": "https://github.com/freema/mcp-jira-stdio",
+  "license": "MIT"
+}
