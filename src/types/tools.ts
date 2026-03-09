@@ -96,6 +96,12 @@ export const UpdateIssueInputSchema = z.object({
   assignee: z.string().optional().describe('New assignee account ID'),
   labels: z.array(z.string()).optional().describe('New labels (replaces existing)'),
   components: z.array(z.string()).optional().describe('New components (replaces existing)'),
+  parent: z
+    .string()
+    .optional()
+    .describe(
+      'New parent issue key (e.g., PROJECT-100). Set to empty string to remove the parent.'
+    ),
   returnIssue: z.boolean().optional().describe('When false, skip fetching full issue after update'),
   format: z
     .enum(['markdown', 'adf', 'plain'])
@@ -359,3 +365,54 @@ export const DeleteAttachmentInputSchema = z.object({
 });
 
 export type DeleteAttachmentInput = z.infer<typeof DeleteAttachmentInputSchema>;
+
+// Get transitions
+export const GetTransitionsInputSchema = z.object({
+  issueKey: z
+    .string()
+    .describe('Issue key to get available transitions for (e.g., PROJECT-123)')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+});
+
+export type GetTransitionsInput = z.infer<typeof GetTransitionsInputSchema>;
+
+// Transition issue
+export const TransitionIssueInputSchema = z.object({
+  issueKey: z
+    .string()
+    .describe('Issue key to transition (e.g., PROJECT-123)')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+  transitionId: z
+    .string()
+    .optional()
+    .describe(
+      'ID of the transition to perform. Use jira_get_transitions to find available transition IDs.'
+    ),
+  transitionName: z
+    .string()
+    .optional()
+    .describe(
+      'Name of the transition to perform (e.g., "In Progress", "Done"). Case-insensitive. Alternative to transitionId.'
+    ),
+  comment: z
+    .string()
+    .optional()
+    .describe('Optional comment to add when transitioning the issue'),
+  resolution: z
+    .string()
+    .optional()
+    .describe('Resolution name when transitioning to a resolved/done status (e.g., "Done", "Fixed")'),
+  format: z
+    .enum(['markdown', 'adf', 'plain'])
+    .optional()
+    .default('markdown')
+    .describe(
+      'Comment format: "markdown" (converts Markdown to ADF), "adf" (use as-is ADF object), "plain" (converts plain text to ADF with basic formatting). Default: "markdown"'
+    ),
+})
+  .refine(
+    (data) => data.transitionId || data.transitionName,
+    { message: 'Either transitionId or transitionName must be provided' }
+  );
+
+export type TransitionIssueInput = z.infer<typeof TransitionIssueInputSchema>;

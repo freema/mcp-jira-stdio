@@ -48,6 +48,11 @@ export const updateIssueTool: Tool = {
         items: { type: 'string' },
         description: 'New components array (replaces existing components) - optional',
       },
+      parent: {
+        type: 'string',
+        description:
+          'New parent issue key (e.g., PROJECT-100). Set to empty string to remove the parent.',
+      },
       returnIssue: {
         type: 'boolean',
         description: 'If false, returns a success message without fetching the updated issue',
@@ -79,6 +84,7 @@ export async function handleUpdateIssue(input: unknown): Promise<McpToolResponse
     if (validated.assignee !== undefined) updateParams.assignee = validated.assignee;
     if (validated.labels !== undefined) updateParams.labels = validated.labels;
     if (validated.components !== undefined) updateParams.components = validated.components;
+    if (validated.parent !== undefined) updateParams.parent = validated.parent;
     if (validated.format !== undefined) updateParams.format = validated.format;
 
     await updateIssue(validated.issueKey, updateParams);

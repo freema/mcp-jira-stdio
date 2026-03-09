@@ -19,3 +19,5 @@ export * from './get-comments.js';
 export * from './add-attachment.js';
 export * from './get-attachments.js';
 export * from './delete-attachment.js';
+export * from './get-transitions.js';
+export * from './transition-issue.js';

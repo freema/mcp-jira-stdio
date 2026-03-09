@@ -47,6 +47,17 @@ export interface JiraIssueFields {
   components: JiraComponent[];
   fixVersions: JiraVersion[];
   versions: JiraVersion[];
+  parent?: {
+    id: string;
+    key: string;
+    self: string;
+    fields?: {
+      summary?: string;
+      status?: JiraStatus;
+      priority?: JiraPriority;
+      issuetype?: JiraIssueType;
+    };
+  };
 }
 
 export interface JiraStatus {
