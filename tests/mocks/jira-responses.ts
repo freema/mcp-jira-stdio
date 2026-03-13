@@ -270,3 +270,44 @@ export const mockJiraAttachmentList = [
     content: 'https://test.atlassian.net/secure/attachment/test-attachment-id-456/document.pdf',
   },
 ];
+
+// Transition responses
+export const mockJiraTransition = {
+  id: '21',
+  name: 'In Progress',
+  to: {
+    id: 'in-progress-status-id',
+    name: 'In Progress',
+    description: 'Work has started on this issue.',
+    iconUrl: 'https://test.atlassian.net/images/icons/statuses/inprogress.png',
+    self: 'https://test.atlassian.net/rest/api/3/status/in-progress-status-id',
+    statusCategory: {
+      id: 4,
+      key: 'indeterminate',
+      colorName: 'blue',
+      name: 'In Progress',
+      self: 'https://test.atlassian.net/rest/api/3/statuscategory/4',
+    },
+  },
+};
+
+export const mockJiraTransitionDone = {
+  id: '31',
+  name: 'Done',
+  to: {
+    id: 'done-status-id',
+    name: 'Done',
+    description: 'Work has been completed on this issue.',
+    iconUrl: 'https://test.atlassian.net/images/icons/statuses/done.png',
+    self: 'https://test.atlassian.net/rest/api/3/status/done-status-id',
+    statusCategory: {
+      id: 3,
+      key: 'done',
+      colorName: 'green',
+      name: 'Done',
+      self: 'https://test.atlassian.net/rest/api/3/statuscategory/3',
+    },
+  },
+};
+
+export const mockJiraTransitions = [mockJiraTransition, mockJiraTransitionDone];

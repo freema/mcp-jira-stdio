@@ -50,6 +50,8 @@ const toolHandlers = new Map<string, (input: unknown) => Promise<any>>([
   [TOOL_NAMES.ADD_ATTACHMENT, tools.handleAddAttachment],
   [TOOL_NAMES.GET_ATTACHMENTS, tools.handleGetAttachments],
   [TOOL_NAMES.DELETE_ATTACHMENT, tools.handleDeleteAttachment],
+  [TOOL_NAMES.GET_TRANSITIONS, tools.handleGetTransitions],
+  [TOOL_NAMES.TRANSITION_ISSUE, tools.handleTransitionIssue],
 ]);
 
 // All available tools
@@ -74,6 +76,8 @@ const allTools = [
   tools.addAttachmentTool,
   tools.getAttachmentsTool,
   tools.deleteAttachmentTool,
+  tools.getTransitionsTool,
+  tools.transitionIssueTool,
 ];
 
 async function main() {

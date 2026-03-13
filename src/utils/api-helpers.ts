@@ -16,6 +16,7 @@ import {
   JiraCreateMetaResponse,
   JiraField,
   JiraAttachment,
+  JiraTransition,
 } from '../types/jira.js';
 import { PaginatedResponse } from '../types/common.js';
 import { sanitizeJQL } from './validators.js';
@@ -363,6 +364,7 @@ export async function updateIssue(
     assignee?: string;
     labels?: string[];
     components?: string[];
+    parent?: string;
     format?: 'markdown' | 'adf' | 'plain';
   }
 ): Promise<void> {
@@ -390,6 +392,10 @@ export async function updateIssue(
 
   if (updates.components !== undefined) {
     fields.components = updates.components.map((name) => ({ name }));
+  }
+
+  if (updates.parent !== undefined) {
+    fields.parent = updates.parent ? { key: updates.parent } : null;
   }
 
   const config: AxiosRequestConfig = {
@@ -849,6 +855,59 @@ export async function deleteAttachment(attachmentId: string): Promise<void> {
   const config: AxiosRequestConfig = {
     method: 'DELETE',
     url: `/attachment/${attachmentId}`,
+  };
+
+  await makeJiraRequest(config);
+}
+
+export async function getTransitions(
+  issueKey: string
+): Promise<JiraTransition[]> {
+  const config: AxiosRequestConfig = {
+    method: 'GET',
+    url: `/issue/${issueKey}/transitions`,
+  };
+
+  const response = await makeJiraRequest<{ transitions: JiraTransition[] }>(config);
+  return response.transitions;
+}
+
+export async function transitionIssue(
+  issueKey: string,
+  transitionId: string,
+  options: {
+    comment?: string;
+    resolution?: string;
+    format?: 'markdown' | 'adf' | 'plain';
+  } = {}
+): Promise<void> {
+  const data: Record<string, any> = {
+    transition: { id: transitionId },
+  };
+
+  if (options.resolution) {
+    data.fields = {
+      resolution: { name: options.resolution },
+    };
+  }
+
+  if (options.comment) {
+    const adfBody = ensureAdfDescription(options.comment, options.format || 'markdown');
+    data.update = {
+      comment: [
+        {
+          add: {
+            body: adfBody,
+          },
+        },
+      ],
+    };
+  }
+
+  const config: AxiosRequestConfig = {
+    method: 'POST',
+    url: `/issue/${issueKey}/transitions`,
+    data,
   };
 
   await makeJiraRequest(config);

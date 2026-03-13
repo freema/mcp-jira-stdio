@@ -14,6 +14,7 @@ import {
   JiraCreateMetaResponse,
   JiraField,
   JiraAttachment,
+  JiraTransition,
 } from '../types/jira.js';
 
 export function formatProjectsResponse(projects: JiraProject[]): McpToolResponse {
@@ -101,11 +102,15 @@ export function formatIssueResponse(issue: JiraIssue): McpToolResponse {
   const createdText = fields?.created ? new Date(fields.created).toISOString() : 'N/A';
   const updatedText = fields?.updated ? new Date(fields.updated).toISOString() : 'N/A';
 
+  const parentText = fields?.parent
+    ? `\n**Parent:** ${fields.parent.key}${fields.parent.fields?.summary ? ` - ${fields.parent.fields.summary}` : ''}${fields.parent.fields?.status ? ` (${fields.parent.fields.status.name})` : ''}`
+    : '';
+
   return {
     content: [
       {
         type: 'text',
-        text: `**${key}: ${summary}**\n\n**Status:** ${fields?.status?.name || 'Unknown'}\n**Priority:** ${fields?.priority?.name || 'None'}\n**Assignee:** ${assigneeText}\n**Reporter:** ${reporterText}\n**Project:** ${fields?.project?.name || 'Unknown'} (${fields?.project?.key || 'N/A'})\n**Issue Type:** ${fields?.issuetype?.name || 'Unknown'}\n**Labels:** ${labelsText}\n**Components:** ${componentsText}\n**Created:** ${createdText}\n**Updated:** ${updatedText}\n\n**Description:**\n${description}`,
+        text: `**${key}: ${summary}**\n\n**Status:** ${fields?.status?.name || 'Unknown'}\n**Priority:** ${fields?.priority?.name || 'None'}\n**Assignee:** ${assigneeText}\n**Reporter:** ${reporterText}\n**Project:** ${fields?.project?.name || 'Unknown'} (${fields?.project?.key || 'N/A'})\n**Issue Type:** ${fields?.issuetype?.name || 'Unknown'}\n**Labels:** ${labelsText}\n**Components:** ${componentsText}${parentText}\n**Created:** ${createdText}\n**Updated:** ${updatedText}\n\n**Description:**\n${description}`,
       },
     ],
   };
@@ -617,6 +622,38 @@ export function formatAttachmentsListResponse(
       {
         type: 'text',
         text: `**Attachments for ${issueKey}** (${attachments.length} attachment${attachments.length !== 1 ? 's' : ''}):\n\n${attachmentsList}\n\n💡 **Tip:** To embed an image in a comment or description, use: \`!filename.png!\` or \`!filename.png|thumbnail!\``,
+      },
+    ],
+  };
+}
+
+export function formatTransitionsResponse(
+  transitions: JiraTransition[],
+  issueKey: string
+): McpToolResponse {
+  if (transitions.length === 0) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `No transitions available for issue ${issueKey}. The issue may be in a final state or you may lack permission.`,
+        },
+      ],
+    };
+  }
+
+  const transitionsList = transitions
+    .map(
+      (t) =>
+        `• **${t.name}** (ID: ${t.id})\n  Target status: ${t.to.name} (Category: ${t.to.statusCategory?.name || 'Unknown'})`
+    )
+    .join('\n\n');
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: `**Available transitions for ${issueKey}** (${transitions.length}):\n\n${transitionsList}\n\n💡 **Tip:** Use \`jira_transition_issue\` with the transition ID or name to move this issue.`,
       },
     ],
   };

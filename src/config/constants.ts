@@ -48,4 +48,6 @@ export const TOOL_NAMES = {
   ADD_ATTACHMENT: 'jira_add_attachment',
   GET_ATTACHMENTS: 'jira_get_attachments',
   DELETE_ATTACHMENT: 'jira_delete_attachment',
+  GET_TRANSITIONS: 'jira_get_transitions',
+  TRANSITION_ISSUE: 'jira_transition_issue',
 } as const;
