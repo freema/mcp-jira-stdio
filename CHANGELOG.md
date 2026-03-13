@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-03-13
+
+### Added
+
+- **Issue transitions**: New `jira_get_transitions` tool to list available workflow transitions for an issue (ID, name, target status, category)
+- **Transition execution**: New `jira_transition_issue` tool to transition issues to a new workflow status (e.g., "To Do" → "In Progress" → "Done")
+  - Supports transition by ID or name (case-insensitive)
+  - Optional comment and resolution during transition
+  - Markdown/ADF/plain format support for comments
+- **Parent field support**: Issue responses now display parent info (key, summary, status)
+  - `jira_update_issue` accepts a `parent` parameter to set or remove an issue's parent
+- **Claude Code plugin**: Added Claude Code plugin with commands, agents, and skills for Jira management
+  - `/create` command for issue creation
+  - `/my-issues` command to view assigned issues
+  - `/search` command for JQL search
+  - Issue manager agent for complex workflows
+
+### Changed
+
+- Bumped `@modelcontextprotocol/sdk` from 1.25.2 to 1.27.1
+- Bumped `axios` from 1.13.2 to 1.13.6
+- Bumped `@types/node` from 22.19.7 to 25.4.0
+- Bumped `@typescript-eslint/parser` from 8.53.0 to 8.57.0
+- Bumped `@typescript-eslint/eslint-plugin` from 8.53.0 to 8.57.0
+
+### Fixed
+
+- Fixed Prettier formatting issues in transition tools
+
+### Tests
+
+- Added 11 unit tests for `jira_transition_issue` (transition by ID/name, comments, resolution, error cases)
+- Total test count increased from 319 to 330 tests
+
 ## [1.8.0] - 2025-01-15
 
 ### Added
