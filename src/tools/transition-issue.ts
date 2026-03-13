@@ -85,7 +85,11 @@ export async function handleTransitionIssue(input: unknown): Promise<McpToolResp
 
     log.info(`Transitioning issue ${validated.issueKey} with transition ${transitionId}...`);
 
-    const transitionOptions: { comment?: string; resolution?: string; format?: 'markdown' | 'adf' | 'plain' } = {};
+    const transitionOptions: {
+      comment?: string;
+      resolution?: string;
+      format?: 'markdown' | 'adf' | 'plain';
+    } = {};
     if (validated.comment) transitionOptions.comment = validated.comment;
     if (validated.resolution) transitionOptions.resolution = validated.resolution;
     if (validated.format) transitionOptions.format = validated.format;
@@ -95,9 +99,7 @@ export async function handleTransitionIssue(input: unknown): Promise<McpToolResp
     // Get the updated issue to return current state
     const updatedIssue = await getIssue(validated.issueKey);
 
-    log.info(
-      `Transitioned issue ${validated.issueKey} to ${updatedIssue.fields.status.name}`
-    );
+    log.info(`Transitioned issue ${validated.issueKey} to ${updatedIssue.fields.status.name}`);
 
     return formatIssueResponse(updatedIssue);
   } catch (error) {

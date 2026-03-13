@@ -860,9 +860,7 @@ export async function deleteAttachment(attachmentId: string): Promise<void> {
   await makeJiraRequest(config);
 }
 
-export async function getTransitions(
-  issueKey: string
-): Promise<JiraTransition[]> {
+export async function getTransitions(issueKey: string): Promise<JiraTransition[]> {
   const config: AxiosRequestConfig = {
     method: 'GET',
     url: `/issue/${issueKey}/transitions`,
