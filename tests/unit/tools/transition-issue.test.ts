@@ -6,15 +6,8 @@ import {
   transitionIssueTool,
 } from '../../../src/tools/index.js';
 import { validateInput } from '../../../src/utils/validators.js';
-import {
-  getTransitions,
-  transitionIssue,
-  getIssue,
-} from '../../../src/utils/api-helpers.js';
-import {
-  formatTransitionsResponse,
-  formatIssueResponse,
-} from '../../../src/utils/formatters.js';
+import { getTransitions, transitionIssue, getIssue } from '../../../src/utils/api-helpers.js';
+import { formatTransitionsResponse, formatIssueResponse } from '../../../src/utils/formatters.js';
 import { handleError } from '../../../src/utils/error-handler.js';
 import {
   mockJiraIssue,
@@ -62,10 +55,7 @@ describe('Transition Tools', () => {
       const result = await handleGetTransitions(input);
 
       expect(mockedGetTransitions).toHaveBeenCalledWith('TEST-123');
-      expect(mockedFormatTransitionsResponse).toHaveBeenCalledWith(
-        mockJiraTransitions,
-        'TEST-123'
-      );
+      expect(mockedFormatTransitionsResponse).toHaveBeenCalledWith(mockJiraTransitions, 'TEST-123');
       expect(result).toEqual(mockResponse);
     });
 
