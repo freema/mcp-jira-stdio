@@ -3,9 +3,6 @@ name: Publish to npm
 on:
   release:
     types: [published]
-  push:
-    tags:
-      - 'v*.*.*'
   workflow_dispatch:
 
 jobs:
@@ -43,7 +40,19 @@ jobs:
           npm run test:run
           npm run build
 
+      - name: Check if version already published
+        id: check
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          if npm view mcp-jira-stdio@${PACKAGE_VERSION} version 2>/dev/null; then
+            echo "already_published=true" >> $GITHUB_OUTPUT
+            echo "Version ${PACKAGE_VERSION} already published, skipping"
+          else
+            echo "already_published=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Publish
+        if: steps.check.outputs.already_published != 'true'
         run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
