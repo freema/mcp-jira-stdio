@@ -415,3 +415,40 @@ export const TransitionIssueInputSchema = z
   });
 
 export type TransitionIssueInput = z.infer<typeof TransitionIssueInputSchema>;
+
+// Get issue graph
+export const GetIssueGraphInputSchema = z.object({
+  issueKey: z
+    .string()
+    .min(1)
+    .describe('Seed issue key to start graph traversal from (e.g., PROJECT-123)')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
+  maxDepth: z
+    .number()
+    .min(1)
+    .max(5)
+    .default(2)
+    .describe('Maximum BFS traversal depth from seed issue (default: 2, max: 5)'),
+  maxNodes: z
+    .number()
+    .min(1)
+    .max(200)
+    .default(50)
+    .describe('Maximum number of nodes to include in the graph (default: 50, max: 200)'),
+  includeHierarchy: z
+    .boolean()
+    .default(true)
+    .describe('Include parent/child/subtask edges (default: true)'),
+  linkTypes: z
+    .array(z.string())
+    .optional()
+    .describe(
+      'Filter to specific link types (e.g., ["Blocks", "Relates"]). If omitted, includes all link types.'
+    ),
+  direction: z
+    .enum(['all', 'inward', 'outward'])
+    .default('all')
+    .describe('Which link directions to follow: "all", "inward", or "outward" (default: "all")'),
+});
+
+export type GetIssueGraphInput = z.infer<typeof GetIssueGraphInputSchema>;

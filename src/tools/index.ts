@@ -21,3 +21,4 @@ export * from './get-attachments.js';
 export * from './delete-attachment.js';
 export * from './get-transitions.js';
 export * from './transition-issue.js';
+export * from './get-issue-graph.js';

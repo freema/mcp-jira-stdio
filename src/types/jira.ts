@@ -255,6 +255,83 @@ export interface JiraField {
   schema: JiraFieldSchema;
 }
 
+export interface JiraIssueLinkType {
+  id: string;
+  name: string;
+  inward: string;
+  outward: string;
+  self: string;
+}
+
+export interface JiraIssueLink {
+  id: string;
+  type: JiraIssueLinkType;
+  inwardIssue?: {
+    id: string;
+    key: string;
+    self: string;
+    fields?: {
+      summary?: string;
+      status?: JiraStatus;
+      priority?: JiraPriority;
+      issuetype?: JiraIssueType;
+    };
+  };
+  outwardIssue?: {
+    id: string;
+    key: string;
+    self: string;
+    fields?: {
+      summary?: string;
+      status?: JiraStatus;
+      priority?: JiraPriority;
+      issuetype?: JiraIssueType;
+    };
+  };
+}
+
+export interface JiraSubtask {
+  id: string;
+  key: string;
+  self: string;
+  fields?: {
+    summary?: string;
+    status?: JiraStatus;
+    issuetype?: JiraIssueType;
+    priority?: JiraPriority;
+  };
+}
+
+// Issue graph types
+export interface IssueGraphNode {
+  key: string;
+  summary: string;
+  status: string;
+  statusCategory: string;
+  issueType: string;
+  priority: string;
+}
+
+export interface IssueGraphEdge {
+  from: string;
+  to: string;
+  type: string;
+  label: string;
+  category: 'hierarchy' | 'link';
+}
+
+export interface IssueGraph {
+  rootIssue: string;
+  nodes: IssueGraphNode[];
+  edges: IssueGraphEdge[];
+  metadata: {
+    totalNodes: number;
+    totalEdges: number;
+    maxDepthReached: boolean;
+    traversalDepth: number;
+  };
+}
+
 export interface JiraAttachment {
   id: string;
   self: string;
