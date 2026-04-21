@@ -43,8 +43,23 @@ function ensureAdfDescription(desc: any, format: 'markdown' | 'adf' | 'plain' = 
     }
   }
 
-  // Handle ADF format (already handled above with typeof === 'object')
+  // Handle ADF format: MCP passes stringified JSON; Jira REST API expects an object.
+  // (typeof === 'object' is handled above — return as-is.)
   if (format === 'adf') {
+    if (typeof desc === 'string') {
+      const trimmed = desc.trim();
+      try {
+        const parsed = JSON.parse(trimmed) as { type?: string };
+        if (parsed && typeof parsed === 'object' && parsed.type === 'doc') {
+          return parsed;
+        }
+      } catch {
+        // fall through to error below
+      }
+      throw new Error(
+        'ADF format: body must be a JSON string that parses to an ADF document with type "doc" (stringified Atlassian Document Format).'
+      );
+    }
     return desc;
   }
 

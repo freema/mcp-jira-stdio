@@ -119,23 +119,24 @@ describe('Markdown Format Conversion', () => {
       expect(call.data.fields.description).toEqual(adfObject);
     });
 
-    it('should return string as-is when format is "adf" and description is string', async () => {
+    it('should JSON.parse description string when format is "adf" (MCP always sends strings)', async () => {
       const mockResponse = { key: 'TEST-123', id: '123', self: 'url' };
       const mockIssue = { key: 'TEST-123', fields: {} };
+      const adfDoc = { type: 'doc', version: 1, content: [] };
 
       mockedMakeJiraRequest.mockResolvedValueOnce(mockResponse).mockResolvedValueOnce(mockIssue);
 
       await createIssue({
         projectKey: 'TEST',
         summary: 'Test',
-        description: 'raw string',
+        description: JSON.stringify(adfDoc),
         issueType: 'Task',
         format: 'adf',
       });
 
       expect(mockedMdToAdf).not.toHaveBeenCalled();
       const call = mockedMakeJiraRequest.mock.calls[0][0];
-      expect(call.data.fields.description).toBe('raw string');
+      expect(call.data.fields.description).toEqual(adfDoc);
     });
 
     it('should use markdown format by default', async () => {
@@ -184,6 +185,31 @@ describe('Markdown Format Conversion', () => {
       await addComment('TEST-123', '# Comment\n\n**Bold**', undefined, 'markdown');
 
       expect(mockedMdToAdf).toHaveBeenCalledWith('# Comment\n\n**Bold**');
+    });
+  });
+
+  describe('addComment with adf format', () => {
+    it('should JSON.parse string body and send ADF object to Jira (not a raw string)', async () => {
+      const mockComment = { id: '1', body: {}, author: {} };
+      mockedMakeJiraRequest.mockResolvedValue(mockComment);
+
+      const adfDoc = {
+        type: 'doc' as const,
+        version: 1,
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'Hello from ADF' }],
+          },
+        ],
+      };
+
+      await addComment('TEST-123', JSON.stringify(adfDoc), undefined, 'adf');
+
+      expect(mockedMdToAdf).not.toHaveBeenCalled();
+      const call = mockedMakeJiraRequest.mock.calls[0][0];
+      expect(call.data.body).toEqual(adfDoc);
+      expect(typeof call.data.body).toBe('object');
     });
   });
 });
