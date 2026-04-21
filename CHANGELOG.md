@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.2] - 2026-04-21
+
+### Fixed
+
+- **ADF format handling**: When `format: 'adf'` is used with `createIssue`, `updateIssue`, `addComment`, or `transitionIssue`, a stringified ADF payload is now `JSON.parse`d into an object before being sent to Jira (PR #212 by @dmduc72). Previously Jira REST rejected the request because MCP tool schemas pass description/body as strings, and the raw string was forwarded as-is. Invalid ADF now raises a clear error instead of a cryptic Jira REST failure.
+
 ## [1.9.0] - 2026-03-13
 
 ### Added
