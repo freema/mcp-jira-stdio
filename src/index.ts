@@ -238,20 +238,26 @@ async function main() {
 
   // Show auth info on startup when configured (skip in DRY_RUN)
   if (!isDryRun) {
-    const hasAuthVars = Boolean(
-      process.env.JIRA_BASE_URL && process.env.JIRA_EMAIL && process.env.JIRA_API_TOKEN
-    );
+    const authType = process.env.JIRA_AUTH_TYPE || 'basic';
+    const hasAuthVars =
+      authType === 'oauth'
+        ? Boolean(process.env.JIRA_BASE_URL && process.env.JIRA_OAUTH_CLIENT_ID && process.env.JIRA_OAUTH_CLIENT_SECRET)
+        : Boolean(process.env.JIRA_BASE_URL && process.env.JIRA_EMAIL && process.env.JIRA_API_TOKEN);
 
     if (hasAuthVars) {
       try {
         const auth = validateAuth();
-        console.error(`🔐 Authenticated as: ${auth.email}`);
+        if (authType === 'oauth') {
+          console.error(`🔐 Auth: OAuth 2.0 (token will be obtained on first request)`);
+        } else {
+          console.error(`🔐 Authenticated as: ${auth.email}`);
+        }
         console.error(`🌐 Jira instance: ${auth.baseUrl}`);
       } catch (error: any) {
         console.error('⚠️  Invalid Jira credentials:', error.message);
       }
     } else {
-      console.error('⚠️  Jira env vars missing (JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN)');
+      console.error('⚠️  Jira env vars missing (JIRA_BASE_URL + JIRA_EMAIL/JIRA_API_TOKEN or JIRA_OAUTH_CLIENT_ID/JIRA_OAUTH_CLIENT_SECRET)');
     }
   } else {
     console.error('🧪 DRY_RUN=1 set — skipping Jira auth check');
