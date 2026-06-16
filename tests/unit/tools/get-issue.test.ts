@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { handleGetIssue, getIssueTool } from '../../../src/tools/get-issue.js';
 import { validateInput, extractIssueKey } from '../../../src/utils/validators.js';
+import { GetIssueInputSchema } from '../../../src/types/tools.js';
 import { getIssue } from '../../../src/utils/api-helpers.js';
 import { formatIssueResponse } from '../../../src/utils/formatters.js';
 import { handleError } from '../../../src/utils/error-handler.js';
@@ -201,14 +202,7 @@ describe('get-issue tool', () => {
 
         await handleGetIssue(input);
 
-        expect(mockedValidateInput).toHaveBeenCalledWith(
-          expect.objectContaining({
-            _def: expect.objectContaining({
-              typeName: 'ZodObject',
-            }),
-          }),
-          input
-        );
+        expect(mockedValidateInput).toHaveBeenCalledWith(GetIssueInputSchema, input);
       });
 
       it('should handle validation errors', async () => {

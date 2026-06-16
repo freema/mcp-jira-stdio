@@ -37,8 +37,8 @@ describe('validators', () => {
 
     it('should handle missing required fields', () => {
       const input = { age: 30 };
-      expect(() => validateInput(testSchema, input)).toThrow('name: Required');
-      expect(() => validateInput(testSchema, input)).toThrow('email: Required');
+      expect(() => validateInput(testSchema, input)).toThrow('name: Invalid input');
+      expect(() => validateInput(testSchema, input)).toThrow('email: Invalid input');
     });
 
     it('should rethrow non-zod errors', () => {

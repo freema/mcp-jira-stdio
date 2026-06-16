@@ -4,6 +4,7 @@ import {
   createIssueLinkTool,
 } from '../../../src/tools/create-issue-link.js';
 import { validateInput } from '../../../src/utils/validators.js';
+import { CreateIssueLinkInputSchema } from '../../../src/types/tools.js';
 import { createIssueLink } from '../../../src/utils/api-helpers.js';
 import { formatSuccessResponse } from '../../../src/utils/formatters.js';
 import { handleError } from '../../../src/utils/error-handler.js';
@@ -194,14 +195,7 @@ describe('create-issue-link tool', () => {
 
         await handleCreateIssueLink(input);
 
-        expect(mockedValidateInput).toHaveBeenCalledWith(
-          expect.objectContaining({
-            _def: expect.objectContaining({
-              typeName: 'ZodObject',
-            }),
-          }),
-          input
-        );
+        expect(mockedValidateInput).toHaveBeenCalledWith(CreateIssueLinkInputSchema, input);
       });
 
       it('should handle validation errors for missing fromIssue', async () => {

@@ -61,7 +61,7 @@ export const CreateIssueInputSchema = z.object({
   labels: z.array(z.string()).optional().describe('Issue labels'),
   components: z.array(z.string()).optional().describe('Component names'),
   customFields: z
-    .record(z.any())
+    .record(z.string(), z.any())
     .optional()
     .describe(
       'Additional Jira field mappings, e.g. { "customfield_12345": value }. Use for required custom fields.'
