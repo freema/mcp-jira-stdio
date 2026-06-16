@@ -1,7 +1,7 @@
 # MCP Jira Server
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Node](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://badge.fury.io/js/mcp-jira-stdio.svg)](https://www.npmjs.com/package/mcp-jira-stdio)
 [![MCP Server](https://img.shields.io/badge/MCP-Server-blue)](https://glama.ai/mcp/servers)
@@ -42,7 +42,7 @@ If you prefer to configure manually or use Claude Desktop, see the [Configuratio
 
 ### 1. Prerequisites
 
-- Node.js v18 or higher
+- Node.js v20 or higher
 - Jira instance (Cloud or Server)
 - Jira API token
 
