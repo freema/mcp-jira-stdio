@@ -851,7 +851,10 @@ export async function addAttachmentFromUrl(
   const formData = new FormData();
   formData.append('file', fileBuffer, {
     filename: filename,
-    contentType: response.headers['content-type'] || 'application/octet-stream',
+    contentType:
+      typeof response.headers['content-type'] === 'string'
+        ? response.headers['content-type']
+        : 'application/octet-stream',
   });
 
   return await makeMultipartRequest<JiraAttachment[]>(`/issue/${issueKey}/attachments`, formData);
