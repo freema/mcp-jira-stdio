@@ -6,7 +6,7 @@ export function validateInput<T>(schema: ZodSchema<T>, input: unknown): T {
     return schema.parse(input);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errorMessages = error.errors.map((err) => `${err.path.join('.')}: ${err.message}`);
+      const errorMessages = error.issues.map((err) => `${err.path.join('.')}: ${err.message}`);
       throw new Error(`${ERROR_MESSAGES.VALIDATION_ERROR}\n${errorMessages.join('\n')}`);
     }
     throw error;

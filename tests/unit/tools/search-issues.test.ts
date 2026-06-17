@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { handleSearchIssues, searchIssuesTool } from '../../../src/tools/search-issues.js';
 import { validateInput } from '../../../src/utils/validators.js';
+import { SearchIssuesInputSchema } from '../../../src/types/tools.js';
 import { searchIssues } from '../../../src/utils/api-helpers.js';
 import { formatSearchResultsResponse } from '../../../src/utils/formatters.js';
 import { handleError } from '../../../src/utils/error-handler.js';
@@ -207,14 +208,7 @@ describe('search-issues tool', () => {
 
         await handleSearchIssues(input);
 
-        expect(mockedValidateInput).toHaveBeenCalledWith(
-          expect.objectContaining({
-            _def: expect.objectContaining({
-              typeName: 'ZodObject',
-            }),
-          }),
-          input
-        );
+        expect(mockedValidateInput).toHaveBeenCalledWith(SearchIssuesInputSchema, input);
       });
 
       it('should handle validation errors for missing JQL', async () => {

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { handleCreateIssue, createIssueTool } from '../../../src/tools/create-issue.js';
 import { validateInput } from '../../../src/utils/validators.js';
+import { CreateIssueInputSchema } from '../../../src/types/tools.js';
 import { createIssue } from '../../../src/utils/api-helpers.js';
 import { formatIssueResponse } from '../../../src/utils/formatters.js';
 import { handleError } from '../../../src/utils/error-handler.js';
@@ -219,14 +220,7 @@ describe('create-issue tool', () => {
 
         await handleCreateIssue(input);
 
-        expect(mockedValidateInput).toHaveBeenCalledWith(
-          expect.objectContaining({
-            _def: expect.objectContaining({
-              typeName: 'ZodObject',
-            }),
-          }),
-          input
-        );
+        expect(mockedValidateInput).toHaveBeenCalledWith(CreateIssueInputSchema, input);
       });
 
       it('should handle validation errors for missing required fields', async () => {
