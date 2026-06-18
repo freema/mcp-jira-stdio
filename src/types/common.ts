@@ -2,8 +2,9 @@ import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
 export interface JiraAuthConfig {
   baseUrl: string;
-  email: string;
-  apiToken: string;
+  email?: string;
+  apiToken?: string;
+  authType: 'basic' | 'bearer' | 'oauth';
 }
 
 export interface JiraApiResponse<T = any> {

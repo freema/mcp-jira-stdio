@@ -20,6 +20,8 @@ A Model Context Protocol (MCP) server for Jira API integration. Enables reading,
 
 The fastest way to add this MCP server to Claude Code:
 
+**Basic auth (API token):**
+
 ```bash
 claude mcp add jira npx mcp-jira-stdio@latest \
   --env JIRA_BASE_URL=https://yourcompany.atlassian.net \
@@ -27,10 +29,21 @@ claude mcp add jira npx mcp-jira-stdio@latest \
   --env JIRA_API_TOKEN=your-api-token
 ```
 
+**OAuth 2.0** (for organizations that have disabled API token access):
+
+```bash
+claude mcp add jira npx mcp-jira-stdio@latest \
+  --env JIRA_BASE_URL=https://yourcompany.atlassian.net \
+  --env JIRA_AUTH_TYPE=oauth \
+  --env JIRA_OAUTH_CLIENT_ID=your-client-id \
+  --env JIRA_OAUTH_CLIENT_SECRET=your-client-secret
+```
+
 Replace the values with your actual Jira credentials:
 - **JIRA_BASE_URL**: Your Jira instance URL (e.g., `https://yourcompany.atlassian.net`)
-- **JIRA_EMAIL**: Your Jira account email
-- **JIRA_API_TOKEN**: Your Jira API token ([generate here](https://id.atlassian.com/manage-profile/security/api-tokens))
+- **JIRA_EMAIL**: Your Jira account email *(basic auth only)*
+- **JIRA_API_TOKEN**: Your Jira API token ([generate here](https://id.atlassian.com/manage-profile/security/api-tokens)) *(basic auth only)*
+- **JIRA_OAUTH_CLIENT_ID / JIRA_OAUTH_CLIENT_SECRET**: OAuth 2.0 app credentials ([see OAuth setup](#oauth-20-setup)) *(OAuth only)*
 
 That's it! The server will be automatically configured and ready to use.
 
@@ -76,11 +89,16 @@ task build
 
 ### 3. Jira API Setup
 
-1. Go to your Jira instance settings
-2. Create an API token:
-   - **Jira Cloud**: Go to Account Settings → Security → Create and manage API tokens
-   - **Jira Server**: Use your username and password (or create an application password)
-3. Note your Jira base URL (e.g., `https://yourcompany.atlassian.net`)
+Two authentication methods are supported:
+
+#### Basic Auth (API Token) — default
+
+1. Go to [Atlassian API tokens](https://id.atlassian.com/manage-profile/security/api-tokens) and create a token
+2. Note your Jira base URL (e.g., `https://yourcompany.atlassian.net`)
+
+#### OAuth 2.0 — for organizations that have disabled API token access
+
+See the [OAuth 2.0 Setup](#oauth-20-setup) section below.
 
 ### 4. Configuration
 
@@ -95,7 +113,7 @@ cp .env.example .env
 task env
 ```
 
-Example `.env` contents:
+**Basic auth** `.env`:
 
 ```env
 JIRA_BASE_URL=https://your-instance.atlassian.net
@@ -103,7 +121,14 @@ JIRA_EMAIL=your-email@example.com
 JIRA_API_TOKEN=your-api-token
 ```
 
-**Note:** Generate your API token at [https://id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
+**OAuth 2.0** `.env`:
+
+```env
+JIRA_BASE_URL=https://your-instance.atlassian.net
+JIRA_AUTH_TYPE=oauth
+JIRA_OAUTH_CLIENT_ID=your-client-id
+JIRA_OAUTH_CLIENT_SECRET=your-client-secret
+```
 
 ### 5. Test Connection
 
@@ -121,11 +146,23 @@ task jira:projects
 
 Use the quick install command (recommended):
 
+**Basic auth:**
+
 ```bash
 claude mcp add jira npx mcp-jira-stdio@latest \
   --env JIRA_BASE_URL=https://yourcompany.atlassian.net \
   --env JIRA_EMAIL=your-email@example.com \
   --env JIRA_API_TOKEN=your-api-token
+```
+
+**OAuth 2.0:**
+
+```bash
+claude mcp add jira npx mcp-jira-stdio@latest \
+  --env JIRA_BASE_URL=https://yourcompany.atlassian.net \
+  --env JIRA_AUTH_TYPE=oauth \
+  --env JIRA_OAUTH_CLIENT_ID=your-client-id \
+  --env JIRA_OAUTH_CLIENT_SECRET=your-client-secret
 ```
 
 #### For Claude Desktop
@@ -136,6 +173,8 @@ Add to your Claude Desktop config:
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 - **Linux**: `~/.config/claude/claude_desktop_config.json`
 
+**Basic auth:**
+
 ```json
 {
   "mcpServers": {
@@ -145,6 +184,24 @@ Add to your Claude Desktop config:
         "JIRA_BASE_URL": "https://your-instance.atlassian.net",
         "JIRA_EMAIL": "your-email@example.com",
         "JIRA_API_TOKEN": "your-api-token"
+      }
+    }
+  }
+}
+```
+
+**OAuth 2.0:**
+
+```json
+{
+  "mcpServers": {
+    "jira": {
+      "command": "mcp-jira-stdio",
+      "env": {
+        "JIRA_BASE_URL": "https://your-instance.atlassian.net",
+        "JIRA_AUTH_TYPE": "oauth",
+        "JIRA_OAUTH_CLIENT_ID": "your-client-id",
+        "JIRA_OAUTH_CLIENT_SECRET": "your-client-secret"
       }
     }
   }
@@ -249,8 +306,9 @@ task inspector:dev
 
 Notes:
 
-- Startup no longer blocks on Jira connectivity. If Jira env vars are missing, the server still starts and lists tools; tool calls will fail with a clear auth error until you set `JIRA_BASE_URL`, `JIRA_EMAIL`, and `JIRA_API_TOKEN`.
+- Startup no longer blocks on Jira connectivity. If required env vars are missing the server still starts and lists tools; tool calls will fail with a clear auth error.
 - Connection testing runs only in development/test (`NODE_ENV=development` or `test`). Failures are logged but do not terminate the server, so the inspector can still display tools.
+- When using OAuth, the browser authorization prompt fires on the **first tool call**, not at startup.
 
 ### Testing
 
@@ -331,6 +389,19 @@ jira_get_visible_projects({
 - Check project permissions in Jira
 - Ensure you're using the correct Jira instance
 
+**OAuth: "Port 7789 is already in use"**
+
+- Another process is using the callback port. Stop it and retry, or kill it with `lsof -ti:7789 | xargs kill`.
+
+**OAuth: "Jira site not found in accessible resources"**
+
+- The `JIRA_BASE_URL` must match exactly one of the sites returned by Atlassian (e.g., `https://yourcompany.atlassian.net`).
+- Delete `~/.mcp-jira-stdio/tokens.json` to force a fresh authorization if credentials changed.
+
+**OAuth: browser does not open automatically**
+
+- The server prints the authorization URL to stderr — copy and open it manually.
+
 **MCP Connection Issues**
 
 - Ensure you're using the built version (`dist/index.js`)
@@ -377,12 +448,51 @@ npm run inspector
 
 ## 🔍 Environment Variables
 
-| Variable         | Required | Description       | Example                         |
-| ---------------- | -------- | ----------------- | ------------------------------- |
-| `JIRA_BASE_URL`  | Yes      | Jira instance URL | `https://company.atlassian.net` |
-| `JIRA_EMAIL`     | Yes      | Your Jira email   | `user@example.com`              |
-| `JIRA_API_TOKEN` | Yes      | Jira API token    | `ATxxx...`                      |
-| `NODE_ENV`       | No       | Environment mode  | `development` or `production`   |
+| Variable                    | Required              | Description                           | Example                         |
+| --------------------------- | --------------------- | ------------------------------------- | ------------------------------- |
+| `JIRA_BASE_URL`             | Yes                   | Jira instance URL                     | `https://company.atlassian.net` |
+| `JIRA_AUTH_TYPE`            | No                    | Auth method: `basic` (default) or `oauth` | `oauth`                     |
+| `JIRA_EMAIL`                | Yes *(basic auth)*    | Your Jira account email               | `user@example.com`              |
+| `JIRA_API_TOKEN`            | Yes *(basic auth)*    | Jira API token                        | `ATxxx...`                      |
+| `JIRA_OAUTH_CLIENT_ID`      | Yes *(OAuth)*         | OAuth 2.0 app client ID               | `abc123`                        |
+| `JIRA_OAUTH_CLIENT_SECRET`  | Yes *(OAuth)*         | OAuth 2.0 app client secret           | `secret...`                     |
+| `NODE_ENV`                  | No                    | Environment mode                      | `development` or `production`   |
+
+## 🔑 OAuth 2.0 Setup
+
+Use OAuth 2.0 when your Atlassian organization has disabled personal API token access.
+
+### 1. Create an OAuth 2.0 app
+
+1. Go to [Atlassian Developer Console](https://developer.atlassian.com/console/myapps/) and click **Create**.
+2. Choose **OAuth 2.0 integration**.
+3. Under **Permissions**, add the **Jira API** and enable these scopes:
+   - `read:jira-user`
+   - `read:jira-work`
+   - `write:jira-work`
+   - `offline_access` (required for token refresh)
+4. Under **Authorization**, add the callback URL: `http://localhost:7789/callback`
+5. Copy the **Client ID** and **Client Secret**.
+
+### 2. Configure the server
+
+Set these environment variables (alongside `JIRA_BASE_URL`):
+
+```env
+JIRA_AUTH_TYPE=oauth
+JIRA_OAUTH_CLIENT_ID=your-client-id
+JIRA_OAUTH_CLIENT_SECRET=your-client-secret
+```
+
+### 3. First-run authorization
+
+On the first tool call, the server will:
+
+1. Open your browser to the Atlassian authorization page.
+2. Ask you to grant access to the app.
+3. Store the tokens in `~/.mcp-jira-stdio/tokens.json` (mode `600`).
+
+Subsequent calls use stored tokens and refresh them automatically — no browser interaction needed until the refresh token expires.
 
 ## 🤝 Contributing
 
