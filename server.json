@@ -1,0 +1,50 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "io.github.freema/mcp-jira-stdio",
+  "description": "MCP server for Jira Cloud — issues, search, comments, attachments, transitions.",
+  "status": "active",
+  "repository": {
+    "url": "https://github.com/freema/mcp-jira-stdio",
+    "source": "github"
+  },
+  "version": "1.11.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "mcp-jira-stdio",
+      "version": "1.11.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "JIRA_BASE_URL",
+          "description": "Jira instance URL, e.g. https://company.atlassian.net",
+          "isRequired": true
+        },
+        {
+          "name": "JIRA_EMAIL",
+          "description": "Email of the Jira account the API token belongs to",
+          "isRequired": true
+        },
+        {
+          "name": "JIRA_API_TOKEN",
+          "description": "Jira API token (id.atlassian.com > Security > API tokens)",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "MCP_REDACT_SENSITIVE",
+          "description": "Set to true to redact sensitive values from logs",
+          "isRequired": false
+        },
+        {
+          "name": "LOG_LEVEL",
+          "description": "Log verbosity: debug, info, warn or error (default: info)",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}
