@@ -1,3 +1,5 @@
+<!-- mcp-name: io.github.freema/mcp-jira-stdio -->
+
 # MCP Jira Server
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
