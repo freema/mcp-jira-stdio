@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.1] - 2026-08-10
+
+### Changed
+
+- Bumped `axios` from 1.18.1 to 1.19.0
+- Bumped `zod` from 4.4.2 to 4.4.3
+- Bumped `eslint` from 9.39.4 to 9.39.5
+- Bumped the vitest group (`vitest`, `@vitest/coverage-v8`, `@vitest/ui`) from 4.1.9 to 4.1.10
+- Bumped `@typescript-eslint/eslint-plugin` and `@typescript-eslint/parser` from 8.62.1 to 8.65.0
+- Bumped `actions/checkout` from 4 to 7 and `actions/setup-node` from 6 to 7 in CI
+
 ## [1.10.2] - 2026-04-21
 
 ### Fixed
