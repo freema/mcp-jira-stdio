@@ -172,10 +172,30 @@ describe('All Jira Tools', () => {
     it('should have correct configuration', () => {
       expect(updateIssueTool.name).toBe(TOOL_NAMES.UPDATE_ISSUE);
       expect(updateIssueTool.description).toContain('Updates an existing Jira issue');
+      expect(updateIssueTool.description).toContain('fix versions');
+      expect(updateIssueTool.inputSchema.properties.fixVersions).toEqual({
+        type: 'array',
+        items: { type: 'string' },
+        description: 'New fix version names array (replaces existing fix versions) - optional',
+      });
       expect(updateIssueTool.inputSchema.required).toEqual(['issueKey']);
     });
 
-    // Removed flaky success-case test to stabilize suite
+    it('should forward fix versions to the API helper', async () => {
+      const input = { issueKey: 'TEST-123', fixVersions: ['v1.2.0'], returnIssue: false };
+      const mockResponse = { content: [{ type: 'text', text: 'issue updated' }] };
+
+      mockedValidateInput.mockReturnValue(input);
+      mockedUpdateIssue.mockResolvedValue(undefined);
+      mockedFormatSuccessResponse.mockReturnValue(mockResponse);
+
+      const result = await handleUpdateIssue(input);
+
+      expect(mockedUpdateIssue).toHaveBeenCalledWith('TEST-123', {
+        fixVersions: ['v1.2.0'],
+      });
+      expect(result).toEqual(mockResponse);
+    });
 
     it('should handle API errors', async () => {
       const mockErrorResponse = { content: [{ type: 'text', text: 'api error' }] };

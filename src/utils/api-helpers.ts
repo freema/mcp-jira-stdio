@@ -379,6 +379,7 @@ export async function updateIssue(
     assignee?: string;
     labels?: string[];
     components?: string[];
+    fixVersions?: string[];
     parent?: string;
     format?: 'markdown' | 'adf' | 'plain';
   }
@@ -407,6 +408,10 @@ export async function updateIssue(
 
   if (updates.components !== undefined) {
     fields.components = updates.components.map((name) => ({ name }));
+  }
+
+  if (updates.fixVersions !== undefined) {
+    fields.fixVersions = updates.fixVersions.map((name) => ({ name }));
   }
 
   if (updates.parent !== undefined) {

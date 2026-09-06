@@ -185,7 +185,7 @@ Restart Claude Desktop after adding the configuration.
 - `jira_get_issue`: Retrieve issue details by key (supports optional fields/expand).
 - `jira_search_issues`: Search for Jira issues using JQL with pagination and fields.
 - `jira_create_issue`: Create a new issue in a project (type, priority, assignee, labels, components).
-- `jira_update_issue`: Update an existing issue (summary, description, priority, assignee, labels, components).
+- `jira_update_issue`: Update an existing issue (summary, description, priority, assignee, labels, components, fix versions).
 - `jira_create_subtask`: Create a subtask under a parent issue (auto-detects subtask type).
 
 ### Comments
