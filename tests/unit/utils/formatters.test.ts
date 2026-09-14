@@ -85,6 +85,7 @@ describe('formatters', () => {
       expect(result.content[0].text).toContain('**Issue Type:** Bug');
       expect(result.content[0].text).toContain('**Labels:** test-label');
       expect(result.content[0].text).toContain('**Components:** None');
+      expect(result.content[0].text).toContain('**Fix Versions:** None');
       expect(result.content[0].text).toContain('**Description:**\nTest issue description');
     });
 
@@ -129,6 +130,19 @@ describe('formatters', () => {
       const result = formatIssueResponse(issueWithComponents);
 
       expect(result.content[0].text).toContain('**Components:** Frontend, Backend');
+    });
+
+    it('should handle issue with fix versions', () => {
+      const issueWithFixVersions = {
+        ...mockJiraIssue,
+        fields: {
+          ...mockJiraIssue.fields,
+          fixVersions: [{ name: 'v1.2.0' }, { name: 'v1.3.0' }],
+        },
+      };
+      const result = formatIssueResponse(issueWithFixVersions);
+
+      expect(result.content[0].text).toContain('**Fix Versions:** v1.2.0, v1.3.0');
     });
 
     it('should handle issue without labels', () => {
