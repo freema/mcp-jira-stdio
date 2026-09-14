@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-09-14
+
+### Added
+
+- **Fix versions on update**: `jira_update_issue` accepts an optional `fixVersions` array of version names, mapped to Jira's `fixVersions` field (PR #244 by @rizzow, closes #243). Passing an array replaces the existing fix versions; passing an empty array clears them. Valid version names for a project can be listed with `jira_get_project_info` and `expand: ["versions"]`.
+
+### Fixed
+
+- Issue responses now display **Fix Versions** alongside Labels and Components. Previously the field was never rendered, so an update that set fix versions came back with no confirmation the write had landed.
+
+### Changed
+
+- Bumped `axios` from 1.19.0 to 1.20.0
+- Bumped `tsx` from 4.21.0 to 4.23.12
+- Bumped `prettier` from 3.9.4 to 3.9.6
+- Bumped `@typescript-eslint/eslint-plugin` and `@typescript-eslint/parser` from 8.65.0 to 8.68.0
+- Bumped the vitest group (`vitest`, `@vitest/coverage-v8`, `@vitest/ui`) from 4.1.10 to 4.1.11
+
 ## [1.11.1] - 2026-08-10
 
 ### Changed
