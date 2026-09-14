@@ -90,6 +90,10 @@ export function formatIssueResponse(issue: JiraIssue): McpToolResponse {
   const componentsText =
     componentsArray.length > 0 ? componentsArray.map((c) => c.name).join(', ') : 'None';
 
+  const fixVersionsArray = Array.isArray(fields?.fixVersions) ? fields.fixVersions : [];
+  const fixVersionsText =
+    fixVersionsArray.length > 0 ? fixVersionsArray.map((v) => v.name).join(', ') : 'None';
+
   let description = fields?.description as any;
   if (description && typeof description === 'object') {
     const parsed = adfToPlainText(description);
@@ -110,7 +114,7 @@ export function formatIssueResponse(issue: JiraIssue): McpToolResponse {
     content: [
       {
         type: 'text',
-        text: `**${key}: ${summary}**\n\n**Status:** ${fields?.status?.name || 'Unknown'}\n**Priority:** ${fields?.priority?.name || 'None'}\n**Assignee:** ${assigneeText}\n**Reporter:** ${reporterText}\n**Project:** ${fields?.project?.name || 'Unknown'} (${fields?.project?.key || 'N/A'})\n**Issue Type:** ${fields?.issuetype?.name || 'Unknown'}\n**Labels:** ${labelsText}\n**Components:** ${componentsText}${parentText}\n**Created:** ${createdText}\n**Updated:** ${updatedText}\n\n**Description:**\n${description}`,
+        text: `**${key}: ${summary}**\n\n**Status:** ${fields?.status?.name || 'Unknown'}\n**Priority:** ${fields?.priority?.name || 'None'}\n**Assignee:** ${assigneeText}\n**Reporter:** ${reporterText}\n**Project:** ${fields?.project?.name || 'Unknown'} (${fields?.project?.key || 'N/A'})\n**Issue Type:** ${fields?.issuetype?.name || 'Unknown'}\n**Labels:** ${labelsText}\n**Components:** ${componentsText}\n**Fix Versions:** ${fixVersionsText}${parentText}\n**Created:** ${createdText}\n**Updated:** ${updatedText}\n\n**Description:**\n${description}`,
       },
     ],
   };
