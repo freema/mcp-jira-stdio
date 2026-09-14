@@ -435,12 +435,13 @@ describe('api-helpers', () => {
       });
     });
 
-    it('should handle labels and components updates', async () => {
+    it('should handle labels, components, and fix versions updates', async () => {
       mockedMakeJiraRequest.mockResolvedValue(undefined);
 
       await updateIssue('TEST-123', {
         labels: ['new-label'],
         components: ['New Component'],
+        fixVersions: ['v1.2.0'],
       });
 
       expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
@@ -450,8 +451,21 @@ describe('api-helpers', () => {
           fields: {
             labels: ['new-label'],
             components: [{ name: 'New Component' }],
+            fixVersions: [{ name: 'v1.2.0' }],
           },
         },
+      });
+    });
+
+    it('should clear fix versions when given an empty array', async () => {
+      mockedMakeJiraRequest.mockResolvedValue(undefined);
+
+      await updateIssue('TEST-123', { fixVersions: [] });
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'PUT',
+        url: '/issue/TEST-123',
+        data: { fields: { fixVersions: [] } },
       });
     });
 
@@ -466,6 +480,7 @@ describe('api-helpers', () => {
       });
       expect(callData.fields.description).toBeUndefined();
       expect(callData.fields.priority).toBeUndefined();
+      expect(callData.fields.fixVersions).toBeUndefined();
     });
   });
 

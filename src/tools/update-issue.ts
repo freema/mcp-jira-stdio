@@ -14,7 +14,7 @@ const log = createLogger('tool:update-issue');
 export const updateIssueTool: Tool = {
   name: TOOL_NAMES.UPDATE_ISSUE,
   description:
-    'Updates an existing Jira issue by its key. Supports updating summary, description, priority, assignee, labels, and components. Description format is controlled by the "format" parameter (default: markdown). Only specified fields will be updated.',
+    'Updates an existing Jira issue by its key. Supports updating summary, description, priority, assignee, labels, components, and fix versions. Description format is controlled by the "format" parameter (default: markdown). Only specified fields will be updated.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -47,6 +47,11 @@ export const updateIssueTool: Tool = {
         type: 'array',
         items: { type: 'string' },
         description: 'New components array (replaces existing components) - optional',
+      },
+      fixVersions: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'New fix version names array (replaces existing fix versions) - optional',
       },
       parent: {
         type: 'string',
@@ -84,6 +89,7 @@ export async function handleUpdateIssue(input: unknown): Promise<McpToolResponse
     if (validated.assignee !== undefined) updateParams.assignee = validated.assignee;
     if (validated.labels !== undefined) updateParams.labels = validated.labels;
     if (validated.components !== undefined) updateParams.components = validated.components;
+    if (validated.fixVersions !== undefined) updateParams.fixVersions = validated.fixVersions;
     if (validated.parent !== undefined) updateParams.parent = validated.parent;
     if (validated.format !== undefined) updateParams.format = validated.format;
 

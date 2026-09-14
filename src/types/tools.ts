@@ -96,6 +96,10 @@ export const UpdateIssueInputSchema = z.object({
   assignee: z.string().optional().describe('New assignee account ID'),
   labels: z.array(z.string()).optional().describe('New labels (replaces existing)'),
   components: z.array(z.string()).optional().describe('New components (replaces existing)'),
+  fixVersions: z
+    .array(z.string())
+    .optional()
+    .describe('New fix version names (replaces existing fix versions)'),
   parent: z
     .string()
     .optional()
