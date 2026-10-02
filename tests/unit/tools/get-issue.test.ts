@@ -31,6 +31,34 @@ describe('get-issue tool', () => {
     });
   });
 
+  describe('issue key in the REST path', () => {
+    it.each(['../myself', '../../serverInfo', 'PROJ-1/../../myself?', '..'])(
+      'rejects %j without calling Jira',
+      async (issueKey) => {
+        mockedValidateInput.mockReturnValue({ issueKey });
+
+        await handleGetIssue({ issueKey });
+
+        expect(mockedGetIssue).not.toHaveBeenCalledWith(issueKey, expect.anything());
+        if (issueKey.match(/[A-Z][A-Z0-9]*-\d+/) === null) {
+          expect(mockedGetIssue).not.toHaveBeenCalled();
+          expect(mockedHandleError).toHaveBeenCalledWith(
+            expect.objectContaining({ message: expect.stringContaining('Invalid issue key') })
+          );
+        }
+      }
+    );
+
+    it.each(['PROJ-12', 'proj-12', '10001'])('accepts %j', async (issueKey) => {
+      mockedValidateInput.mockReturnValue({ issueKey });
+      mockedGetIssue.mockResolvedValue(mockJiraIssue);
+
+      await handleGetIssue({ issueKey });
+
+      expect(mockedGetIssue).toHaveBeenCalledWith(issueKey, {});
+    });
+  });
+
   describe('getIssueTool configuration', () => {
     it('should have correct tool configuration', () => {
       expect(getIssueTool.name).toBe(TOOL_NAMES.GET_ISSUE);

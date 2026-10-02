@@ -22,6 +22,18 @@ import { PaginatedResponse } from '../types/common.js';
 import { sanitizeJQL } from './validators.js';
 import mdToAdf from 'md-to-adf';
 
+/**
+ * Encodes one REST path segment. An id such as `../issue/PROJ-1` would
+ * otherwise address a different endpoint; encoding leaves "." and ".." as
+ * they are and the URL parser resolves them, so those are rejected.
+ */
+export function pathSegment(value: string): string {
+  if (typeof value !== 'string' || value === '' || value === '.' || value === '..') {
+    throw new Error(`Invalid identifier: ${JSON.stringify(value)}`);
+  }
+  return encodeURIComponent(value);
+}
+
 // Convert a description into Atlassian Document Format (ADF) based on the specified format.
 // Supports three formats:
 // - 'markdown': Converts Markdown syntax to ADF using md-to-adf
@@ -254,7 +266,7 @@ export async function getIssue(
 
   const config: AxiosRequestConfig = {
     method: 'GET',
-    url: `/issue/${issueKey}`,
+    url: `/issue/${pathSegment(issueKey)}`,
     params,
   };
 
@@ -420,7 +432,7 @@ export async function updateIssue(
 
   const config: AxiosRequestConfig = {
     method: 'PUT',
-    url: `/issue/${issueKey}`,
+    url: `/issue/${pathSegment(issueKey)}`,
     data: { fields },
   };
 
@@ -462,7 +474,7 @@ export async function getIssueTypes(projectKey?: string): Promise<JiraIssueType[
   let url = '/issuetype';
 
   if (projectKey) {
-    url = `/project/${projectKey}/issuetype`;
+    url = `/project/${pathSegment(projectKey)}/issuetype`;
   }
 
   const config: AxiosRequestConfig = {
@@ -531,9 +543,9 @@ export async function getStatuses(
   let url = '/status';
 
   if (options.projectKey && options.issueTypeId) {
-    url = `/project/${options.projectKey}/statuses`;
+    url = `/project/${pathSegment(options.projectKey)}/statuses`;
   } else if (options.projectKey) {
-    url = `/project/${options.projectKey}/statuses`;
+    url = `/project/${pathSegment(options.projectKey)}/statuses`;
   }
 
   const config: AxiosRequestConfig = {
@@ -576,7 +588,7 @@ export async function addComment(
 
   const config: AxiosRequestConfig = {
     method: 'POST',
-    url: `/issue/${issueKey}/comment`,
+    url: `/issue/${pathSegment(issueKey)}/comment`,
     data,
   };
 
@@ -607,7 +619,7 @@ export async function getComments(
 
   const config: AxiosRequestConfig = {
     method: 'GET',
-    url: `/issue/${issueKey}/comment`,
+    url: `/issue/${pathSegment(issueKey)}/comment`,
     params,
   };
 
@@ -626,7 +638,7 @@ export async function getProjectDetails(
 
   const config: AxiosRequestConfig = {
     method: 'GET',
-    url: `/project/${projectKey}`,
+    url: `/project/${pathSegment(projectKey)}`,
     params,
   };
 
@@ -815,7 +827,10 @@ export async function addAttachment(
     contentType: 'application/octet-stream',
   });
 
-  return await makeMultipartRequest<JiraAttachment[]>(`/issue/${issueKey}/attachments`, formData);
+  return await makeMultipartRequest<JiraAttachment[]>(
+    `/issue/${pathSegment(issueKey)}/attachments`,
+    formData
+  );
 }
 
 export async function addAttachmentFromUrl(
@@ -862,7 +877,10 @@ export async function addAttachmentFromUrl(
         : 'application/octet-stream',
   });
 
-  return await makeMultipartRequest<JiraAttachment[]>(`/issue/${issueKey}/attachments`, formData);
+  return await makeMultipartRequest<JiraAttachment[]>(
+    `/issue/${pathSegment(issueKey)}/attachments`,
+    formData
+  );
 }
 
 export async function getAttachments(issueKey: string): Promise<JiraAttachment[]> {
@@ -877,7 +895,7 @@ export async function getAttachments(issueKey: string): Promise<JiraAttachment[]
 export async function deleteAttachment(attachmentId: string): Promise<void> {
   const config: AxiosRequestConfig = {
     method: 'DELETE',
-    url: `/attachment/${attachmentId}`,
+    url: `/attachment/${pathSegment(attachmentId)}`,
   };
 
   await makeJiraRequest(config);
@@ -886,7 +904,7 @@ export async function deleteAttachment(attachmentId: string): Promise<void> {
 export async function getTransitions(issueKey: string): Promise<JiraTransition[]> {
   const config: AxiosRequestConfig = {
     method: 'GET',
-    url: `/issue/${issueKey}/transitions`,
+    url: `/issue/${pathSegment(issueKey)}/transitions`,
   };
 
   const response = await makeJiraRequest<{ transitions: JiraTransition[] }>(config);
@@ -927,7 +945,7 @@ export async function transitionIssue(
 
   const config: AxiosRequestConfig = {
     method: 'POST',
-    url: `/issue/${issueKey}/transitions`,
+    url: `/issue/${pathSegment(issueKey)}/transitions`,
     data,
   };
 

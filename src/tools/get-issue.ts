@@ -5,7 +5,7 @@ import { validateInput, extractIssueKey } from '../utils/validators.js';
 import { getIssue } from '../utils/api-helpers.js';
 import { formatIssueResponse } from '../utils/formatters.js';
 import { handleError } from '../utils/error-handler.js';
-import { TOOL_NAMES } from '../config/constants.js';
+import { TOOL_NAMES, ERROR_MESSAGES } from '../config/constants.js';
 import { createLogger } from '../utils/logger.js';
 
 const log = createLogger('tool:get-issue');
@@ -46,6 +46,11 @@ export async function handleGetIssue(input: unknown): Promise<McpToolResponse> {
     // Accept either an issue key or a full Jira URL and extract the key
     const trimmedInput = (validated.issueKey || '').trim();
     const key = extractIssueKey(trimmedInput) || trimmedInput;
+    // The key becomes part of the REST path: accept an issue key (any case)
+    // or a numeric issue id, nothing that could address another endpoint.
+    if (!/^[A-Za-z][A-Za-z0-9_]*-\d+$/.test(key) && !/^\d+$/.test(key)) {
+      throw new Error(`${ERROR_MESSAGES.VALIDATION_ERROR}\nissueKey: Invalid issue key format`);
+    }
 
     log.info(`Getting issue ${key}...`);
 
