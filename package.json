@@ -50,19 +50,19 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.31.0",
     "axios": "^1.7.0",
     "form-data": "^4.0.5",
     "md-to-adf": "^0.5.0",
     "zod": "^4.4.2"
   },
   "devDependencies": {
-    "@types/node": "^25.3.3",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
-    "@vitest/coverage-v8": "^4.0.10",
-    "@vitest/ui": "^4.0.10",
-    "dotenv": "^17.2.1",
+    "@types/node": "^26.6.4",
+    "@typescript-eslint/eslint-plugin": "^8.71.0",
+    "@typescript-eslint/parser": "^8.71.0",
+    "@vitest/coverage-v8": "^5.0.3",
+    "@vitest/ui": "^5.0.3",
+    "dotenv": "^18.0.5",
     "eslint": "^9.9.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.2.0",
@@ -70,7 +70,7 @@
     "tsup": "^8.5.1",
     "tsx": "^4.16.0",
     "typescript": "^5.5.0",
-    "vitest": "^4.0.10"
+    "vitest": "^5.0.3"
   },
   "files": [
     "dist",
