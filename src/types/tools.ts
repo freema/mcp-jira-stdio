@@ -218,7 +218,10 @@ export type GetProjectInfoInput = z.infer<typeof GetProjectInfoInputSchema>;
 
 // Create subtask
 export const CreateSubtaskInputSchema = z.object({
-  parentIssueKey: z.string().describe('Parent issue key'),
+  parentIssueKey: z
+    .string()
+    .describe('Parent issue key')
+    .refine((v) => isValidIssueKey(v), 'Invalid issue key format'),
   summary: z.string().min(1).describe('Subtask summary/title'),
   description: z
     .union([z.string(), z.any()])
@@ -365,7 +368,10 @@ export type GetAttachmentsInput = z.infer<typeof GetAttachmentsInputSchema>;
 
 // Delete attachment
 export const DeleteAttachmentInputSchema = z.object({
-  attachmentId: z.string().min(1).describe('ID of the attachment to delete'),
+  attachmentId: z
+    .string()
+    .regex(/^\d+$/, 'Attachment ID must be numeric')
+    .describe('ID of the attachment to delete'),
 });
 
 export type DeleteAttachmentInput = z.infer<typeof DeleteAttachmentInputSchema>;

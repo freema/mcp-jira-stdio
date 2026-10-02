@@ -180,3 +180,24 @@ describe('validators', () => {
     });
   });
 });
+
+describe('ids that end up in a REST path', () => {
+  it('accepts only numeric attachment ids', async () => {
+    const { DeleteAttachmentInputSchema } = await import('../../../src/types/tools.js');
+    expect(DeleteAttachmentInputSchema.safeParse({ attachmentId: '10001' }).success).toBe(true);
+    for (const attachmentId of ['../issue/PROJ-1', '..', '10001/../../issue/PROJ-1', 'abc', '']) {
+      expect(DeleteAttachmentInputSchema.safeParse({ attachmentId }).success).toBe(false);
+    }
+  });
+
+  it('validates the parent issue key of a subtask', async () => {
+    const { CreateSubtaskInputSchema } = await import('../../../src/types/tools.js');
+    const base = { summary: 'Sub' };
+    expect(CreateSubtaskInputSchema.safeParse({ ...base, parentIssueKey: 'PROJ-1' }).success).toBe(
+      true
+    );
+    expect(
+      CreateSubtaskInputSchema.safeParse({ ...base, parentIssueKey: '../myself' }).success
+    ).toBe(false);
+  });
+});

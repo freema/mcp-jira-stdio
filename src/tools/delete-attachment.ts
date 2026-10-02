@@ -19,7 +19,7 @@ export const deleteAttachmentTool: Tool = {
       attachmentId: {
         type: 'string',
         description: 'ID of the attachment to delete (can be found using jira_get_attachments)',
-        minLength: 1,
+        pattern: '^[0-9]+$',
       },
     },
     required: ['attachmentId'],

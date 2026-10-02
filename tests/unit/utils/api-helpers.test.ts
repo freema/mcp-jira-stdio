@@ -1295,6 +1295,22 @@ describe('api-helpers', () => {
       });
     });
 
+    it('cannot be pointed at another endpoint', async () => {
+      mockedMakeJiraRequest.mockResolvedValue(undefined);
+
+      await deleteAttachment('../issue/PROJ-1');
+
+      expect(mockedMakeJiraRequest).toHaveBeenCalledWith({
+        method: 'DELETE',
+        url: '/attachment/..%2Fissue%2FPROJ-1',
+      });
+    });
+
+    it.each(['..', '.', ''])('rejects the path segment %j', async (id) => {
+      await expect(deleteAttachment(id)).rejects.toThrow('Invalid identifier');
+      expect(mockedMakeJiraRequest).not.toHaveBeenCalled();
+    });
+
     it('should handle long attachment IDs', async () => {
       mockedMakeJiraRequest.mockResolvedValue(undefined);
 
