@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.1] - 2026-10-02
+
+### Security
+
+- **The Jira API token no longer reaches the logs.** Tool handlers log the error they catch, and the logger serialized it with `JSON.stringify`. An axios error carries its whole request config, including `auth.password`, so every 400, 403 or 5xx answer from Jira wrote the API token to stderr, which MCP clients such as Claude Desktop keep in their log files. Errors are now logged as name, message, status, method, URL and Jira's error messages, credential fields in logged objects are redacted, and log lines are scrubbed of the configured token. **If you ran an earlier version, rotate your Jira API token and clear old MCP client logs.**
+- **Ids can no longer address a different Jira endpoint.** Ids were placed into REST paths as given, so `jira_delete_attachment` with `attachmentId: "../issue/PROJ-1"` deleted the issue PROJ-1 and reported a deleted attachment. Every path segment is now encoded and `.`/`..` are rejected; `attachmentId` must be numeric, `jira_create_subtask` validates `parentIssueKey`, and `jira_get_issue` accepts only an issue key or a numeric issue id (a full issue URL still works).
+
 ## [1.12.0] - 2026-09-14
 
 ### Added
