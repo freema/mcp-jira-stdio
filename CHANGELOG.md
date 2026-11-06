@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.2] - 2026-11-06
+
+### Security
+
+Dependency updates only. `npm audit --omit=dev` on the lockfile flagged 13 packages in 1.12.1 (1 critical, 10 high, 2 moderate) and flags none now. The tools, their names and their input schemas are unchanged.
+
+- **`axios` 1.20.0 → 1.21.0, `follow-redirects` 1.16.0 → 1.16.2.** This is the HTTP client that sends the Jira credentials. `follow-redirects` 1.16.0 and 1.16.1 could keep credential headers on a redirect to another origin (GHSA-q3jh-wrc6-jgq8, GHSA-8r9p-f939-6h3c, GHSA-mrwp-f3q8-3g9p). The minimum `axios` version is now 1.21.0.
+- **`@modelcontextprotocol/sdk` 1.31.0 → 1.32.2** (GHSA-22jm-h49p-29qw, GHSA-46jr-4wx8-v453, GHSA-rvq5-wwqv-78pq, GHSA-6prh-2h8m-c8cw).
+- **`zod` 4.4.3 → 4.6.7.** Validating an oversized constrained collection could exhaust memory (GHSA-mrhx-c7xc-m3w5).
+- Transitive dependencies of the SDK, most of them for its HTTP transports, which this stdio server does not start: `proxy-addr` 2.0.8 (GHSA-jqcg-44mw-7w3h), `hono` 4.13.16, `@hono/node-server` 2.1.6, `body-parser` 2.4.0, `express-rate-limit` 8.7.3, `path-to-regexp` 8.4.2, `fast-uri` 3.1.9, `ip-address` 10.7.6, `qs` 6.17.1, `ajv` 8.20.0.
+
+### Changed
+
+- Bumped the vitest group (`vitest`, `@vitest/coverage-v8`, `@vitest/ui`) from 5.0.3 to 5.0.5
+- Bumped `@typescript-eslint/eslint-plugin` and `@typescript-eslint/parser` from 8.71.0 to 8.72.1
+- Bumped `eslint-plugin-prettier` from 5.5.6 to 5.5.7
+- Bumped `prettier` from 3.9.6 to 3.9.10
+- Bumped `@types/node` from 26.6.4 to 26.6.6
+
+### Fixed
+
+- `bin` in `package.json` is written as `dist/index.js`, so `npm publish` no longer warns that it cleaned the script name.
+
 ## [1.12.1] - 2026-10-02
 
 ### Security
@@ -40,6 +63,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bumped the vitest group (`vitest`, `@vitest/coverage-v8`, `@vitest/ui`) from 4.1.9 to 4.1.10
 - Bumped `@typescript-eslint/eslint-plugin` and `@typescript-eslint/parser` from 8.62.1 to 8.65.0
 - Bumped `actions/checkout` from 4 to 7 and `actions/setup-node` from 6 to 7 in CI
+
+## [1.11.0] - 2026-07-27
+
+### Added
+
+- **MCP Registry**: the server is registered in the [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.freema/mcp-jira-stdio`, so it can be discovered and installed from there and not only from npm. `server.json` describes the stdio transport and the environment the server reads: `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` (required), `MCP_REDACT_SENSITIVE` and `LOG_LEVEL` (optional). Publishing runs on release over GitHub OIDC, with no new secrets.
+
+### Changed
+
+- Bumped `zod` from 3.25.76 to 4.4.2
+- Bumped `axios` from 1.13.6 to 1.18.1
+- Bumped `form-data` from 4.0.5 to 4.0.6
+- The Docker image is built on `node:22-alpine`
 
 ## [1.10.2] - 2026-04-21
 
