@@ -1,6 +1,7 @@
 import { AxiosRequestConfig } from 'axios';
 import FormData from 'form-data';
 import { makeJiraRequest, makeMultipartRequest } from './jira-auth.js';
+import { assertSafeUrl, createSafeAgents, MAX_REDIRECTS } from './url-guard.js';
 import {
   JiraProject,
   JiraIssue,
@@ -839,31 +840,38 @@ export async function addAttachmentFromUrl(
   filename: string
 ): Promise<JiraAttachment[]> {
   const axios = (await import('axios')).default;
+  const { httpAgent, httpsAgent } = createSafeAgents();
 
-  // Parse and validate URL
-  const urlObj = new URL(fileUrl);
+  // SSRF protection (see url-guard.ts): every URL, including each redirect target, is
+  // checked before the request, and the agents' lookup rejects hostnames that resolve
+  // to a non-public address. Redirects are followed here, not by axios, so every hop is
+  // checked. No proxy: with a proxy the target name would be resolved by the proxy,
+  // past the lookup check.
+  let currentUrl = new URL(fileUrl);
+  let response;
+  for (let hop = 0; ; hop++) {
+    assertSafeUrl(currentUrl);
+    response = await axios.get(currentUrl.toString(), {
+      responseType: 'arraybuffer',
+      maxContentLength: 50 * 1024 * 1024, // 50 MB limit
+      timeout: 30000, // 30 seconds
+      maxRedirects: 0,
+      proxy: false,
+      httpAgent,
+      httpsAgent,
+      validateStatus: (status) => status >= 200 && status < 400,
+    });
+    if (response.status < 300) break;
 
-  // Prevent SSRF attacks - block localhost and private IPs
-  if (urlObj.hostname === 'localhost' || urlObj.hostname.startsWith('127.')) {
-    throw new Error('Cannot download from localhost (SSRF protection)');
-  }
-  if (urlObj.hostname.startsWith('192.168.') || urlObj.hostname.startsWith('10.')) {
-    throw new Error('Cannot download from private network (SSRF protection)');
-  }
-  if (urlObj.hostname.startsWith('172.')) {
-    const parts = urlObj.hostname.split('.');
-    const secondOctet = parts[1] ? parseInt(parts[1]) : 0;
-    if (secondOctet >= 16 && secondOctet <= 31) {
-      throw new Error('Cannot download from private network (SSRF protection)');
+    const location = response.headers['location'];
+    if (typeof location !== 'string' || location === '') {
+      throw new Error(`Download failed: HTTP ${response.status} without a Location header`);
     }
+    if (hop >= MAX_REDIRECTS) {
+      throw new Error(`Download failed: more than ${MAX_REDIRECTS} redirects`);
+    }
+    currentUrl = new URL(location, currentUrl);
   }
-
-  // Download file
-  const response = await axios.get(fileUrl, {
-    responseType: 'arraybuffer',
-    maxContentLength: 50 * 1024 * 1024, // 50 MB limit
-    timeout: 30000, // 30 seconds
-  });
 
   const fileBuffer = Buffer.from(response.data);
 

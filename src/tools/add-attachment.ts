@@ -38,7 +38,7 @@ Returns attachment metadata including ID and download URL. To reference the imag
       fileUrl: {
         type: 'string',
         description:
-          'URL to download file from (efficient for remote files, ~60 tokens). Upload large files to Dropbox/S3/imgur first, then use URL.',
+          'URL to download file from (efficient for remote files, ~60 tokens). Upload large files to Dropbox/S3/imgur first, then use URL. Only public http(s) URLs: localhost, private and link-local addresses are refused, also after a redirect.',
         format: 'uri',
       },
       content: {
