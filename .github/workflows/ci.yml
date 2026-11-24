@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, master]
 
+# The CI jobs only read the repository; the token gets no write access.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
