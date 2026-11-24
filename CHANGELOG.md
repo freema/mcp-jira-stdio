@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.3] - 2026-11-24
+
+### Security
+
+- **`jira_add_attachment` with `fileUrl` no longer fetches internal addresses (SSRF, CWE-918).** In 1.12.2 and earlier the check compared the URL hostname against `localhost`, `127.*`, `10.*`, `192.168.*` and `172.16–31.*` as text, and axios then followed redirects without checking them. A URL could reach an internal address through the cloud metadata range (`169.254.169.254`), `0.0.0.0`, IPv6 forms (`[::1]`, `[::ffff:127.0.0.1]`, `fd00::/8`), decimal or hex IPv4 (`http://2130706433/`), a hostname that resolves to an internal IP, or a public URL that redirects to one. The downloaded body is uploaded to the Jira issue, so a prompt-injected tool call could read internal responses through Jira. Reported by Plumbline security research (MCPT-0003).
+  - Addresses are checked after DNS resolution. Every resolved address must be public unicast: loopback, private, carrier-grade NAT, link-local, unique-local, IPv4-mapped and NAT64 IPv6, multicast, documentation and reserved ranges are refused. The connection goes to the address that was checked, so a second DNS answer cannot swap in an internal one.
+  - Redirects are followed by the server, at most 5, and every hop goes through the same checks.
+  - Only `http` and `https` URLs are accepted, without credentials in the URL. `localhost` and `*.localhost` are refused by name.
+  - The download does not use `HTTP_PROXY`/`HTTPS_PROXY`: through a proxy the target would be resolved by the proxy, past the check. Attachments from URLs reachable only through a proxy now fail; upload them with `content` instead.
+
+### Changed
+
+- The `fileUrl` description says which URLs are accepted, so the agent knows before calling the tool.
+
 ## [1.12.2] - 2026-11-06
 
 ### Security

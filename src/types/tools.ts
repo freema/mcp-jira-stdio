@@ -326,7 +326,7 @@ export const AddAttachmentInputSchema = z
       .url()
       .optional()
       .describe(
-        'URL to download file from (efficient for remote files, ~60 tokens). Upload large files to Dropbox/S3/imgur first, then use URL.'
+        'URL to download file from (efficient for remote files, ~60 tokens). Upload large files to Dropbox/S3/imgur first, then use URL. Only public http(s) URLs: localhost, private and link-local addresses are refused, also after a redirect.'
       ),
 
     // Option 2: Base64 content (for small files or backwards compatibility)
